@@ -1,12 +1,11 @@
 #!/usr/bin/env node
-
 'use strict';
 
 const { Command } = require('commander');
 const chalk = require('chalk');
 const { create } = require('../lib/commands/create');
 
-const program = new Command();
+const pkg = require('../package.json');
 
 const BANNER = `
 \u001b[36m██████╗  █████╗ ███████╗██╗  ██╗ █████╗ \u001b[0m
@@ -15,32 +14,29 @@ const BANNER = `
 \u001b[36m██╔═══╝ ██╔══██║╚════██║██╔══██║██╔══██║\u001b[0m
 \u001b[36m██║     ██║  ██║███████║██║  ██║██║  ██║\u001b[0m
 \u001b[36m╚═╝     ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝\u001b[0m
-        by Parsa Shadkam — v1.1.0
+        by Parsa Shadkam — v${pkg.version}
 `;
+
+const program = new Command();
 
 program
   .name('pasha')
-  .description('pasha CLI — ابزار ساخت CLI شخصی')
-  .version('1.1.0')
+  .description('pasha — ابزار ساخت CLI شخصی')
+  .version(pkg.version)
   .addHelpText('beforeAll', BANNER);
 
 program
   .command('create')
   .description('یه CLI شخصی جدید بساز')
-  .action(async () => {
-    await create();
-  });
+  .action(async () => { await create(); });
 
 program
   .command('hello [name]')
   .description('سلام می‌کنه!')
   .option('-f, --fancy', 'خروجی رنگی‌تر')
   .action((name = 'World', opts) => {
-    if (opts.fancy) {
-      console.log('\x1b[35m✨ Hey ' + name + '! خوش اومدی به pasha CLI ✨\x1b[0m');
-    } else {
-      console.log('\x1b[32m👋 Hello, ' + name + '!\x1b[0m');
-    }
+    if (opts.fancy) console.log(chalk.magenta('✨ Hey ' + name + '! خوش اومدی به pasha CLI ✨'));
+    else console.log(chalk.green('👋 Hello, ' + name + '!'));
   });
 
 program
@@ -48,11 +44,11 @@ program
   .description('اطلاعات کامل CLI')
   .action(() => {
     console.log(BANNER);
-    console.log('📦 Package : @pasha1383/pasha');
-    console.log('🔖 Version : 1.1.0');
-    console.log('👤 Author  : Parsa Shadkam');
-    console.log('🌐 Node    : ' + process.version);
-    console.log('💻 OS      : ' + process.platform);
+    console.log(chalk.bold('📦 Package : ') + chalk.cyan('@pasha1383/pasha'));
+    console.log(chalk.bold('🔖 Version : ') + chalk.cyan(pkg.version));
+    console.log(chalk.bold('👤 Author  : ') + chalk.cyan('Parsa Shadkam'));
+    console.log(chalk.bold('🌐 Node    : ') + chalk.cyan(process.version));
+    console.log(chalk.bold('💻 OS      : ') + chalk.cyan(process.platform));
   });
 
 program.parse();

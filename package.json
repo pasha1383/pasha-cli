@@ -1,0 +1,23 @@
+{
+  "name": "pasha",
+  "version": "1.0.0",
+  "description": "CLI شخصی پارسا شادکام",
+  "main": "bin/pasha.js",
+  "bin": {
+    "pasha": "./bin/pasha.js"
+  },
+  "author": "Parsa Shadkam <ایمیلت@gmail.com>",
+  "license": "MIT",
+  "keywords": ["cli", "pasha"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pasha1383/pasha.git"
+  },
+  "dependencies": {
+    "commander": "^12.0.0",
+    "chalk": "^4.1.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

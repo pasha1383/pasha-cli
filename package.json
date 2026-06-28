@@ -1,5 +1,5 @@
 {
-  "name": "pasha",
+  "name": "@pasha1383/pasha",
   "version": "1.0.0",
   "description": "CLI شخصی پارسا شادکام",
   "main": "bin/pasha.js",

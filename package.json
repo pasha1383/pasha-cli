@@ -1,6 +1,6 @@
 {
   "name": "@pasha1383/pasha",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "CLI generator — برای ساخت CLI شخصی",
   "main": "bin/pasha.js",
   "bin": {

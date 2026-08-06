@@ -4,7 +4,7 @@
 const { Command } = require('commander');
 const chalk = require('chalk');
 const { create } = require('../lib/commands/create');
-
+const { doctor } = require('../lib/commands/doctor');
 const pkg = require('../package.json');
 
 const BANNER = `
@@ -21,27 +21,32 @@ const program = new Command();
 
 program
   .name('pasha')
-  .description('pasha — ابزار ساخت CLI شخصی')
+  .description('pasha — pick a language, framework, and architecture, and scaffold your base project')
   .version(pkg.version)
   .addHelpText('beforeAll', BANNER);
 
 program
   .command('create')
-  .description('یه CLI شخصی جدید بساز')
+  .description('Scaffold a new project (language/framework/architecture wizard)')
   .action(async () => { await create(); });
 
 program
+  .command('doctor')
+  .description('Check system prerequisites and install them if needed')
+  .action(async () => { await doctor(); });
+
+program
   .command('hello [name]')
-  .description('سلام می‌کنه!')
-  .option('-f, --fancy', 'خروجی رنگی‌تر')
+  .description('Say hello!')
+  .option('-f, --fancy', 'Colorful output')
   .action((name = 'World', opts) => {
-    if (opts.fancy) console.log(chalk.magenta('✨ Hey ' + name + '! خوش اومدی به pasha CLI ✨'));
+    if (opts.fancy) console.log(chalk.magenta('✨ Hey ' + name + '! Welcome to pasha CLI ✨'));
     else console.log(chalk.green('👋 Hello, ' + name + '!'));
   });
 
 program
   .command('info')
-  .description('اطلاعات کامل CLI')
+  .description('Show full CLI info')
   .action(() => {
     console.log(BANNER);
     console.log(chalk.bold('📦 Package : ') + chalk.cyan('@pasha1383/pasha'));

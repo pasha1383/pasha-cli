@@ -1,43 +1,46 @@
 #!/bin/bash
-
 set -e
 
-REPO="pasha1383/pasha"
-BINARY_NAME="pasha"
-INSTALL_DIR="/usr/local/bin"
-TMP_DIR=$(mktemp -d)
+REPO_URL="https://github.com/pasha1383/pasha-cli.git"
+INSTALL_ROOT="$HOME/.pasha-cli"
+BIN_LINK="/usr/local/bin/pasha"
 
 echo "📦 Installing pasha CLI..."
 
+OS_NAME=$(uname -s)
+if [ "$OS_NAME" != "Linux" ] && [ "$OS_NAME" != "Darwin" ]; then
+  echo "❌ pasha currently only supports Linux and macOS."
+  exit 1
+fi
+
 if ! command -v node &> /dev/null; then
-  echo "❌ Node.js پیدا نشد! اول Node.js نصب کن: https://nodejs.org"
+  echo "❌ Node.js not found! Install Node.js 18+ first: https://nodejs.org"
   exit 1
 fi
 
-NODE_VERSION=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
-if [ "$NODE_VERSION" -lt 18 ]; then
-  echo "❌ Node.js 18+ لازمه. نسخه فعلی: $(node -v)"
+NODE_MAJOR=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
+if [ "$NODE_MAJOR" -lt 18 ]; then
+  echo "❌ Node.js 18+ is required. Current version: $(node -v)"
   exit 1
 fi
 
-echo "✅ Node.js $(node -v) پیدا شد"
-echo "⬇️  در حال دانلود از GitHub..."
+if ! command -v git &> /dev/null; then
+  echo "❌ git not found! Install git first."
+  exit 1
+fi
 
-curl -fsSL "https://raw.githubusercontent.com/$REPO/main/bin/pasha.js" \
-  -o "$TMP_DIR/pasha.js"
+echo "✅ Found Node.js $(node -v) and git"
+echo "⬇️  Downloading pasha-cli..."
 
-curl -fsSL "https://raw.githubusercontent.com/$REPO/main/package.json" \
-  -o "$TMP_DIR/package.json"
+rm -rf "$INSTALL_ROOT"
+git clone --depth 1 "$REPO_URL" "$INSTALL_ROOT" --quiet
 
-cd "$TMP_DIR" && npm install --production --silent
+echo "📦 Installing dependencies..."
+cd "$INSTALL_ROOT" && npm install --production --silent
 
-sudo tee "$INSTALL_DIR/$BINARY_NAME" > /dev/null << WRAPPER
-#!/bin/bash
-NODE_PATH="$TMP_DIR/node_modules" node "$TMP_DIR/pasha.js" "\$@"
-WRAPPER
-
-sudo chmod +x "$INSTALL_DIR/$BINARY_NAME"
+chmod +x "$INSTALL_ROOT/bin/pasha.js"
+sudo ln -sf "$INSTALL_ROOT/bin/pasha.js" "$BIN_LINK"
 
 echo ""
-echo "✅ pasha CLI نصب شد!"
-echo "اجرا کن: pasha --help"
+echo "✅ pasha CLI installed!"
+echo "Run: pasha --help"

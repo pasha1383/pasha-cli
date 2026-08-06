@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
-      POSTGRES_DB: ${DB_NAME:-{{snakeCase projectName}}}
+      POSTGRES_DB: {{shellDefault "DB_NAME" dbName}}
     ports:
       - '${DB_PORT:-5432}:5432'
     volumes:
@@ -23,7 +23,7 @@ services:
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
-      MYSQL_DATABASE: ${DB_NAME:-{{snakeCase projectName}}}
+      MYSQL_DATABASE: {{shellDefault "DB_NAME" dbName}}
     ports:
       - '${DB_PORT:-3306}:3306'
     volumes:

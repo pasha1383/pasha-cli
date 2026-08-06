@@ -1,0 +1,33 @@
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+
+/**
+ * Minimal starter auth: one admin identity read from the environment, so the
+ * generated project has a working login endpoint on day one. Replace
+ * validateUser with a real lookup (hashed password, user table) before this
+ * goes anywhere near production.
+ */
+@Injectable()
+export class AuthService {
+  constructor(
+    private readonly jwt: JwtService,
+    private readonly config: ConfigService,
+  ) {}
+
+  async validateUser(username: string, password: string): Promise<{ sub: string; username: string }> {
+    const expectedUser = this.config.get<string>('ADMIN_USER', 'admin');
+    const expectedPassword = this.config.get<string>('ADMIN_PASSWORD', 'admin');
+
+    if (username !== expectedUser || password !== expectedPassword) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+    return { sub: '1', username };
+  }
+
+  async login(username: string, password: string): Promise<{ accessToken: string }> {
+    const user = await this.validateUser(username, password);
+    const accessToken = await this.jwt.signAsync(user);
+    return { accessToken };
+  }
+}

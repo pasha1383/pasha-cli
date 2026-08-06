@@ -1,0 +1,20 @@
+{{#if useClassValidator}}
+import { IsNotEmpty, IsString } from 'class-validator';
+
+export class LoginDto {
+  @IsString()
+  @IsNotEmpty()
+  username!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  password!: string;
+}
+{{else}}
+export class LoginDto {
+  // Definite assignment assertion: populated by NestJS from the request
+  // body, not via a constructor.
+  username!: string;
+  password!: string;
+}
+{{/if}}

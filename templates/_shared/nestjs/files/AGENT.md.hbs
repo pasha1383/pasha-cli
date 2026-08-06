@@ -22,6 +22,18 @@ you are editing.
 {{#if hasBroker}}
 - **Message broker:** {{broker}}
 {{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger at `/api/docs`
+{{/if}}
+{{#if useAuth}}
+- **Auth:** JWT (starter credentials in `.env` — replace before production)
+{{/if}}
+{{#if useHealthCheck}}
+- **Health check:** `GET /health`
+{{/if}}
+{{#if useRateLimit}}
+- **Rate limiting:** enabled globally (see `THROTTLE_TTL`/`THROTTLE_LIMIT` in `.env`)
+{{/if}}
 
 ## Modules
 
@@ -42,6 +54,14 @@ npm run infra:down
 npm run prisma:migrate # create and apply a migration
 npm run prisma:generate
 {{/if}}
+{{#if useLint}}
+npm run lint
+npm run format
+{{/if}}
+{{#if useTests}}
+npm run test           # unit tests
+npm run test:e2e       # end-to-end tests
+{{/if}}
 ```
 
 ## Hard rules
@@ -60,6 +80,16 @@ npm run prisma:generate
 {{/if}}
 6. **Secrets come from `ConfigService`**, never from hardcoded literals or
    direct `process.env` reads outside the config layer.
+{{#if useAuth}}
+7. **A route is public unless explicitly guarded.** Add
+   `@UseGuards(JwtAuthGuard)` deliberately — do not assume auth is enforced
+   somewhere else.
+{{/if}}
+{{#if useTests}}
+8. **New use-cases/services get a spec file.** Follow the pattern already in
+   each module — mock the repository, do not hit a real database in unit
+   tests.
+{{/if}}
 
 ## When you are unsure
 

@@ -1,6 +1,10 @@
 {
   "name": "Node.js + NestJS + Hexagonal/DDD",
-  "prerequisites": ["node", "npm", "git"],
+  "prerequisites": [
+    "node",
+    "npm",
+    "git"
+  ],
   "shared": "_shared/nestjs",
   "stackFeatures": true,
   "modules": {
@@ -35,8 +39,26 @@
     "src/infrastructure/{{moduleName}}/persistence/{{moduleName}}.orm-entity.ts.hbs": "ormTypeorm",
     "src/infrastructure/{{moduleName}}/persistence/{{moduleName}}.typeorm.repository.ts.hbs": "ormTypeorm",
     "src/infrastructure/{{moduleName}}/persistence/{{moduleName}}.schema.ts.hbs": "ormMongoose",
-    "src/infrastructure/{{moduleName}}/persistence/{{moduleName}}.mongoose.repository.ts.hbs": "ormMongoose"
+    "src/infrastructure/{{moduleName}}/persistence/{{moduleName}}.mongoose.repository.ts.hbs": "ormMongoose",
+    ".eslintrc.js": "useLint",
+    ".prettierrc": "useLint",
+    "Dockerfile.hbs": "useAppDockerfile",
+    ".dockerignore.hbs": "useAppDockerfile",
+    ".github": "useCI",
+    "test": "useTests",
+    "src/config/swagger.ts.hbs": "useSwagger",
+    "src/shared/auth": "useAuth",
+    "src/shared/health": "useHealthCheck",
+    "src/shared/health/indicators/prisma.health-indicator.ts.hbs": "ormPrisma",
+    "src/shared/health/indicators/typeorm.health-indicator.ts.hbs": "ormTypeorm",
+    "src/shared/health/indicators/mongoose.health-indicator.ts.hbs": "ormMongoose",
+    "src/shared/health/indicators/redis.health-indicator.ts.hbs": "useRedis",
+    "src/application/{{moduleName}}/use-cases/create-{{moduleName}}.use-case.spec.ts.hbs": "useTests",
+    "src/shared/auth/AGENT.md.hbs": "useAgentDocs",
+    "src/shared/health/AGENT.md.hbs": "useAgentDocs"
   },
-  "postInstall": ["npm install"],
+  "postInstall": [
+    "npm install"
+  ],
   "gitInit": true
 }

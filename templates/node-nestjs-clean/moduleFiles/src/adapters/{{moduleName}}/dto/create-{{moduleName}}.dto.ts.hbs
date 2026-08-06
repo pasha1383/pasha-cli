@@ -1,7 +1,13 @@
 {{#if useClassValidator}}
 import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
+{{#if useSwagger}}
+import { ApiProperty } from '@nestjs/swagger';
+{{/if}}
 
 export class Create{{pascalCase moduleName}}Dto {
+{{#if useSwagger}}
+  @ApiProperty({ example: 'sample-{{moduleName}}', maxLength: 255 })
+{{/if}}
   @IsString()
   @IsNotEmpty()
   @MaxLength(255)

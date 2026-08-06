@@ -1,0 +1,23 @@
+import { INestApplication } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+
+/**
+ * Mounts interactive API docs at /api/docs. Called once from main.ts.
+ * {{#if useAuth}}
+ * The "bearer" security scheme lets you click "Authorize" in the UI and
+ * attach a JWT to every request made from the docs page.
+ * {{/if}}
+ */
+export function setupSwagger(app: INestApplication): void {
+  const config = new DocumentBuilder()
+    .setTitle('{{projectName}}')
+    .setDescription('{{description}}')
+    .setVersion('0.1.0')
+{{#if useAuth}}
+    .addBearerAuth()
+{{/if}}
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
+}

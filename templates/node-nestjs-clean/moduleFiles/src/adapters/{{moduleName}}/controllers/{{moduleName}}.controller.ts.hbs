@@ -1,9 +1,15 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
+{{#if useSwagger}}
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+{{/if}}
 import { Create{{pascalCase moduleName}}UseCase } from '../../../core/use-cases/{{moduleName}}/create-{{moduleName}}.use-case';
 import { Get{{pascalCase moduleName}}sUseCase } from '../../../core/use-cases/{{moduleName}}/get-{{moduleName}}s.use-case';
 import { Create{{pascalCase moduleName}}Dto } from '../dto/create-{{moduleName}}.dto';
 import { {{pascalCase moduleName}}Presenter, {{pascalCase moduleName}}View } from '../presenters/{{moduleName}}.presenter';
 
+{{#if useSwagger}}
+@ApiTags('{{moduleName}}')
+{{/if}}
 @Controller('{{moduleName}}')
 export class {{pascalCase moduleName}}Controller {
   constructor(
@@ -12,12 +18,19 @@ export class {{pascalCase moduleName}}Controller {
   ) {}
 
   @Post()
+{{#if useSwagger}}
+  @ApiOperation({ summary: 'Create a {{moduleName}}' })
+  @ApiResponse({ status: 201, description: 'Created.' })
+{{/if}}
   async create(@Body() dto: Create{{pascalCase moduleName}}Dto): Promise<{{pascalCase moduleName}}View> {
     const entity = await this.create{{pascalCase moduleName}}.execute(dto.name);
     return {{pascalCase moduleName}}Presenter.toView(entity);
   }
 
   @Get()
+{{#if useSwagger}}
+  @ApiOperation({ summary: 'List all {{moduleName}} records' })
+{{/if}}
   async findAll(): Promise<{{pascalCase moduleName}}View[]> {
     const entities = await this.get{{pascalCase moduleName}}s.execute();
     return {{pascalCase moduleName}}Presenter.toViewList(entities);

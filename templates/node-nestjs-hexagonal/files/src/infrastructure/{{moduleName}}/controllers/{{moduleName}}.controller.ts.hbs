@@ -1,0 +1,22 @@
+import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Create{{pascalCase moduleName}}UseCase } from '../../../application/{{moduleName}}/use-cases/create-{{moduleName}}.use-case';
+import { Get{{pascalCase moduleName}}sUseCase } from '../../../application/{{moduleName}}/use-cases/get-{{moduleName}}.use-case';
+import { Create{{pascalCase moduleName}}Dto } from '../../../application/{{moduleName}}/dto/create-{{moduleName}}.dto';
+
+@Controller('{{moduleName}}')
+export class {{pascalCase moduleName}}Controller {
+  constructor(
+    private readonly create{{pascalCase moduleName}}: Create{{pascalCase moduleName}}UseCase,
+    private readonly get{{pascalCase moduleName}}s: Get{{pascalCase moduleName}}sUseCase,
+  ) {}
+
+  @Post()
+  create(@Body() dto: Create{{pascalCase moduleName}}Dto) {
+    return this.create{{pascalCase moduleName}}.execute(dto);
+  }
+
+  @Get()
+  findAll() {
+    return this.get{{pascalCase moduleName}}s.execute();
+  }
+}

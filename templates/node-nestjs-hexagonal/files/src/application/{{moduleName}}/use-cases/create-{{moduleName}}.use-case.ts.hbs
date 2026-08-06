@@ -1,0 +1,22 @@
+import { Inject, Injectable } from '@nestjs/common';
+import { randomUUID } from 'crypto';
+import { {{pascalCase moduleName}} } from '../../../domain/{{moduleName}}/entities/{{moduleName}}.entity';
+import {
+  I{{pascalCase moduleName}}Repository,
+  {{pascalCase moduleName}}_REPOSITORY,
+} from '../../../domain/{{moduleName}}/repositories/{{moduleName}}.repository.interface';
+import { Create{{pascalCase moduleName}}Dto } from '../dto/create-{{moduleName}}.dto';
+
+@Injectable()
+export class Create{{pascalCase moduleName}}UseCase {
+  constructor(
+    @Inject({{pascalCase moduleName}}_REPOSITORY)
+    private readonly repo: I{{pascalCase moduleName}}Repository,
+  ) {}
+
+  async execute(dto: Create{{pascalCase moduleName}}Dto): Promise<{{pascalCase moduleName}}> {
+    const entity = new {{pascalCase moduleName}}(randomUUID(), dto.name);
+    await this.repo.save(entity);
+    return entity;
+  }
+}

@@ -1,0 +1,31 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { Create{{pascalCase moduleName}}UseCase } from './create-{{moduleName}}.use-case';
+import { {{constantCase moduleName}}_REPOSITORY } from '../../../domain/{{moduleName}}/repositories/{{moduleName}}.repository.interface';
+
+describe('Create{{pascalCase moduleName}}UseCase', () => {
+  let useCase: Create{{pascalCase moduleName}}UseCase;
+  let repository: { save: jest.Mock; findAll: jest.Mock; findById: jest.Mock };
+
+  beforeEach(async () => {
+    repository = {
+      save: jest.fn().mockResolvedValue(undefined),
+      findAll: jest.fn().mockResolvedValue([]),
+      findById: jest.fn().mockResolvedValue(null),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        Create{{pascalCase moduleName}}UseCase,
+        { provide: {{constantCase moduleName}}_REPOSITORY, useValue: repository },
+      ],
+    }).compile();
+
+    useCase = module.get(Create{{pascalCase moduleName}}UseCase);
+  });
+
+  it('creates an entity and persists it through the repository port', async () => {
+    const result = await useCase.execute({ name: 'test' } as any);
+    expect(repository.save).toHaveBeenCalled();
+    expect(result.name).toBe('test');
+  });
+});

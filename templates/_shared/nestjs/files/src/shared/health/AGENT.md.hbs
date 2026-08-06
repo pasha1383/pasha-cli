@@ -1,0 +1,19 @@
+# AGENT.md — src/shared/health/
+
+Liveness/readiness endpoint at `GET /health`, built on `@nestjs/terminus`.
+
+## What lives here
+
+- `health.controller.ts` — always checks process memory via
+  `MemoryHealthIndicator`; conditionally checks whatever data stores this
+  project actually has.
+- `indicators/` — one indicator class per external dependency this project
+  is configured with{{#if ormPrisma}} (Prisma, via a raw `SELECT 1`){{/if}}{{#if ormTypeorm}} (TypeORM, via `DataSource.query`){{/if}}{{#if ormMongoose}} (Mongoose, via connection `readyState`){{/if}}{{#if healthChecksRedis}} (Redis, via `PING`){{/if}}.
+
+## Rules
+
+- Adding a new external dependency (another queue, another cache) means
+  adding a matching indicator here and wiring it into `health.controller.ts`
+  — do not let `/health` report healthy while something it depends on is down.
+- Keep each indicator's check cheap. This endpoint may be polled every few
+  seconds by an orchestrator; it is not the place for expensive queries.

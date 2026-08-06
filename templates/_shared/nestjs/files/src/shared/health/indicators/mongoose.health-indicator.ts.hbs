@@ -1,0 +1,20 @@
+import { Injectable } from '@nestjs/common';
+import { HealthCheckError, HealthIndicator, HealthIndicatorResult } from '@nestjs/terminus';
+import { InjectConnection } from '@nestjs/mongoose';
+import { Connection } from 'mongoose';
+
+@Injectable()
+export class MongooseHealthIndicatorService extends HealthIndicator {
+  constructor(@InjectConnection() private readonly connection: Connection) {
+    super();
+  }
+
+  async isHealthy(key: string): Promise<HealthIndicatorResult> {
+    // readyState: 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+    const isUp = this.connection.readyState === 1;
+    if (!isUp) {
+      throw new HealthCheckError('Mongoose check failed', this.getStatus(key, false));
+    }
+    return this.getStatus(key, true);
+  }
+}

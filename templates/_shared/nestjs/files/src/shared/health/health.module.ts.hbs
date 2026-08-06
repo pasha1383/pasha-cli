@@ -1,0 +1,40 @@
+import { Module } from '@nestjs/common';
+import { TerminusModule } from '@nestjs/terminus';
+import { HealthController } from './health.controller';
+{{#if ormPrisma}}
+import { PrismaHealthIndicator } from './indicators/prisma.health-indicator';
+{{/if}}
+{{#if ormTypeorm}}
+import { TypeormHealthIndicator } from './indicators/typeorm.health-indicator';
+{{/if}}
+{{#if ormMongoose}}
+import { MongooseHealthIndicatorService } from './indicators/mongoose.health-indicator';
+{{/if}}
+{{#if healthChecksRedis}}
+import { RedisHealthIndicator } from './indicators/redis.health-indicator';
+{{/if}}
+
+/**
+ * @nestjs/typeorm and @nestjs/mongoose both export their root connection as
+ * a global provider once forRoot()/forRootAsync() runs (see shared/database),
+ * so the indicators below can inject it without importing DatabaseModule here.
+ */
+@Module({
+  imports: [TerminusModule],
+  controllers: [HealthController],
+  providers: [
+{{#if ormPrisma}}
+    PrismaHealthIndicator,
+{{/if}}
+{{#if ormTypeorm}}
+    TypeormHealthIndicator,
+{{/if}}
+{{#if ormMongoose}}
+    MongooseHealthIndicatorService,
+{{/if}}
+{{#if healthChecksRedis}}
+    RedisHealthIndicator,
+{{/if}}
+  ],
+})
+export class HealthModule {}

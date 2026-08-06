@@ -1,0 +1,13 @@
+{
+  "name": "Node.js + NestJS + Hexagonal/DDD",
+  "prerequisites": ["node", "npm", "git"],
+  "prompts": [
+    {
+      "name": "moduleName",
+      "message": "What's the name of your first module/entity? (e.g. product, user, order)",
+      "default": "product"
+    }
+  ],
+  "postInstall": ["npm install"],
+  "gitInit": true
+}

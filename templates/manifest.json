@@ -1,0 +1,18 @@
+{
+  "languages": {
+    "node": {
+      "label": "Node.js / TypeScript",
+      "frameworks": {
+        "nestjs": {
+          "label": "NestJS",
+          "architectures": {
+            "hexagonal": {
+              "label": "Hexagonal / DDD",
+              "template": "node-nestjs-hexagonal"
+            }
+          }
+        }
+      }
+    }
+  }
+}

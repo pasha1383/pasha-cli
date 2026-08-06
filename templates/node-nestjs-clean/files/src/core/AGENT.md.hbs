@@ -1,0 +1,25 @@
+# AGENT.md — src/core/
+
+The innermost circle. Enterprise and application business rules.
+
+## Absolute rules
+
+- **Nothing here imports from `adapters/`, `modules/`, or `shared/`.**
+  Source-code dependencies point inwards only. This is the rule that makes
+  the business logic testable without a database or an HTTP server.
+- No HTTP, no SQL, no ORM types. Use-cases speak in domain entities.
+- Ports are interfaces the outer circles must implement — declare what the
+  core needs, never how it is satisfied.
+
+## What goes where
+
+- `entities/` — enterprise business rules. The objects and their invariants.
+- `use-cases/<module>/` — application business rules. One class per action,
+  each exposing `execute()`.
+- `ports/` — the interfaces (plus their DI tokens) that `adapters/` fulfils.
+
+## Adding a use-case
+
+Create the class in `use-cases/<module>/`, inject the port via
+`@Inject(<MODULE>_REPOSITORY)`, then register it as a provider in
+`src/modules/<module>.module.ts`. Never inject a concrete repository class.

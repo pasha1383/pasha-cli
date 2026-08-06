@@ -1,0 +1,22 @@
+# AGENT.md — src/adapters/
+
+Interface adapters. Translation between the core and the outside world.
+
+## Rules
+
+- May import from `core/`. **May not** be imported by `core/`.
+- Controllers are input boundaries: parse the request, call a use-case,
+  hand the result to a presenter. No business logic.
+- Presenters are output boundaries: they decide the response shape. If the
+  API format changes, that change belongs here and nowhere else.
+- Repositories implement a port from `core/ports/`. Database rows are not
+  core entities — map explicitly.
+
+## What goes where
+
+- `<module>/controllers/` — HTTP in.
+- `<module>/presenters/` — response shaping, plus the `*View` types.
+- `<module>/repositories/` — port implementations{{#if ormTypeorm}} and the
+  TypeORM `*.orm-entity.ts` persistence model{{/if}}{{#if ormMongoose}} and the
+  Mongoose `*.schema.ts` persistence model{{/if}}.
+- `<module>/dto/` — request shapes{{#if hasValidation}} with {{validation}} rules{{/if}}.

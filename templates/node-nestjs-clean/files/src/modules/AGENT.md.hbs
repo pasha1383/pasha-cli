@@ -1,0 +1,12 @@
+# AGENT.md — src/modules/
+
+Frameworks layer. The outermost circle: pure NestJS wiring.
+
+## Rules
+
+- One file per feature: `<module>.module.ts`.
+- This is the **only** place that binds a concrete repository to a core port.
+  Changing data layer should be a one-line edit here — if it isn't, something
+  leaked into an inner circle and should be fixed there instead.
+- No business logic, no mapping, no request handling. Wiring only.
+- Every module here must be imported in `src/app.module.ts` or it does nothing.

@@ -1,0 +1,19 @@
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { HydratedDocument } from 'mongoose';
+
+export type {{pascalCase moduleName}}Document = HydratedDocument<{{pascalCase moduleName}}Model>;
+
+/**
+ * Persistence model. Separate from the core entity so schema changes never
+ * reach into core/.
+ */
+@Schema({ collection: '{{snakeCase moduleName}}', timestamps: true })
+export class {{pascalCase moduleName}}Model {
+  @Prop({ required: true, unique: true })
+  id!: string;
+
+  @Prop({ required: true })
+  name!: string;
+}
+
+export const {{pascalCase moduleName}}Schema = SchemaFactory.createForClass({{pascalCase moduleName}}Model);

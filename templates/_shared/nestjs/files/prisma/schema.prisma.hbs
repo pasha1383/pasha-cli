@@ -1,0 +1,37 @@
+// Prisma schema for {{projectName}}
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+{{#if dbPostgres}}
+  provider = "postgresql"
+{{/if}}
+{{#if dbMysql}}
+  provider = "mysql"
+{{/if}}
+{{#if dbSqlite}}
+  provider = "sqlite"
+{{/if}}
+{{#if dbMongo}}
+  provider = "mongodb"
+{{/if}}
+  url      = env("DATABASE_URL")
+}
+
+{{#each modules}}
+model {{pascalCase this}} {
+{{#if ../dbMongo}}
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
+{{else}}
+  id   String @id @default(uuid())
+{{/if}}
+  name String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+{{/each}}

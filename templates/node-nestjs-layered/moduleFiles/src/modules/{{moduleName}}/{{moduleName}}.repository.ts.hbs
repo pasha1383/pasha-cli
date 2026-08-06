@@ -1,3 +1,92 @@
+{{#if ormPrisma}}
+import { Injectable } from '@nestjs/common';
+import { {{pascalCase moduleName}} } from './entities/{{moduleName}}.entity';
+import { PrismaService } from '../../shared/database/prisma.service';
+
+@Injectable()
+export class {{pascalCase moduleName}}Repository {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async save(entity: {{pascalCase moduleName}}): Promise<void> {
+    await this.prisma.{{camelCase moduleName}}.upsert({
+      where: { id: entity.id },
+      create: { id: entity.id, name: entity.name },
+      update: { name: entity.name },
+    });
+  }
+
+  async findAll(): Promise<{{pascalCase moduleName}}[]> {
+    const rows = await this.prisma.{{camelCase moduleName}}.findMany();
+    return rows.map((r: { id: string; name: string }) => new {{pascalCase moduleName}}(r.id, r.name));
+  }
+
+  async findById(id: string): Promise<{{pascalCase moduleName}} | null> {
+    const row = await this.prisma.{{camelCase moduleName}}.findUnique({ where: { id } });
+    return row ? new {{pascalCase moduleName}}(row.id, row.name) : null;
+  }
+}
+{{/if}}
+{{#if ormTypeorm}}
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { {{pascalCase moduleName}} } from './entities/{{moduleName}}.entity';
+
+@Injectable()
+export class {{pascalCase moduleName}}Repository {
+  constructor(
+    @InjectRepository({{pascalCase moduleName}})
+    private readonly repo: Repository<{{pascalCase moduleName}}>,
+  ) {}
+
+  async save(entity: {{pascalCase moduleName}}): Promise<void> {
+    await this.repo.save(entity);
+  }
+
+  findAll(): Promise<{{pascalCase moduleName}}[]> {
+    return this.repo.find();
+  }
+
+  findById(id: string): Promise<{{pascalCase moduleName}} | null> {
+    return this.repo.findOne({ where: { id } });
+  }
+}
+{{/if}}
+{{#if ormMongoose}}
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { {{pascalCase moduleName}} } from './entities/{{moduleName}}.entity';
+
+@Injectable()
+export class {{pascalCase moduleName}}Repository {
+  constructor(
+    @InjectModel({{pascalCase moduleName}}.name)
+    private readonly model: Model<{{pascalCase moduleName}}>,
+  ) {}
+
+  async save(entity: {{pascalCase moduleName}}): Promise<void> {
+    await this.model.updateOne(
+      { id: entity.id },
+      { $set: { id: entity.id, name: entity.name } },
+      { upsert: true },
+    );
+  }
+
+  async findAll(): Promise<{{pascalCase moduleName}}[]> {
+    // lean() returns plain objects; typing it explicitly keeps this stable
+    // across mongoose versions, whose lean() generics change between majors.
+    const rows: {{pascalCase moduleName}}[] = await this.model.find().lean();
+    return rows;
+  }
+
+  async findById(id: string): Promise<{{pascalCase moduleName}} | null> {
+    const row: {{pascalCase moduleName}} | null = await this.model.findOne({ id }).lean();
+    return row;
+  }
+}
+{{/if}}
+{{#if ormNone}}
 import { Injectable } from '@nestjs/common';
 import { {{pascalCase moduleName}} } from './entities/{{moduleName}}.entity';
 
@@ -17,3 +106,4 @@ export class {{pascalCase moduleName}}Repository {
     return this.items.get(id) ?? null;
   }
 }
+{{/if}}

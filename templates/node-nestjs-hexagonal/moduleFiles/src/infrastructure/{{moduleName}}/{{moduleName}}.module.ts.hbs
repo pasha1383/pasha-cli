@@ -1,16 +1,55 @@
 import { Module } from '@nestjs/common';
+{{#if ormTypeorm}}
+import { TypeOrmModule } from '@nestjs/typeorm';
+{{/if}}
+{{#if ormMongoose}}
+import { MongooseModule } from '@nestjs/mongoose';
+{{/if}}
 import { {{pascalCase moduleName}}Controller } from './controllers/{{moduleName}}.controller';
 import { Create{{pascalCase moduleName}}UseCase } from '../../application/{{moduleName}}/use-cases/create-{{moduleName}}.use-case';
 import { Get{{pascalCase moduleName}}sUseCase } from '../../application/{{moduleName}}/use-cases/get-{{moduleName}}.use-case';
 import { {{constantCase moduleName}}_REPOSITORY } from '../../domain/{{moduleName}}/repositories/{{moduleName}}.repository.interface';
+{{#if ormNone}}
 import { {{pascalCase moduleName}}InMemoryRepository } from './persistence/{{moduleName}}.repository';
+{{/if}}
+{{#if ormPrisma}}
+import { {{pascalCase moduleName}}PrismaRepository } from './persistence/{{moduleName}}.prisma.repository';
+{{/if}}
+{{#if ormTypeorm}}
+import { {{pascalCase moduleName}}OrmEntity } from './persistence/{{moduleName}}.orm-entity';
+import { {{pascalCase moduleName}}TypeormRepository } from './persistence/{{moduleName}}.typeorm.repository';
+{{/if}}
+{{#if ormMongoose}}
+import { {{pascalCase moduleName}}Model, {{pascalCase moduleName}}Schema } from './persistence/{{moduleName}}.schema';
+import { {{pascalCase moduleName}}MongooseRepository } from './persistence/{{moduleName}}.mongoose.repository';
+{{/if}}
 
 @Module({
+{{#if ormTypeorm}}
+  imports: [TypeOrmModule.forFeature([{{pascalCase moduleName}}OrmEntity])],
+{{/if}}
+{{#if ormMongoose}}
+  imports: [MongooseModule.forFeature([{ name: {{pascalCase moduleName}}Model.name, schema: {{pascalCase moduleName}}Schema }])],
+{{/if}}
   controllers: [{{pascalCase moduleName}}Controller],
   providers: [
     Create{{pascalCase moduleName}}UseCase,
     Get{{pascalCase moduleName}}sUseCase,
-    { provide: {{constantCase moduleName}}_REPOSITORY, useClass: {{pascalCase moduleName}}InMemoryRepository },
+    {
+      provide: {{constantCase moduleName}}_REPOSITORY,
+{{#if ormNone}}
+      useClass: {{pascalCase moduleName}}InMemoryRepository,
+{{/if}}
+{{#if ormPrisma}}
+      useClass: {{pascalCase moduleName}}PrismaRepository,
+{{/if}}
+{{#if ormTypeorm}}
+      useClass: {{pascalCase moduleName}}TypeormRepository,
+{{/if}}
+{{#if ormMongoose}}
+      useClass: {{pascalCase moduleName}}MongooseRepository,
+{{/if}}
+    },
   ],
   exports: [{{constantCase moduleName}}_REPOSITORY],
 })

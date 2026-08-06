@@ -9,7 +9,13 @@ export class {{pascalCase moduleName}}Service {
   constructor(private readonly repository: {{pascalCase moduleName}}Repository) {}
 
   async create(dto: Create{{pascalCase moduleName}}Dto): Promise<{{pascalCase moduleName}}> {
+{{#if hasOrmClassEntity}}
+    const entity = new {{pascalCase moduleName}}();
+    entity.id = randomUUID();
+    entity.name = dto.name;
+{{else}}
     const entity = new {{pascalCase moduleName}}(randomUUID(), dto.name);
+{{/if}}
     await this.repository.save(entity);
     return entity;
   }

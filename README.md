@@ -27,6 +27,22 @@ pasha --help
 | Node.js | NestJS | Clean Architecture |
 | Node.js | NestJS | Hexagonal / DDD |
 
+## Stack options
+
+On top of the architecture, `pasha create` asks about:
+
+| Choice | Options |
+|---|---|
+| Data layer | Prisma, TypeORM, Mongoose, none (in-memory) |
+| Database | PostgreSQL, MySQL, MongoDB, SQLite — filtered to what the ORM supports |
+| Validation | class-validator + class-transformer, Zod, none |
+| Cache | Redis (optional) |
+| Message broker | Kafka, RabbitMQ, none |
+| AI docs | per-directory `AGENT.md` files (optional) |
+
+Anything requiring a server gets a matching `docker-compose.yml` service and
+`.env.example` entries. Files you didn't ask for are never generated.
+
 ## Local development
 
 ```bash

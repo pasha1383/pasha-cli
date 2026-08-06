@@ -1,10 +1,45 @@
 import { Module } from '@nestjs/common';
+import { AppConfigModule } from './config/app.config';
+{{#if ormPrisma}}
+import { PrismaModule } from './shared/database/prisma.module';
+{{/if}}
+{{#if ormTypeorm}}
+import { DatabaseModule } from './shared/database/typeorm.module';
+{{/if}}
+{{#if ormMongoose}}
+import { DatabaseModule } from './shared/database/mongoose.module';
+{{/if}}
+{{#if useRedis}}
+import { RedisModule } from './shared/cache/redis.module';
+{{/if}}
+{{#if useKafka}}
+import { MessagingModule } from './shared/messaging/kafka.module';
+{{/if}}
+{{#if useRabbitmq}}
+import { MessagingModule } from './shared/messaging/rabbitmq.module';
+{{/if}}
 {{#each modules}}
 import { {{pascalCase this}}Module } from './infrastructure/{{this}}/{{this}}.module';
 {{/each}}
 
 @Module({
   imports: [
+    AppConfigModule,
+{{#if ormPrisma}}
+    PrismaModule,
+{{/if}}
+{{#if ormTypeorm}}
+    DatabaseModule,
+{{/if}}
+{{#if ormMongoose}}
+    DatabaseModule,
+{{/if}}
+{{#if useRedis}}
+    RedisModule,
+{{/if}}
+{{#if hasBroker}}
+    MessagingModule,
+{{/if}}
 {{#each modules}}
     {{pascalCase this}}Module,
 {{/each}}

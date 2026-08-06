@@ -1,0 +1,28 @@
+# AGENT.md — src/domain/
+
+The innermost layer. Pure business concepts.
+
+## Absolute rules
+
+- **Zero framework imports.** No `@nestjs/*`, no ORM, no HTTP, no
+  `@Injectable()`. If you need a decorator here, you are solving the problem
+  in the wrong layer.
+- **Zero imports from `application/`, `infrastructure/`, or `shared/`.**
+  The dependency arrow points inwards only.
+- Entities hold state and the invariants that protect it. A rule that is
+  always true of a `{{#if modules.0}}{{pascalCase modules.0}}{{else}}Thing{{/if}}` belongs here, not in a use-case.
+
+## What goes where
+
+- `<module>/entities/` — the domain objects.
+- `<module>/repositories/` — **interfaces only**, never implementations.
+  These are ports: the domain declares what it needs, and
+  `infrastructure/` supplies it.
+
+## Adding a field
+
+Changing an entity means updating the repository interface if the field must
+be persisted, then every implementation in `infrastructure/`{{#if ormPrisma}}, then
+`prisma/schema.prisma` plus a migration{{/if}}{{#if ormTypeorm}}, then the
+matching `*.orm-entity.ts`{{/if}}{{#if ormMongoose}}, then the matching
+`*.schema.ts`{{/if}}. Do not stop halfway.

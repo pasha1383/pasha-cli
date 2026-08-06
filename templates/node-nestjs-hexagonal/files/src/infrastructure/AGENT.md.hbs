@@ -1,0 +1,24 @@
+# AGENT.md — src/infrastructure/
+
+Adapters. Everything that talks to the outside world lives here.
+
+## Rules
+
+- May import from `application/` and `domain/`. Nothing in those layers may
+  import from here — enforce this direction in every change.
+- Repository implementations must satisfy the interface declared in
+  `domain/<module>/repositories/`. If the interface does not fit, change the
+  interface deliberately; do not widen the implementation and cast.
+- Controllers stay thin: parse, delegate to a use-case, return. No business
+  logic, no direct repository access.
+- Database rows are not domain entities. Map explicitly at this boundary.
+
+## What goes where
+
+- `<module>/controllers/` — HTTP entry points.
+- `<module>/persistence/` — repository implementations{{#if ormTypeorm}} and the
+  TypeORM `*.orm-entity.ts` persistence models{{/if}}{{#if ormMongoose}} and the
+  Mongoose `*.schema.ts` persistence models{{/if}}.
+- `<module>/<module>.module.ts` — DI wiring. This is where the concrete
+  repository is bound to the domain's token; swapping data layers is a
+  one-line change here.

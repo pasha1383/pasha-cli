@@ -1,0 +1,14 @@
+import { Column, Entity, PrimaryColumn } from 'typeorm';
+
+/**
+ * Persistence model. Separate from the core entity so schema changes never
+ * reach into core/.
+ */
+@Entity('{{snakeCase moduleName}}')
+export class {{pascalCase moduleName}}OrmEntity {
+  @PrimaryColumn('varchar')
+  id!: string;
+
+  @Column('varchar')
+  name!: string;
+}

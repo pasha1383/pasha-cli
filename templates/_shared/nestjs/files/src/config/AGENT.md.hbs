@@ -1,0 +1,20 @@
+# AGENT.md — src/config/
+
+Environment loading and global request pipeline configuration.
+
+## Rules
+
+- This is the **only** place allowed to read `process.env` directly.
+  Everywhere else injects `ConfigService`.
+- Provide a sensible default for every non-secret value so the app boots
+  on a fresh clone.
+- Never commit real secrets. `.env` is gitignored; `.env.example` documents
+  the shape and is committed.
+{{#if useZod}}
+- `zod.pipe.ts` exposes `ZodValidationPipe`. Apply it per-route with
+  `@UsePipes(new ZodValidationPipe(schema))`.
+{{/if}}
+{{#if useClassValidator}}
+- `validation.pipe.ts` exposes the global pipe wired up in `main.ts`.
+  It rejects unknown properties, so every accepted field needs a decorator.
+{{/if}}

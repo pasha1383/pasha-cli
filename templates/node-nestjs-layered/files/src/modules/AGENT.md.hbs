@@ -1,0 +1,32 @@
+# AGENT.md — src/modules/
+
+One directory per feature. Each is self-contained and stacks three layers.
+
+## Call direction
+
+```
+controller  →  service  →  repository
+```
+
+A layer only ever calls the one directly below it. Never let a controller
+reach past the service into the repository, and never let a repository call
+back up into a service.
+
+## Responsibilities
+
+- `<module>.controller.ts` — HTTP only: routing, params, status codes.
+  No business logic.
+- `<module>.service.ts` — all business logic. This is where rules,
+  validation of invariants, and orchestration live.
+- `<module>.repository.ts` — data access only. No business decisions.
+- `dto/` — request shapes{{#if hasValidation}} with {{validation}} rules{{/if}}.
+- `entities/` — the model{{#if hasOrmClassEntity}} (also the persistence
+  model, decorated for {{orm}}){{/if}}.
+
+## Rules
+
+- A module may import from `shared/`. A module must **not** import from
+  another module's internals — go through the other module's exported
+  service, and register the dependency in `<module>.module.ts`.
+- New module means: create the directory with all five files, then register
+  it in `src/app.module.ts`. A module that isn't registered does nothing.

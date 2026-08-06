@@ -1,0 +1,42 @@
+import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+
+@Module({
+  imports: [
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+{{#if dbPostgres}}
+        type: 'postgres' as const,
+        host: config.get<string>('DB_HOST', 'localhost'),
+        port: config.get<number>('DB_PORT', {{dbPort}}),
+        username: config.get<string>('DB_USER', 'postgres'),
+        password: config.get<string>('DB_PASSWORD', 'postgres'),
+        database: config.get<string>('DB_NAME', '{{snakeCase projectName}}'),
+{{/if}}
+{{#if dbMysql}}
+        type: 'mysql' as const,
+        host: config.get<string>('DB_HOST', 'localhost'),
+        port: config.get<number>('DB_PORT', {{dbPort}}),
+        username: config.get<string>('DB_USER', 'root'),
+        password: config.get<string>('DB_PASSWORD', 'root'),
+        database: config.get<string>('DB_NAME', '{{snakeCase projectName}}'),
+{{/if}}
+{{#if dbSqlite}}
+        type: 'sqlite' as const,
+        database: config.get<string>('DB_FILE', './data/{{snakeCase projectName}}.sqlite'),
+{{/if}}
+{{#if dbMongo}}
+        type: 'mongodb' as const,
+        url: config.get<string>('DATABASE_URL', 'mongodb://localhost:{{dbPort}}/{{snakeCase projectName}}'),
+{{/if}}
+        autoLoadEntities: true,
+        // Never enable this in production — use migrations instead.
+        synchronize: config.get<string>('NODE_ENV') !== 'production',
+      }),
+    }),
+  ],
+})
+export class DatabaseModule {}

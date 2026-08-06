@@ -1,6 +1,37 @@
+{{#if ormTypeorm}}
+import { Column, Entity, PrimaryColumn } from 'typeorm';
+
+@Entity('{{snakeCase moduleName}}')
+export class {{pascalCase moduleName}} {
+  @PrimaryColumn('varchar')
+  id!: string;
+
+  @Column('varchar')
+  name!: string;
+}
+{{/if}}
+{{#if ormMongoose}}
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { HydratedDocument } from 'mongoose';
+
+export type {{pascalCase moduleName}}Document = HydratedDocument<{{pascalCase moduleName}}>;
+
+@Schema({ collection: '{{snakeCase moduleName}}', timestamps: true })
+export class {{pascalCase moduleName}} {
+  @Prop({ required: true, unique: true })
+  id!: string;
+
+  @Prop({ required: true })
+  name!: string;
+}
+
+export const {{pascalCase moduleName}}Schema = SchemaFactory.createForClass({{pascalCase moduleName}});
+{{/if}}
+{{#unless hasOrmClassEntity}}
 export class {{pascalCase moduleName}} {
   constructor(
     public readonly id: string,
     public name: string,
   ) {}
 }
+{{/unless}}

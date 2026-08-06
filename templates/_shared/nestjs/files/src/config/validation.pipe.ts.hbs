@@ -1,0 +1,13 @@
+import { ValidationPipe } from '@nestjs/common';
+
+/**
+ * whitelist strips properties with no decorator; forbidNonWhitelisted turns
+ * unexpected properties into a 400 rather than silently dropping them;
+ * transform turns the plain request body into an instance of the DTO class.
+ */
+export const globalValidationPipe = new ValidationPipe({
+  whitelist: true,
+  forbidNonWhitelisted: true,
+  transform: true,
+  transformOptions: { enableImplicitConversion: true },
+});

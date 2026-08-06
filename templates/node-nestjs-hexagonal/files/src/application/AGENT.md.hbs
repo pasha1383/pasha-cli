@@ -1,0 +1,20 @@
+# AGENT.md — src/application/
+
+Use-cases: the application-specific business rules. One class per action.
+
+## Rules
+
+- May import from `domain/`. **May not** import from `infrastructure/`.
+- Depend on repository **interfaces**, injected via the DI token
+  (`@Inject(<MODULE>_REPOSITORY)`), never on a concrete implementation.
+  That indirection is the entire point of this architecture — bypassing it
+  to "simplify" defeats the design.
+- One use-case does one thing. `CreateXUseCase`, `GetXsUseCase`. If a class
+  starts accumulating unrelated methods, split it.
+- No HTTP concepts here: no status codes, no request/response objects.
+  Throw domain-meaningful errors and let the controller translate them.
+
+## What goes where
+
+- `<module>/use-cases/` — one file per use-case, each exposing `execute()`.
+- `<module>/dto/` — input shapes{{#if hasValidation}} with {{validation}} rules{{/if}}.

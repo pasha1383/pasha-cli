@@ -1,6 +1,14 @@
 import { Module } from '@nestjs/common';
+{{#if ormTypeorm}}
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { {{pascalCase moduleName}}OrmEntity } from '../adapters/{{moduleName}}/repositories/{{moduleName}}.orm-entity';
+{{/if}}
+{{#if ormMongoose}}
+import { MongooseModule } from '@nestjs/mongoose';
+import { {{pascalCase moduleName}}Model, {{pascalCase moduleName}}Schema } from '../adapters/{{moduleName}}/repositories/{{moduleName}}.schema';
+{{/if}}
 import { {{pascalCase moduleName}}Controller } from '../adapters/{{moduleName}}/controllers/{{moduleName}}.controller';
-import { {{pascalCase moduleName}}InMemoryRepository } from '../adapters/{{moduleName}}/repositories/{{moduleName}}.in-memory.repository';
+import { {{pascalCase moduleName}}Repository } from '../adapters/{{moduleName}}/repositories/{{moduleName}}.repository';
 import { Create{{pascalCase moduleName}}UseCase } from '../core/use-cases/{{moduleName}}/create-{{moduleName}}.use-case';
 import { Get{{pascalCase moduleName}}sUseCase } from '../core/use-cases/{{moduleName}}/get-{{moduleName}}s.use-case';
 import { {{constantCase moduleName}}_REPOSITORY } from '../core/ports/{{moduleName}}.repository.port';
@@ -10,11 +18,17 @@ import { {{constantCase moduleName}}_REPOSITORY } from '../core/ports/{{moduleNa
  * Swap the repository implementation here without touching core/.
  */
 @Module({
+{{#if ormTypeorm}}
+  imports: [TypeOrmModule.forFeature([{{pascalCase moduleName}}OrmEntity])],
+{{/if}}
+{{#if ormMongoose}}
+  imports: [MongooseModule.forFeature([{ name: {{pascalCase moduleName}}Model.name, schema: {{pascalCase moduleName}}Schema }])],
+{{/if}}
   controllers: [{{pascalCase moduleName}}Controller],
   providers: [
     Create{{pascalCase moduleName}}UseCase,
     Get{{pascalCase moduleName}}sUseCase,
-    { provide: {{constantCase moduleName}}_REPOSITORY, useClass: {{pascalCase moduleName}}InMemoryRepository },
+    { provide: {{constantCase moduleName}}_REPOSITORY, useClass: {{pascalCase moduleName}}Repository },
   ],
   exports: [{{constantCase moduleName}}_REPOSITORY],
 })

@@ -1,7 +1,13 @@
 import { Module } from '@nestjs/common';
-import { {{pascalCase moduleName}}Module } from './infrastructure/{{moduleName}}/{{moduleName}}.module';
+{{#each modules}}
+import { {{pascalCase this}}Module } from './infrastructure/{{this}}/{{this}}.module';
+{{/each}}
 
 @Module({
-  imports: [{{pascalCase moduleName}}Module],
+  imports: [
+{{#each modules}}
+    {{pascalCase this}}Module,
+{{/each}}
+  ],
 })
 export class AppModule {}

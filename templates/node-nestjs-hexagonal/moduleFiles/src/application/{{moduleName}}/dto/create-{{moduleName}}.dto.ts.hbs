@@ -1,0 +1,6 @@
+export class Create{{pascalCase moduleName}}Dto {
+  // Definite assignment assertion: DTOs are populated by NestJS from the
+  // request body, not via a constructor, so strictPropertyInitialization
+  // can't see the assignment.
+  name!: string;
+}

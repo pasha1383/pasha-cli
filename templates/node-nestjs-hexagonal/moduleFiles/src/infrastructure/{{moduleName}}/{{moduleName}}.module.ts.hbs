@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { {{pascalCase moduleName}}Controller } from './controllers/{{moduleName}}.controller';
 import { Create{{pascalCase moduleName}}UseCase } from '../../application/{{moduleName}}/use-cases/create-{{moduleName}}.use-case';
 import { Get{{pascalCase moduleName}}sUseCase } from '../../application/{{moduleName}}/use-cases/get-{{moduleName}}.use-case';
-import { {{pascalCase moduleName}}_REPOSITORY } from '../../domain/{{moduleName}}/repositories/{{moduleName}}.repository.interface';
+import { {{constantCase moduleName}}_REPOSITORY } from '../../domain/{{moduleName}}/repositories/{{moduleName}}.repository.interface';
 import { {{pascalCase moduleName}}InMemoryRepository } from './persistence/{{moduleName}}.repository';
 
 @Module({
@@ -10,8 +10,8 @@ import { {{pascalCase moduleName}}InMemoryRepository } from './persistence/{{mod
   providers: [
     Create{{pascalCase moduleName}}UseCase,
     Get{{pascalCase moduleName}}sUseCase,
-    { provide: {{pascalCase moduleName}}_REPOSITORY, useClass: {{pascalCase moduleName}}InMemoryRepository },
+    { provide: {{constantCase moduleName}}_REPOSITORY, useClass: {{pascalCase moduleName}}InMemoryRepository },
   ],
-  exports: [{{pascalCase moduleName}}_REPOSITORY],
+  exports: [{{constantCase moduleName}}_REPOSITORY],
 })
 export class {{pascalCase moduleName}}Module {}

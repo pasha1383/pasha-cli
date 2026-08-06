@@ -11,27 +11,33 @@ npm install
 npm run start:dev
 ```
 
-Server comes up at `http://localhost:3000/{{moduleName}}`.
+## Modules
+
+{{#each modules}}
+- `{{this}}` → `http://localhost:3000/{{this}}`
+{{/each}}
 
 ## Structure (Hexagonal layers)
 
+Each module gets its own slice across all three layers:
+
 ```
 src/
-├── domain/{{moduleName}}/            ← core: no dependency on NestJS or a database
-│   ├── entities/{{moduleName}}.entity.ts
-│   └── repositories/{{moduleName}}.repository.interface.ts
-├── application/{{moduleName}}/       ← use-cases and DTOs
+├── domain/<module>/            ← core: no dependency on NestJS or a database
+│   ├── entities/<module>.entity.ts
+│   └── repositories/<module>.repository.interface.ts
+├── application/<module>/       ← use-cases and DTOs
 │   ├── use-cases/
 │   └── dto/
-└── infrastructure/{{moduleName}}/    ← adapters: controller, repository implementation
+└── infrastructure/<module>/    ← adapters: controller, repository implementation
     ├── controllers/
     ├── persistence/
-    └── {{moduleName}}.module.ts
+    └── <module>.module.ts
 ```
 
 Dependency rule: `infrastructure` → `application` → `domain`. Never the other way around.
 
-The current repository implementation is in-memory (`{{moduleName}}InMemoryRepository`). To connect a real database, just write a new implementation of `I{{moduleName}}Repository` and swap it in `{{moduleName}}.module.ts` — since the use-cases only depend on the interface, nothing else needs to change.
+Each repository implementation is currently in-memory. To connect a real database, write a new implementation of the module's repository interface and swap it in that module's `*.module.ts` — since the use-cases only depend on the interface, nothing else needs to change.
 
 ---
 Made with ❤️ by {{author}}

@@ -1,0 +1,11 @@
+{
+  "name": "Node.js + NestJS + Layered (N-Tier)",
+  "prerequisites": ["node", "npm", "git"],
+  "modules": {
+    "enabled": true,
+    "message": "Module/entity name (e.g. product, user, order)",
+    "default": "product"
+  },
+  "postInstall": ["npm install"],
+  "gitInit": true
+}

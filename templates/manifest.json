@@ -6,6 +6,14 @@
         "nestjs": {
           "label": "NestJS",
           "architectures": {
+            "layered": {
+              "label": "Layered (N-Tier)",
+              "template": "node-nestjs-layered"
+            },
+            "clean": {
+              "label": "Clean Architecture",
+              "template": "node-nestjs-clean"
+            },
             "hexagonal": {
               "label": "Hexagonal / DDD",
               "template": "node-nestjs-hexagonal"

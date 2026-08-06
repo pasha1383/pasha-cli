@@ -1,0 +1,25 @@
+import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Create{{pascalCase moduleName}}UseCase } from '../../../core/use-cases/{{moduleName}}/create-{{moduleName}}.use-case';
+import { Get{{pascalCase moduleName}}sUseCase } from '../../../core/use-cases/{{moduleName}}/get-{{moduleName}}s.use-case';
+import { Create{{pascalCase moduleName}}Dto } from '../dto/create-{{moduleName}}.dto';
+import { {{pascalCase moduleName}}Presenter, {{pascalCase moduleName}}View } from '../presenters/{{moduleName}}.presenter';
+
+@Controller('{{moduleName}}')
+export class {{pascalCase moduleName}}Controller {
+  constructor(
+    private readonly create{{pascalCase moduleName}}: Create{{pascalCase moduleName}}UseCase,
+    private readonly get{{pascalCase moduleName}}s: Get{{pascalCase moduleName}}sUseCase,
+  ) {}
+
+  @Post()
+  async create(@Body() dto: Create{{pascalCase moduleName}}Dto): Promise<{{pascalCase moduleName}}View> {
+    const entity = await this.create{{pascalCase moduleName}}.execute(dto.name);
+    return {{pascalCase moduleName}}Presenter.toView(entity);
+  }
+
+  @Get()
+  async findAll(): Promise<{{pascalCase moduleName}}View[]> {
+    const entities = await this.get{{pascalCase moduleName}}s.execute();
+    return {{pascalCase moduleName}}Presenter.toViewList(entities);
+  }
+}

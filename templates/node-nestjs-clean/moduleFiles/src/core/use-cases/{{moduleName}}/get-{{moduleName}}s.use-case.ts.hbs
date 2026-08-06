@@ -1,0 +1,18 @@
+import { Inject, Injectable } from '@nestjs/common';
+import { {{pascalCase moduleName}} } from '../../entities/{{moduleName}}.entity';
+import {
+  I{{pascalCase moduleName}}Repository,
+  {{constantCase moduleName}}_REPOSITORY,
+} from '../../ports/{{moduleName}}.repository.port';
+
+@Injectable()
+export class Get{{pascalCase moduleName}}sUseCase {
+  constructor(
+    @Inject({{constantCase moduleName}}_REPOSITORY)
+    private readonly repository: I{{pascalCase moduleName}}Repository,
+  ) {}
+
+  execute(): Promise<{{pascalCase moduleName}}[]> {
+    return this.repository.findAll();
+  }
+}

@@ -1,0 +1,13 @@
+import { {{pascalCase moduleName}} } from '../entities/{{moduleName}}.entity';
+
+/**
+ * Output port. The core defines what it needs; the adapters layer provides it.
+ * This is the interface that keeps the dependency arrow pointing inwards.
+ */
+export interface I{{pascalCase moduleName}}Repository {
+  save(entity: {{pascalCase moduleName}}): Promise<void>;
+  findAll(): Promise<{{pascalCase moduleName}}[]>;
+  findById(id: string): Promise<{{pascalCase moduleName}} | null>;
+}
+
+export const {{constantCase moduleName}}_REPOSITORY = Symbol('{{constantCase moduleName}}_REPOSITORY');

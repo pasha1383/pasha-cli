@@ -1,0 +1,43 @@
+# {{projectName}}
+
+{{description}}
+
+Built with pasha CLI — **Clean Architecture** on NestJS.
+
+## Run
+
+```bash
+npm install
+npm run start:dev
+```
+
+## Modules
+
+{{#each modules}}
+- `{{this}}` → `http://localhost:3000/{{this}}`
+{{/each}}
+
+## Structure (concentric layers)
+
+```
+src/
+├── core/                       ← innermost: knows nothing about NestJS or HTTP
+│   ├── entities/               ← enterprise business rules
+│   ├── use-cases/<module>/     ← application business rules
+│   └── ports/                  ← interfaces the outer layers must satisfy
+├── adapters/<module>/          ← interface adapters
+│   ├── controllers/            ← input boundary: HTTP in
+│   ├── presenters/             ← output boundary: shapes the response
+│   ├── repositories/           ← implements the core's port
+│   └── dto/                    ← request shapes
+└── modules/                    ← frameworks layer: NestJS wiring
+```
+
+**The dependency rule:** source-code dependencies point only inwards. `modules` → `adapters` → `core`. Nothing in `core/` imports from `adapters/` or `modules/` — that's what keeps the business rules testable without a running framework.
+
+The presenter is the output boundary: use-cases return domain entities, and the presenter decides how they're shaped for the outside world. Changing your API response format touches the presenter only.
+
+Repositories are currently in-memory. To move to a real database, add a new class implementing the module's port and swap it in that module's provider list.
+
+---
+Made with ❤️ by {{author}}

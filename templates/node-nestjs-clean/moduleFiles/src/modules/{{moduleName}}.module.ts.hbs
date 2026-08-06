@@ -1,0 +1,21 @@
+import { Module } from '@nestjs/common';
+import { {{pascalCase moduleName}}Controller } from '../adapters/{{moduleName}}/controllers/{{moduleName}}.controller';
+import { {{pascalCase moduleName}}InMemoryRepository } from '../adapters/{{moduleName}}/repositories/{{moduleName}}.in-memory.repository';
+import { Create{{pascalCase moduleName}}UseCase } from '../core/use-cases/{{moduleName}}/create-{{moduleName}}.use-case';
+import { Get{{pascalCase moduleName}}sUseCase } from '../core/use-cases/{{moduleName}}/get-{{moduleName}}s.use-case';
+import { {{constantCase moduleName}}_REPOSITORY } from '../core/ports/{{moduleName}}.repository.port';
+
+/**
+ * Frameworks layer: the only place that knows how everything is wired.
+ * Swap the repository implementation here without touching core/.
+ */
+@Module({
+  controllers: [{{pascalCase moduleName}}Controller],
+  providers: [
+    Create{{pascalCase moduleName}}UseCase,
+    Get{{pascalCase moduleName}}sUseCase,
+    { provide: {{constantCase moduleName}}_REPOSITORY, useClass: {{pascalCase moduleName}}InMemoryRepository },
+  ],
+  exports: [{{constantCase moduleName}}_REPOSITORY],
+})
+export class {{pascalCase moduleName}}Module {}

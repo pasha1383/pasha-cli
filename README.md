@@ -19,10 +19,12 @@ pasha info
 pasha --help
 ```
 
-## Supported combos (Phase 1)
+## Supported combos
 
 | Language | Framework | Architecture |
 |---|---|---|
+| Node.js | NestJS | Layered (N-Tier) |
+| Node.js | NestJS | Clean Architecture |
 | Node.js | NestJS | Hexagonal / DDD |
 
 ## Local development

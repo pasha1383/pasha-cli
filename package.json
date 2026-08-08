@@ -1,7 +1,7 @@
 {
   "name": "@pasha1383/pasha",
   "version": "2.0.0",
-  "description": "Multi-language / multi-architecture CLI generator \u2014 pick a stack, we scaffold the base project for you",
+  "description": "Multi-language / multi-architecture CLI generator — pick a stack, we scaffold the base project for you",
   "main": "bin/pasha.js",
   "bin": {
     "pasha": "./bin/pasha.js"
@@ -31,7 +31,19 @@
     "start": "node bin/pasha.js",
     "doctor": "node bin/pasha.js doctor",
     "link": "npm link",
-    "unlink": "npm unlink -g @pasha1383/pasha"
+    "unlink": "npm unlink -g @pasha1383/pasha",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/test/**/*.test.js"
+    ],
+    "collectCoverageFrom": [
+      "lib/**/*.js"
+    ]
   },
   "dependencies": {
     "chalk": "^4.1.2",
@@ -40,5 +52,8 @@
     "handlebars": "^4.7.8",
     "inquirer": "^8.2.7",
     "ora": "^5.4.1"
+  },
+  "devDependencies": {
+    "jest": "^30.4.2"
   }
 }

@@ -27,6 +27,12 @@
     "darwin",
     "linux"
   ],
+  "scripts": {
+    "start": "node bin/pasha.js",
+    "doctor": "node bin/pasha.js doctor",
+    "link": "npm link",
+    "unlink": "npm unlink -g @pasha1383/pasha"
+  },
   "dependencies": {
     "chalk": "^4.1.2",
     "commander": "^12.0.0",

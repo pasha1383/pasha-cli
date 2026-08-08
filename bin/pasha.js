@@ -5,7 +5,6 @@ const { Command } = require('commander');
 const chalk = require('chalk');
 const { create } = require('../lib/commands/create');
 const { doctor } = require('../lib/commands/doctor');
-const history = require('../lib/core/history');
 const pkg = require('../package.json');
 
 const BANNER = `
@@ -22,63 +21,17 @@ const program = new Command();
 
 program
   .name('pasha')
-  .description('pasha — pick a language, framework, and architecture, and scaffold your base project')
+  .description('Project scaffold generator — pick a stack, we build the rest')
   .version(pkg.version)
-  .addHelpText('beforeAll', BANNER);
-
-program
-  .command('create')
-  .description('Scaffold a new project (language/framework/architecture wizard)')
+  .addHelpText('beforeAll', BANNER)
   .option('--resume', 'Resume from a previous session')
-  .action(async (opts) => { await create({ resume: opts.resume }); });
-
-program
-  .command('doctor')
-  .description('Check system prerequisites and install them if needed')
-  .action(async () => { await doctor(); });
-
-program
-  .command('history')
-  .description('List recent scaffolding sessions')
-  .action(async () => {
-    const sessions = await history.listSessions(10);
-    if (!sessions.length) {
-      console.log(chalk.dim('No session history found.'));
-      console.log(chalk.dim(`Sessions are saved to ${history.HISTORY_DIR} after each successful scaffold.`));
+  .option('--doctor', 'Check system prerequisites')
+  .action(async (opts) => {
+    if (opts.doctor) {
+      await doctor();
       return;
     }
-    console.log(chalk.bold('\n📋 Recent sessions\n'));
-    for (const s of sessions) {
-      const date = s.timestamp ? s.timestamp.slice(0, 10) : '?';
-      console.log(
-        chalk.cyan(`  ${date}`) + '  ' +
-        chalk.bold(s.projectName || 'unnamed') + '  ' +
-        chalk.dim(`· ${s.framework || '?'} · ${s.architecture || '?'}`)
-      );
-    }
-    console.log(chalk.dim(`\n  Sessions stored in: ${history.HISTORY_DIR}`));
-    console.log(chalk.dim('  Use: pasha create --resume to pick one\n'));
-  });
-
-program
-  .command('hello [name]')
-  .description('Say hello!')
-  .option('-f, --fancy', 'Colorful output')
-  .action((name = 'World', opts) => {
-    if (opts.fancy) console.log(chalk.magenta('✨ Hey ' + name + '! Welcome to pasha CLI ✨'));
-    else console.log(chalk.green('👋 Hello, ' + name + '!'));
-  });
-
-program
-  .command('info')
-  .description('Show full CLI info')
-  .action(() => {
-    console.log(BANNER);
-    console.log(chalk.bold('📦 Package : ') + chalk.cyan('@pasha1383/pasha'));
-    console.log(chalk.bold('🔖 Version : ') + chalk.cyan(pkg.version));
-    console.log(chalk.bold('👤 Author  : ') + chalk.cyan('Parsa Shadkam'));
-    console.log(chalk.bold('🌐 Node    : ') + chalk.cyan(process.version));
-    console.log(chalk.bold('💻 OS      : ') + chalk.cyan(process.platform));
+    await create({ resume: opts.resume });
   });
 
 program.parse();

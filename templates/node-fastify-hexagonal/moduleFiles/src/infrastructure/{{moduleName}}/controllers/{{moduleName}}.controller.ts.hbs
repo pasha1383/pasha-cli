@@ -1,0 +1,26 @@
+import { FastifyReply, FastifyRequest } from 'fastify';
+import { Create{{pascalCase moduleName}}UseCase } from '../../../application/{{moduleName}}/use-cases/create-{{moduleName}}.use-case';
+import { Get{{pascalCase moduleName}}sUseCase } from '../../../application/{{moduleName}}/use-cases/get-{{moduleName}}s.use-case';
+
+export class {{pascalCase moduleName}}Controller {
+  constructor(
+    private readonly create{{pascalCase moduleName}}: Create{{pascalCase moduleName}}UseCase,
+    private readonly get{{pascalCase moduleName}}s: Get{{pascalCase moduleName}}sUseCase,
+  ) {}
+
+  create = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+    const { name } = request.body as { name: string };
+    const entity = await this.create{{pascalCase moduleName}}.execute(name);
+    reply.status(201).send(entity);
+  };
+
+  getAll = async (_request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+    const entities = await this.get{{pascalCase moduleName}}s.execute();
+    reply.send(entities);
+  };
+
+  getOne = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+    const { id } = request.params as { id: string };
+    reply.send({ id });
+  };
+}

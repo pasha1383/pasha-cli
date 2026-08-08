@@ -1,0 +1,45 @@
+import { FastifyInstance } from 'fastify';
+{{#if ormPrisma}}
+import { {{pascalCase moduleName}}PrismaRepository } from '../persistence/{{moduleName}}.prisma.repository';
+{{/if}}
+{{#if ormTypeorm}}
+import { {{pascalCase moduleName}}TypeormRepository } from '../persistence/{{moduleName}}.typeorm.repository';
+{{/if}}
+{{#if ormMongoose}}
+import { {{pascalCase moduleName}}MongooseRepository } from '../persistence/{{moduleName}}.mongoose.repository';
+{{/if}}
+{{#if ormNone}}
+import { {{pascalCase moduleName}}InMemoryRepository } from '../persistence/{{moduleName}}.repository';
+{{/if}}
+{{#unless hasOrm}}
+import { {{pascalCase moduleName}}InMemoryRepository } from '../persistence/{{moduleName}}.repository';
+{{/unless}}
+import { Create{{pascalCase moduleName}}UseCase } from '../../../application/{{moduleName}}/use-cases/create-{{moduleName}}.use-case';
+import { Get{{pascalCase moduleName}}sUseCase } from '../../../application/{{moduleName}}/use-cases/get-{{moduleName}}s.use-case';
+import { {{pascalCase moduleName}}Controller } from '../controllers/{{moduleName}}.controller';
+
+export default async function {{camelCase moduleName}}Routes(fastify: FastifyInstance) {
+{{#if ormPrisma}}
+  const repository = new {{pascalCase moduleName}}PrismaRepository();
+{{/if}}
+{{#if ormTypeorm}}
+  const repository = new {{pascalCase moduleName}}TypeormRepository();
+{{/if}}
+{{#if ormMongoose}}
+  const repository = new {{pascalCase moduleName}}MongooseRepository();
+{{/if}}
+{{#if ormNone}}
+  const repository = new {{pascalCase moduleName}}InMemoryRepository();
+{{/if}}
+{{#unless hasOrm}}
+  const repository = new {{pascalCase moduleName}}InMemoryRepository();
+{{/unless}}
+
+  const createUseCase = new Create{{pascalCase moduleName}}UseCase(repository);
+  const getUseCase = new Get{{pascalCase moduleName}}sUseCase(repository);
+  const controller = new {{pascalCase moduleName}}Controller(createUseCase, getUseCase);
+
+  fastify.post('/', controller.create.bind(controller));
+  fastify.get('/', controller.getAll.bind(controller));
+  fastify.get('/:id', controller.getOne.bind(controller));
+}

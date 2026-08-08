@@ -26,6 +26,13 @@ pasha --help
 | Node.js | NestJS | Layered (N-Tier) |
 | Node.js | NestJS | Clean Architecture |
 | Node.js | NestJS | Hexagonal / DDD |
+| Node.js | Express | Layered (Controller-Service-Repository) |
+
+Express has no DI container, so wiring is manual (each module's `routes.ts`
+constructs `repository → service → controller` itself) and the extra
+NestJS-only features (Swagger, JWT auth, health checks, rate limiting, Jest/
+ESLint/CI scaffolding) aren't ported over yet — only the core stack (ORM,
+database, validation, Redis, message broker) is available for Express so far.
 
 ## Stack options
 

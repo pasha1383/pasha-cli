@@ -1,0 +1,31 @@
+import express, { Express } from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import { errorHandler, notFoundHandler } from './middlewares/error-handler.middleware';
+{{#each modules}}
+import { {{camelCase this}}Router } from './routes/{{this}}/{{this}}.routes';
+{{/each}}
+
+/**
+ * Builds the Express app without starting the server — kept separate from
+ * main.ts so tests can import it and drive requests with supertest without
+ * binding a real port.
+ */
+export function createApp(): Express {
+  const app = express();
+
+  app.use(helmet());
+  app.use(cors());
+  app.use(express.json());
+  app.use(morgan('dev'));
+
+{{#each modules}}
+  app.use('/{{this}}', {{camelCase this}}Router);
+{{/each}}
+
+  app.use(notFoundHandler);
+  app.use(errorHandler);
+
+  return app;
+}

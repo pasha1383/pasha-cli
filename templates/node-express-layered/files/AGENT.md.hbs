@@ -1,0 +1,74 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository. Read this before
+generating or editing code. Each significant directory has its own `AGENT.md`
+with rules specific to that layer.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Framework:** Express (TypeScript, strict mode) — no DI container. Wiring
+  is manual (see `routes.ts` in each module).
+- **Architecture:** {{architectureLabel}}
+- **Data layer:** {{#if ormNone}}in-memory repositories (no ORM){{else}}{{orm}}{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+- **Validation:** {{#if hasValidation}}{{validation}}{{else}}none{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis (via `ioredis`)
+{{/if}}
+{{#if hasBroker}}
+- **Message broker:** {{broker}}
+{{/if}}
+
+## Modules
+
+{{#each modules}}
+- `{{this}}`
+{{/each}}
+
+## Commands
+
+```bash
+npm run start:dev      # watch mode (tsx)
+npm run build           # tsc
+{{#if useDocker}}
+npm run infra:up        # start databases/brokers via docker compose
+npm run infra:down
+{{/if}}
+{{#if ormPrisma}}
+npm run prisma:migrate  # create and apply a migration
+npm run prisma:generate
+{{/if}}
+```
+
+## Hard rules
+
+1. **No DI container.** Every module's `<module>.routes.ts` manually
+   constructs `repository → service → controller`, once. Do not introduce a
+   framework-level injector to "simplify" this — it's the one place that
+   wiring happens, and that's deliberate.
+2. **TypeScript is strict.** No `any`, no non-null assertions to silence the
+   compiler.{{#if ormTypeorm}} TypeORM entity fields use `!:` because the ORM
+   populates them, not a constructor — that's the one sanctioned exception.{{/if}}
+3. **Adding a module means adding every file.** entity, repository, service,
+   controller, routes{{#if hasValidation}}, validation{{/if}} — a new feature
+   gets its full slice.
+4. **Mount new routers** in `src/app.ts` or they will not be reachable.
+5. **Controllers never touch the repository directly.** Always go through
+   the service.
+6. **Every controller method calls `next(err)` on failure**, never lets an
+   error escape unhandled — Express does not catch async rejections for you
+   without it landing in the error middleware.
+{{#if hasValidation}}
+7. **Every request body needs validation** before it reaches a controller.
+{{/if}}
+8. **`config/env.ts` is the only file that reads `process.env`** directly.
+   Everywhere else imports `env` from there.
+
+## When you are unsure
+
+Prefer asking over guessing. Generating a plausible-looking file in the wrong
+layer costs more to unpick than a clarifying question costs to answer.

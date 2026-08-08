@@ -1,0 +1,51 @@
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+{{#if ormPrisma}}
+import { Prisma{{pascalCase moduleName}}Repository } from '../repositories/{{moduleName}}.repository';
+{{/if}}
+{{#if ormTypeorm}}
+import { Typeorm{{pascalCase moduleName}}Repository } from '../repositories/{{moduleName}}.repository';
+{{/if}}
+{{#if ormMongoose}}
+import { Mongoose{{pascalCase moduleName}}Repository } from '../repositories/{{moduleName}}.repository';
+{{/if}}
+{{#if ormNone}}
+import { InMemory{{pascalCase moduleName}}Repository } from '../repositories/{{moduleName}}.repository';
+{{/if}}
+import {
+  Create{{pascalCase moduleName}}UseCase,
+  Get{{pascalCase moduleName}}UseCase,
+} from '../../core/use-cases/{{moduleName}}/{{moduleName}}.use-cases';
+
+export default async function {{camelCase moduleName}}Routes(fastify: FastifyInstance) {
+{{#if ormPrisma}}
+  const repository = new Prisma{{pascalCase moduleName}}Repository();
+{{/if}}
+{{#if ormTypeorm}}
+  const repository = new Typeorm{{pascalCase moduleName}}Repository();
+{{/if}}
+{{#if ormMongoose}}
+  const repository = new Mongoose{{pascalCase moduleName}}Repository();
+{{/if}}
+{{#if ormNone}}
+  const repository = new InMemory{{pascalCase moduleName}}Repository();
+{{/if}}
+
+  const createUseCase = new Create{{pascalCase moduleName}}UseCase(repository);
+  const getUseCase = new Get{{pascalCase moduleName}}UseCase(repository);
+
+  fastify.post('/', async (request: FastifyRequest, reply: FastifyReply) => {
+    const entity = await createUseCase.execute(request.body as { name: string });
+    reply.status(201).send(entity);
+  });
+
+  fastify.get('/', async (_request: FastifyRequest, reply: FastifyReply) => {
+    const entities = await getUseCase.findAll();
+    reply.send(entities);
+  });
+
+  fastify.get('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
+    const { id } = request.params as { id: string };
+    const entity = await getUseCase.findById(id);
+    reply.send(entity);
+  });
+}

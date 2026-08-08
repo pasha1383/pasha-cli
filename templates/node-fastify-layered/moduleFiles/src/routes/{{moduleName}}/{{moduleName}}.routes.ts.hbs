@@ -1,0 +1,21 @@
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+{{#if useZod}}
+import { create{{pascalCase moduleName}}Schema } from './{{moduleName}}.validation';
+{{/if}}
+import { {{pascalCase moduleName}}Repository } from './{{moduleName}}.repository';
+import { {{pascalCase moduleName}}Service } from './{{moduleName}}.service';
+import { {{pascalCase moduleName}}Controller } from './{{moduleName}}.controller';
+
+export default async function {{camelCase moduleName}}Routes(fastify: FastifyInstance) {
+  const repository = new {{pascalCase moduleName}}Repository();
+  const service = new {{pascalCase moduleName}}Service(repository);
+  const controller = new {{pascalCase moduleName}}Controller(service);
+
+{{#if useZod}}
+  fastify.post('/', { schema: { body: create{{pascalCase moduleName}}Schema } }, controller.create);
+{{else}}
+  fastify.post('/', controller.create);
+{{/if}}
+  fastify.get('/', controller.getAll);
+  fastify.get('/:id', controller.getOne);
+}

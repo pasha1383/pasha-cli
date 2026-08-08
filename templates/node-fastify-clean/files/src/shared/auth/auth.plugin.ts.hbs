@@ -1,0 +1,45 @@
+import fp from 'fastify-plugin';
+import fjwt from '@fastify/jwt';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { env } from '../../config/env';
+
+export interface JwtPayload {
+  sub: string;
+  username: string;
+}
+
+declare module 'fastify' {
+  interface FastifyInstance {
+    authenticate: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
+  }
+}
+
+declare module '@fastify/jwt' {
+  interface FastifyJWT {
+    payload: JwtPayload;
+    user: JwtPayload;
+  }
+}
+
+export const authPlugin = fp(async (fastify: FastifyInstance) => {
+  await fastify.register(fjwt, { secret: env.jwtSecret });
+
+  fastify.decorate('authenticate', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      await request.jwtVerify();
+    } catch (err) {
+      reply.status(401).send({ error: 'Unauthorized' });
+    }
+  });
+
+  fastify.post('/auth/login', async (request, reply) => {
+    const { username, password } = request.body as { username: string; password: string };
+
+    if (username !== env.adminUser || password !== env.adminPassword) {
+      return reply.status(401).send({ error: 'Invalid credentials' });
+    }
+
+    const token = fastify.jwt.sign({ sub: '1', username });
+    return { accessToken: token };
+  });
+});

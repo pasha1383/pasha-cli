@@ -1,0 +1,17 @@
+import { {{pascalCase moduleName}} } from './{{moduleName}}.entity';
+import { {{pascalCase moduleName}}Repository } from './{{moduleName}}.repository.interface';
+import { Create{{pascalCase moduleName}}UseCase, Get{{pascalCase moduleName}}UseCase } from './{{moduleName}}.use-cases';
+
+describe('Create{{pascalCase moduleName}}UseCase', () => {
+  it('creates an entity', async () => {
+    const mockRepo: {{pascalCase moduleName}}Repository = {
+      save: jest.fn(),
+      findAll: jest.fn(),
+      findById: jest.fn(),
+    };
+    const useCase = new Create{{pascalCase moduleName}}UseCase(mockRepo);
+    const entity = await useCase.execute({ name: 'test' });
+    expect(entity.name).toBe('test');
+    expect(mockRepo.save).toHaveBeenCalled();
+  });
+});

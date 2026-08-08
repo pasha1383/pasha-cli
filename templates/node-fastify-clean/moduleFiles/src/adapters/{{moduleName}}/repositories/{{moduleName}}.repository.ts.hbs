@@ -1,0 +1,96 @@
+{{#if ormPrisma}}
+import { prisma } from '../../../shared/database/prisma.client';
+import { {{pascalCase moduleName}} } from '../../core/use-cases/{{moduleName}}/{{moduleName}}.entity';
+import { {{pascalCase moduleName}}Repository } from '../../core/use-cases/{{moduleName}}/{{moduleName}}.repository.interface';
+
+export class Prisma{{pascalCase moduleName}}Repository implements {{pascalCase moduleName}}Repository {
+  async save(entity: {{pascalCase moduleName}}): Promise<void> {
+    await prisma.{{camelCase moduleName}}.upsert({
+      where: { id: entity.id },
+      create: { id: entity.id, name: entity.name },
+      update: { name: entity.name },
+    });
+  }
+
+  async findAll(): Promise<{{pascalCase moduleName}}[]> {
+    const rows = await prisma.{{camelCase moduleName}}.findMany();
+    return rows.map((r: { id: string; name: string }) => new {{pascalCase moduleName}}(r.id, r.name));
+  }
+
+  async findById(id: string): Promise<{{pascalCase moduleName}} | null> {
+    const row = await prisma.{{camelCase moduleName}}.findUnique({ where: { id } });
+    return row ? new {{pascalCase moduleName}}(row.id, row.name) : null;
+  }
+}
+{{/if}}
+{{#if ormTypeorm}}
+import { Repository } from 'typeorm';
+import { AppDataSource } from '../../../shared/database/typeorm.datasource';
+import { {{pascalCase moduleName}} } from '../../core/use-cases/{{moduleName}}/{{moduleName}}.entity';
+import { {{pascalCase moduleName}}Repository } from '../../core/use-cases/{{moduleName}}/{{moduleName}}.repository.interface';
+import { {{pascalCase moduleName}}OrmEntity } from './{{moduleName}}.orm-entity';
+
+export class Typeorm{{pascalCase moduleName}}Repository implements {{pascalCase moduleName}}Repository {
+  private readonly repo: Repository<{{pascalCase moduleName}}OrmEntity> = AppDataSource.getRepository({{pascalCase moduleName}}OrmEntity);
+
+  async save(entity: {{pascalCase moduleName}}): Promise<void> {
+    const ormEntity = this.repo.create({ id: entity.id, name: entity.name });
+    await this.repo.save(ormEntity);
+  }
+
+  async findAll(): Promise<{{pascalCase moduleName}}[]> {
+    const rows = await this.repo.find();
+    return rows.map((r) => new {{pascalCase moduleName}}(r.id, r.name));
+  }
+
+  async findById(id: string): Promise<{{pascalCase moduleName}} | null> {
+    const row = await this.repo.findOne({ where: { id } });
+    return row ? new {{pascalCase moduleName}}(row.id, row.name) : null;
+  }
+}
+{{/if}}
+{{#if ormMongoose}}
+import { {{pascalCase moduleName}}OrmEntity, {{pascalCase moduleName}}Model } from './{{moduleName}}.schema';
+import { {{pascalCase moduleName}} } from '../../core/use-cases/{{moduleName}}/{{moduleName}}.entity';
+import { {{pascalCase moduleName}}Repository } from '../../core/use-cases/{{moduleName}}/{{moduleName}}.repository.interface';
+
+export class Mongoose{{pascalCase moduleName}}Repository implements {{pascalCase moduleName}}Repository {
+  async save(entity: {{pascalCase moduleName}}): Promise<void> {
+    await {{pascalCase moduleName}}Model.updateOne(
+      { id: entity.id },
+      { $set: { id: entity.id, name: entity.name } },
+      { upsert: true },
+    );
+  }
+
+  async findAll(): Promise<{{pascalCase moduleName}}[]> {
+    const rows: { id: string; name: string }[] = await {{pascalCase moduleName}}Model.find().lean();
+    return rows.map((r) => new {{pascalCase moduleName}}(r.id, r.name));
+  }
+
+  async findById(id: string): Promise<{{pascalCase moduleName}} | null> {
+    const row: { id: string; name: string } | null = await {{pascalCase moduleName}}Model.findOne({ id }).lean();
+    return row ? new {{pascalCase moduleName}}(row.id, row.name) : null;
+  }
+}
+{{/if}}
+{{#if ormNone}}
+import { {{pascalCase moduleName}} } from '../../core/use-cases/{{moduleName}}/{{moduleName}}.entity';
+import { {{pascalCase moduleName}}Repository } from '../../core/use-cases/{{moduleName}}/{{moduleName}}.repository.interface';
+
+export class InMemory{{pascalCase moduleName}}Repository implements {{pascalCase moduleName}}Repository {
+  private readonly items = new Map<string, {{pascalCase moduleName}}>();
+
+  async save(entity: {{pascalCase moduleName}}): Promise<void> {
+    this.items.set(entity.id, entity);
+  }
+
+  async findAll(): Promise<{{pascalCase moduleName}}[]> {
+    return Array.from(this.items.values());
+  }
+
+  async findById(id: string): Promise<{{pascalCase moduleName}} | null> {
+    return this.items.get(id) ?? null;
+  }
+}
+{{/if}}

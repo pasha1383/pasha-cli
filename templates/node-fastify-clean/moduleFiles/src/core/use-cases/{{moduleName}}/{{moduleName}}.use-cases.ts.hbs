@@ -1,0 +1,30 @@
+import { randomUUID } from 'crypto';
+import { {{pascalCase moduleName}} } from './{{moduleName}}.entity';
+import { {{pascalCase moduleName}}Repository } from './{{moduleName}}.repository.interface';
+import { NotFoundError } from '../../../errors/app-error';
+
+export class Create{{pascalCase moduleName}}UseCase {
+  constructor(private readonly repository: {{pascalCase moduleName}}Repository) {}
+
+  async execute(input: { name: string }): Promise<{{pascalCase moduleName}}> {
+    const entity = new {{pascalCase moduleName}}(randomUUID(), input.name);
+    await this.repository.save(entity);
+    return entity;
+  }
+}
+
+export class Get{{pascalCase moduleName}}UseCase {
+  constructor(private readonly repository: {{pascalCase moduleName}}Repository) {}
+
+  async findAll(): Promise<{{pascalCase moduleName}}[]> {
+    return this.repository.findAll();
+  }
+
+  async findById(id: string): Promise<{{pascalCase moduleName}}> {
+    const entity = await this.repository.findById(id);
+    if (!entity) {
+      throw new NotFoundError(`{{pascalCase moduleName}} with id "${id}" not found`);
+    }
+    return entity;
+  }
+}

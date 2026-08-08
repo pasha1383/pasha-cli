@@ -1,0 +1,7 @@
+import { {{pascalCase moduleName}} } from './{{moduleName}}.entity';
+
+export interface {{pascalCase moduleName}}Repository {
+  save(entity: {{pascalCase moduleName}}): Promise<void>;
+  findAll(): Promise<{{pascalCase moduleName}}[]>;
+  findById(id: string): Promise<{{pascalCase moduleName}} | null>;
+}

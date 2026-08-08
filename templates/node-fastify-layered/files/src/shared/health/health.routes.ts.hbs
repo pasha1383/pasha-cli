@@ -1,0 +1,53 @@
+import { FastifyInstance } from 'fastify';
+{{#if ormPrisma}}
+import { prisma } from '../database/prisma.client';
+{{/if}}
+{{#if ormTypeorm}}
+import { AppDataSource } from '../database/typeorm.datasource';
+{{/if}}
+{{#if ormMongoose}}
+import mongoose from 'mongoose';
+{{/if}}
+{{#if useRedis}}
+import { redis } from '../cache/redis.client';
+{{/if}}
+
+export async function healthRoutes(fastify: FastifyInstance) {
+  fastify.get('/', async (_request, reply) => {
+    const checks: Record<string, string> = {};
+
+    const mem = process.memoryUsage();
+    checks.heapUsedMB = Math.round(mem.heapUsed / (1024 * 1024)).toString();
+
+{{#if ormPrisma}}
+    try {
+      await prisma.$executeRawUnsafe('SELECT 1');
+      checks.database = 'ok';
+    } catch {
+      checks.database = 'error';
+    }
+{{/if}}
+{{#if ormTypeorm}}
+    try {
+      await AppDataSource.query('SELECT 1');
+      checks.database = 'ok';
+    } catch {
+      checks.database = 'error';
+    }
+{{/if}}
+{{#if ormMongoose}}
+    checks.database = mongoose.connection.readyState === 1 ? 'ok' : 'error';
+{{/if}}
+{{#if useRedis}}
+    try {
+      await redis.ping();
+      checks.redis = 'ok';
+    } catch {
+      checks.redis = 'error';
+    }
+{{/if}}
+
+    const allOk = Object.values(checks).every((v) => v === 'ok');
+    return reply.status(allOk ? 200 : 503).send({ status: allOk ? 'ok' : 'degraded', checks });
+  });
+}

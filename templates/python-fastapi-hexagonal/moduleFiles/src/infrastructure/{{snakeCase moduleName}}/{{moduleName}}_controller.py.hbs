@@ -1,0 +1,95 @@
+from fastapi import APIRouter, Depends, status
+{{#if ormSqlalchemy}}
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.shared.database.sqlalchemy import get_session
+{{/if}}
+
+from src.application.{{snakeCase moduleName}}.create_{{moduleName}}_use_case import Create{{pascalCase moduleName}}UseCase
+from src.application.{{snakeCase moduleName}}.get_{{moduleName}}_use_case import Get{{pascalCase moduleName}}UseCase
+{{#if hasValidation}}
+from .{{moduleName}}_schema import {{pascalCase moduleName}}Create, {{pascalCase moduleName}}Response
+{{/if}}
+from .{{moduleName}}_repository import {{pascalCase moduleName}}Repository
+
+router = APIRouter()
+
+{{#if ormSqlalchemy}}
+_repo = None
+
+def _get_repository(session: AsyncSession = Depends(get_session)):
+    return {{pascalCase moduleName}}Repository(session)
+
+{{else}}
+_repo = {{pascalCase moduleName}}Repository()
+{{/if}}
+
+
+{{#if hasValidation}}
+@router.post("/", response_model={{pascalCase moduleName}}Response, status_code=status.HTTP_201_CREATED)
+{{#if ormSqlalchemy}}
+async def create(body: {{pascalCase moduleName}}Create, repo: {{pascalCase moduleName}}Repository = Depends(_get_repository)):
+{{else}}
+async def create(body: {{pascalCase moduleName}}Create):
+{{/if}}
+    uc = Create{{pascalCase moduleName}}UseCase({{#if ormSqlalchemy}}repo{{else}}_repo{{/if}})
+    entity = await uc.execute(body.name)
+    return entity
+
+@router.get("/", response_model=list[{{pascalCase moduleName}}Response])
+{{#if ormSqlalchemy}}
+async def list_all(repo: {{pascalCase moduleName}}Repository = Depends(_get_repository)):
+{{else}}
+async def list_all():
+{{/if}}
+    uc = Get{{pascalCase moduleName}}UseCase({{#if ormSqlalchemy}}repo{{else}}_repo{{/if}})
+    return await uc.get_all()
+
+@router.get("/{pk}", response_model={{pascalCase moduleName}}Response)
+{{#if ormSqlalchemy}}
+async def get_one(pk: int, repo: {{pascalCase moduleName}}Repository = Depends(_get_repository)):
+{{else}}
+async def get_one(pk: int):
+{{/if}}
+    uc = Get{{pascalCase moduleName}}UseCase({{#if ormSqlalchemy}}repo{{else}}_repo{{/if}})
+    return await uc.get_by_id(pk)
+
+{{else}}
+@router.post("/", status_code=status.HTTP_201_CREATED)
+{{#if ormSqlalchemy}}
+async def create(body: dict, repo: {{pascalCase moduleName}}Repository = Depends(_get_repository)):
+{{else}}
+async def create(body: dict):
+{{/if}}
+    uc = Create{{pascalCase moduleName}}UseCase({{#if ormSqlalchemy}}repo{{else}}_repo{{/if}})
+    entity = await uc.execute(body["name"])
+    return {"id": entity.id, "name": entity.name}
+
+@router.get("/")
+{{#if ormSqlalchemy}}
+async def list_all(repo: {{pascalCase moduleName}}Repository = Depends(_get_repository)):
+{{else}}
+async def list_all():
+{{/if}}
+    uc = Get{{pascalCase moduleName}}UseCase({{#if ormSqlalchemy}}repo{{else}}_repo{{/if}})
+    entities = await uc.get_all()
+    return [{"id": e.id, "name": e.name} for e in entities]
+
+@router.get("/{pk}")
+{{#if ormSqlalchemy}}
+async def get_one(pk: int, repo: {{pascalCase moduleName}}Repository = Depends(_get_repository)):
+{{else}}
+async def get_one(pk: int):
+{{/if}}
+    uc = Get{{pascalCase moduleName}}UseCase({{#if ormSqlalchemy}}repo{{else}}_repo{{/if}})
+    return await uc.get_by_id(pk)
+{{/if}}
+
+@router.delete("/{pk}", status_code=status.HTTP_204_NO_CONTENT)
+{{#if ormSqlalchemy}}
+async def delete(pk: int, repo: {{pascalCase moduleName}}Repository = Depends(_get_repository)):
+    await repo.delete(pk)
+{{else}}
+async def delete(pk: int):
+    await _repo.delete(pk)
+{{/if}}

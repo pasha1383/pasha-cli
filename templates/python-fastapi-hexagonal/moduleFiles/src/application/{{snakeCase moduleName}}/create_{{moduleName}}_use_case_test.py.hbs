@@ -1,0 +1,55 @@
+import pytest
+
+from src.application.{{snakeCase moduleName}}.create_{{moduleName}}_use_case import Create{{pascalCase moduleName}}UseCase
+from src.application.{{snakeCase moduleName}}.get_{{moduleName}}_use_case import Get{{pascalCase moduleName}}UseCase
+{{#if ormSqlalchemy}}
+from src.infrastructure.{{snakeCase moduleName}}.{{moduleName}}_repository import {{pascalCase moduleName}}Repository
+{{/if}}
+{{#if ormNone}}
+from src.infrastructure.{{snakeCase moduleName}}.{{moduleName}}_repository import {{pascalCase moduleName}}Repository
+{{/if}}
+
+
+@pytest.fixture
+{{#if ormSqlalchemy}}
+# SQLAlchemy repo needs a session; skip for unit tests
+def create_use_case():
+    return None
+
+
+@pytest.mark.skip("requires database session")
+async def test_create():
+    pass
+{{/if}}
+{{#if ormNone}}
+def repo():
+    return {{pascalCase moduleName}}Repository()
+
+@pytest.fixture
+def create_use_case(repo):
+    return Create{{pascalCase moduleName}}UseCase(repo)
+
+@pytest.fixture
+def get_use_case(repo):
+    return Get{{pascalCase moduleName}}UseCase(repo)
+
+@pytest.mark.asyncio
+async def test_create_and_get(create_use_case, get_use_case):
+    created = await create_use_case.execute("test-item")
+    assert created.name == "test-item"
+
+    found = await get_use_case.get_by_id(created.id)
+    assert found.name == "test-item"
+{{/if}}
+{{#if ormTortoise}}
+def repo():
+    from src.infrastructure.{{snakeCase moduleName}}.{{moduleName}}_repository import {{pascalCase moduleName}}Repository
+    return {{pascalCase moduleName}}Repository()
+
+
+@pytest.mark.asyncio
+async def test_create(repo):
+    uc = Create{{pascalCase moduleName}}UseCase(repo)
+    created = await uc.execute("test-item")
+    assert created.name == "test-item"
+{{/if}}

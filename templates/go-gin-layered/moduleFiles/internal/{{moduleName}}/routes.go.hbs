@@ -1,0 +1,25 @@
+package {{snakeCase moduleName}}
+
+import (
+{{#if ormGorm}}
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+{{else}}
+	"github.com/gin-gonic/gin"
+{{/if}}
+)
+
+func RegisterRoutes(r *gin.RouterGroup{{#if ormGorm}}, db *gorm.DB{{/if}}) {
+{{#if ormGorm}}
+	repo := NewRepository(db)
+{{else}}
+	repo := NewRepository()
+{{/if}}
+	svc := NewService(repo)
+	h := NewHandler(svc)
+
+	r.GET("/{{moduleName}}", h.List)
+	r.GET("/{{moduleName}}/:id", h.GetByID)
+	r.POST("/{{moduleName}}", h.Create)
+	r.DELETE("/{{moduleName}}/:id", h.Delete)
+}

@@ -1,0 +1,33 @@
+package docs
+
+import "github.com/swaggo/swag"
+
+const docTemplate = `
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "{{projectName}}",
+    "version": "0.1.0",
+    "description": "{{description}}"
+  },
+  "servers": [{"url": "http://localhost:8080"}],
+  "paths": {},
+  "components": {
+    "schemas": {}
+  }
+}`
+
+var SwaggerInfo = &swag.Spec{
+	Version:          "0.1.0",
+	Host:             "localhost:8080",
+	BasePath:         "/api",
+	Schemes:          []string{"http"},
+	Title:            "{{projectName}} API",
+	Description:      "{{description}}",
+	InfoInstanceName: "swagger",
+	SwaggerTemplate:  docTemplate,
+}
+
+func init() {
+	swag.Register(SwaggerInfo.InstanceName(), SwaggerInfo)
+}

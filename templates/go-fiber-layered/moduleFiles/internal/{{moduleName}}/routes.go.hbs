@@ -1,0 +1,25 @@
+package {{snakeCase moduleName}}
+
+import (
+{{#if ormGorm}}
+	"github.com/gofiber/fiber/v3"
+	"gorm.io/gorm"
+{{else}}
+	"github.com/gofiber/fiber/v3"
+{{/if}}
+)
+
+func RegisterRoutes(r fiber.Router{{#if ormGorm}}, db *gorm.DB{{/if}}) {
+{{#if ormGorm}}
+	repo := NewRepository(db)
+{{else}}
+	repo := NewRepository()
+{{/if}}
+	svc := NewService(repo)
+	h := NewHandler(svc)
+
+	r.Get("/{{moduleName}}", h.List)
+	r.Get("/{{moduleName}}/:id", h.GetByID)
+	r.Post("/{{moduleName}}", h.Create)
+	r.Delete("/{{moduleName}}/:id", h.Delete)
+}

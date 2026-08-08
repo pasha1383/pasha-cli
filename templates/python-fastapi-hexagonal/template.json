@@ -1,0 +1,40 @@
+{
+  "name": "Python + FastAPI + Hexagonal/DDD",
+  "prerequisites": ["python3", "pip3", "git"],
+  "shared": null,
+  "stackFeatures": "python",
+  "modules": {
+    "enabled": true,
+    "message": "Module/entity name (e.g. product, user, order)",
+    "default": "product"
+  },
+  "fileConditions": {
+    "docker-compose.yml.hbs": "useDocker",
+    "src/shared": "hasSharedInfra",
+    "src/shared/database": "hasOrm",
+    "src/shared/database/sqlalchemy.py.hbs": "ormSqlalchemy",
+    "src/shared/database/tortoise.py.hbs": "ormTortoise",
+    "src/shared/database/none.py.hbs": "ormNone",
+    "src/shared/cache": "useRedis",
+    "src/shared/auth": "useAuth",
+    "src/shared/health": "useHealthCheck",
+    "AGENT.md.hbs": "useAgentDocs",
+    "src/AGENT.md.hbs": "useAgentDocs",
+    "src/domain/AGENT.md.hbs": "useAgentDocs",
+    "src/application/AGENT.md.hbs": "useAgentDocs",
+    "src/infrastructure/AGENT.md.hbs": "useAgentDocs",
+    "src/domain/{{snakeCase moduleName}}/{{moduleName}}_entity.py.hbs": true,
+    "src/domain/{{snakeCase moduleName}}/{{moduleName}}_repository_interface.py.hbs": true,
+    "src/application/{{snakeCase moduleName}}/create_{{moduleName}}_use_case.py.hbs": true,
+    "src/application/{{snakeCase moduleName}}/get_{{moduleName}}_use_case.py.hbs": true,
+    "src/application/{{snakeCase moduleName}}/create_{{moduleName}}_use_case_test.py.hbs": "useTests",
+    "src/infrastructure/{{snakeCase moduleName}}/{{moduleName}}_repository.py.hbs": true,
+    "src/infrastructure/{{snakeCase moduleName}}/{{moduleName}}_controller.py.hbs": true,
+    "src/infrastructure/{{snakeCase moduleName}}/{{moduleName}}_schema.py.hbs": "hasValidation",
+    "Dockerfile.hbs": "useAppDockerfile",
+    ".dockerignore.hbs": "useAppDockerfile",
+    ".github": "useCI"
+  },
+  "postInstall": [],
+  "gitInit": true
+}

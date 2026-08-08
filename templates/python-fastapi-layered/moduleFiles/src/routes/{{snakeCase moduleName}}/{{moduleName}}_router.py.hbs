@@ -1,0 +1,78 @@
+from fastapi import APIRouter, Depends, HTTPException, status
+{{#if ormSqlalchemy}}
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.shared.database.sqlalchemy import get_session
+{{/if}}
+
+from .{{moduleName}}_repository import {{pascalCase moduleName}}Repository
+{{#if hasValidation}}
+from .{{moduleName}}_schema import {{pascalCase moduleName}}Create, {{pascalCase moduleName}}Response
+{{/if}}
+from .{{moduleName}}_service import {{pascalCase moduleName}}Service
+
+router = APIRouter()
+
+
+{{#if ormSqlalchemy}}
+def _get_repository(session: AsyncSession = Depends(get_session)) -> {{pascalCase moduleName}}Repository:
+    return {{pascalCase moduleName}}Repository(session)
+
+
+def _get_service(repo: {{pascalCase moduleName}}Repository = Depends(_get_repository)) -> {{pascalCase moduleName}}Service:
+    return {{pascalCase moduleName}}Service(repo)
+
+{{else}}
+_repo = {{pascalCase moduleName}}Repository()
+
+
+def _get_service() -> {{pascalCase moduleName}}Service:
+    return {{pascalCase moduleName}}Service(_repo)
+{{/if}}
+
+{{#if hasValidation}}
+@router.post("/", response_model={{pascalCase moduleName}}Response, status_code=status.HTTP_201_CREATED)
+async def create(body: {{pascalCase moduleName}}Create, svc: {{pascalCase moduleName}}Service = Depends(_get_service)):
+    entity = await svc.create(body.model_dump())
+    return entity
+
+{{else}}
+@router.post("/", status_code=status.HTTP_201_CREATED)
+async def create(body: dict, svc: {{pascalCase moduleName}}Service = Depends(_get_service)):
+    entity = await svc.create(body)
+    return {"id": entity.id, "name": entity.name}
+
+{{/if}}
+
+{{#if hasValidation}}
+@router.get("/", response_model=list[{{pascalCase moduleName}}Response])
+async def list_all(svc: {{pascalCase moduleName}}Service = Depends(_get_service)):
+    return await svc.get_all()
+
+@router.get("/{pk}", response_model={{pascalCase moduleName}}Response)
+{{else}}
+@router.get("/")
+async def list_all(svc: {{pascalCase moduleName}}Service = Depends(_get_service)):
+    entities = await svc.get_all()
+    return [{"id": e.id, "name": e.name} for e in entities]
+
+@router.get("/{pk}")
+{{/if}}
+async def get_one(pk: int, svc: {{pascalCase moduleName}}Service = Depends(_get_service)):
+    return await svc.get_by_id(pk)
+
+{{#if hasValidation}}
+@router.put("/{pk}", response_model={{pascalCase moduleName}}Response)
+async def update(pk: int, body: {{pascalCase moduleName}}Create, svc: {{pascalCase moduleName}}Service = Depends(_get_service)):
+    return await svc.update(pk, body.model_dump())
+
+{{else}}
+@router.put("/{pk}")
+async def update(pk: int, body: dict, svc: {{pascalCase moduleName}}Service = Depends(_get_service)):
+    entity = await svc.update(pk, body)
+    return {"id": entity.id, "name": entity.name}
+{{/if}}
+
+@router.delete("/{pk}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete(pk: int, svc: {{pascalCase moduleName}}Service = Depends(_get_service)):
+    await svc.delete(pk)

@@ -1,0 +1,19 @@
+"""Application entry point — starts uvicorn."""
+
+import uvicorn
+
+from src.config.settings import settings
+
+
+def main():
+    uvicorn.run(
+        "src.app:create_app",
+        host="0.0.0.0",
+        port=settings.app_port,
+        reload=settings.app_env == "development",
+        factory=True,
+    )
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,78 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Framework:** Django (Python) — MVC architecture
+- **Architecture:** {{architectureLabel}}
+{{#if hasOrm}}
+- **ORM:** Django ORM{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}{{/if}}
+{{#if hasValidation}}
+- **Validation:** DRF serializers{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis{{/if}}
+{{#if hasBroker}}
+- **Message broker:** {{broker}}{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/api/docs/` (drf-spectacular){{/if}}
+{{#if useAuth}}
+- **Auth:** JWT via djangorestframework-simplejwt{{/if}}
+{{#if useHealthCheck}}
+- **Health:** `GET /health/`{{/if}}
+{{#if useRateLimit}}
+- **Rate limiting:** DRF throttling + django-ratelimit middleware{{/if}}
+
+## Modules (Django Apps)
+
+{{#each modules}}
+- `{{snakeCase this}}`
+{{/each}}
+
+## Commands
+
+```bash
+source venv/bin/activate
+python manage.py runserver           # dev server on :8000
+python manage.py migrate             # apply migrations
+python manage.py makemigrations      # create migrations
+python manage.py createsuperuser     # admin user
+{{#if useDocker}}
+docker compose up -d                 # start databases/brokers
+docker compose down
+{{/if}}
+{{#if useLint}}
+ruff check .                         # lint
+ruff format .                        # format
+{{/if}}
+{{#if useTests}}
+pytest                               # run tests
+pytest --cov=. --cov-report=term-missing
+{{/if}}
+```
+
+## Hard rules
+
+1. **Keep views thin.** Delegate business logic to `services.py`.
+2. **Validation lives in serializers.** DRF `serializers.py` handles
+   deserialization and validation — never validate in views.
+3. **Every new app is registered in `config/settings.py`** (`INSTALLED_APPS`)
+   and wired in `config/urls.py`.
+4. **`config/settings.py` reads from environment variables** via `dotenv`.
+5. **Errors from `core/app_error.py`** (AppError, NotFoundError, etc.) should
+   be raised from services and caught by DRF's exception handler.
+{{#if useAuth}}
+6. **Protected views** use DRF's `IsAuthenticated` permission class.
+{{/if}}
+{{#if useTests}}
+7. **Tests use pytest + pytest-django** — no plain `unittest.TestCase`.
+{{/if}}
+
+## When you are unsure
+
+Prefer asking over guessing. Generating a plausible-looking file in the wrong
+layer costs more to unpick than a clarifying question costs to answer.

@@ -1,0 +1,17 @@
+# Application Layer
+
+Use cases (commands & queries) — the "what" of the system.
+
+Rules:
+- Each use case is a class with a single `execute()` method.
+- Use cases depend ONLY on domain interfaces (repository ports) — never on
+  concrete implementations.
+- Use cases NEVER import from `infrastructure/`.
+- Use cases may import from `domain/` and from `src/errors/`.
+- Unit tests for use cases live alongside them (e.g. `create_<context>_use_case_test.py`).
+  They test against an in-memory stub of the repository interface.
+
+Files per bounded context:
+- `create_<context>_use_case.py` — command (mutates state)
+- `get_<context>_use_case.py` — query (reads state)
+- `create_<context>_use_case_test.py` — unit test (optional, gated on `useTests`)

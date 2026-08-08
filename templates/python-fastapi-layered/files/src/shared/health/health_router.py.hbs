@@ -1,0 +1,46 @@
+"""Health check router for FastAPI."""
+
+from fastapi import APIRouter
+
+health_router = APIRouter()
+
+{{#if hasOrm}}
+{{#if ormSqlalchemy}}
+from src.shared.database.sqlalchemy import engine
+{{/if}}
+{{#if ormTortoise}}
+from tortoise import connections
+{{/if}}
+{{/if}}
+{{#if useRedis}}
+from src.shared.cache.redis_client import get_redis
+{{/if}}
+
+
+@health_router.get("/")
+async def health_check():
+    result = {"status": "ok"}
+    {{#if healthChecksDb}}
+    try:
+        {{#if ormSqlalchemy}}
+        if engine:
+            async with engine.connect() as conn:
+                await conn.execute("SELECT 1")
+        {{/if}}
+        {{#if ormTortoise}}
+        conn = connections.get("default")
+        await conn.execute_query("SELECT 1")
+        {{/if}}
+        result["database"] = "ok"
+    except Exception:
+        result["database"] = "error"
+    {{/if}}
+    {{#if healthChecksRedis}}
+    try:
+        r = await get_redis()
+        await r.ping()
+        result["redis"] = "ok"
+    except Exception:
+        result["redis"] = "error"
+    {{/if}}
+    return result

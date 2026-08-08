@@ -1,0 +1,84 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Framework:** FastAPI (Python, async) — Hexagonal / DDD architecture
+- **Architecture:** {{architectureLabel}}
+{{#if ormSqlalchemy}}
+- **ORM:** SQLAlchemy (async){{/if}}
+{{#if ormTortoise}}
+- **ORM:** Tortoise ORM{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}{{/if}}
+{{#if hasValidation}}
+- **Validation:** Pydantic v2{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis{{/if}}
+{{#if hasBroker}}
+- **Message broker:** {{broker}}{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/docs` (built-in){{/if}}
+{{#if useAuth}}
+- **Auth:** JWT{{/if}}
+{{#if useHealthCheck}}
+- **Health:** `GET /health/`{{/if}}
+{{#if useRateLimit}}
+- **Rate limiting:** slowapi{{/if}}
+
+## Modules (DDD Bounded Contexts)
+
+{{#each modules}}
+- `{{snakeCase this}}`
+{{/each}}
+
+## Layer rules
+
+1. **Domain** (`src/domain/`) — entities and repository interfaces. No imports
+   from infrastructure or application. Pure Python.
+2. **Application** (`src/application/`) — use cases (commands/queries). Calls
+   domain interfaces. No imports from infrastructure.
+3. **Infrastructure** (`src/infrastructure/`) — persistence, controllers
+   (FastAPI routers), DTOs. Imports from domain and application.
+
+## Commands
+
+```bash
+source venv/bin/activate
+uvicorn src.main:create_app --reload --factory   # dev server on :8000
+{{#if useDocker}}
+docker compose up -d                                # start databases/brokers
+docker compose down
+{{/if}}
+{{#if useLint}}
+ruff check .                                        # lint
+ruff format .                                       # format
+{{/if}}
+{{#if useTests}}
+pytest                                              # run tests
+pytest --cov=. --cov-report=term-missing
+{{/if}}
+```
+
+## Hard rules
+
+1. **Dependency inversion.** Domain defines `RepositoryInterface`; Infrastructure
+   implements it. Use cases depend on the interface, never on SQLAlchemy/Tortoise
+   directly.
+2. **Pydantic stays at the boundary.** Request/response schemas are defined in
+   infrastructure. Domain entities are plain Python classes.
+3. **`src/config/settings.py` is the only file that reads `os.environ`.**
+4. **`AppError` / `NotFoundError` / `ValidationError`** from
+   `src/errors/app_error.py` — raise them in use cases, let FastAPI's
+   exception handler translate them.
+5. **Adding a bounded context:** create the domain entity + interface, then
+   the application use cases, then the infrastructure adapter + controller.
+6. **Register new controllers** in `src/app.py`.
+
+## When you are unsure
+
+Prefer asking over guessing. Generating a plausible-looking file in the wrong
+layer costs more to unpick than a clarifying question costs to answer.

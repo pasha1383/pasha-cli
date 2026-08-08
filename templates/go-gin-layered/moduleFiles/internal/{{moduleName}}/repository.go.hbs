@@ -1,0 +1,94 @@
+package {{snakeCase moduleName}}
+
+import (
+{{#if ormGorm}}
+	"gorm.io/gorm"
+{{else}}
+	"sync"
+{{/if}}
+{{#if ormGorm}}
+	"{{github}}/{{projectName}}/internal/{{moduleName}}"
+{{/if}}
+)
+
+type Repository interface {
+	Save(model *{{pascalCase moduleName}}) error
+	FindAll() ([]{{pascalCase moduleName}}, error)
+	FindByID(id {{#if ormGorm}}uint{{else}}string{{/if}}) (*{{pascalCase moduleName}}, error)
+	Delete(id {{#if ormGorm}}uint{{else}}string{{/if}}) error
+}
+
+{{#if ormGorm}}
+type repository struct {
+	db *gorm.DB
+}
+
+func NewRepository(db *gorm.DB) Repository {
+	return &repository{db: db}
+}
+
+func (r *repository) Save(model *{{pascalCase moduleName}}) error {
+	return r.db.Save(model).Error
+}
+
+func (r *repository) FindAll() ([]{{pascalCase moduleName}}, error) {
+	var models []{{pascalCase moduleName}}
+	err := r.db.Find(&models).Error
+	return models, err
+}
+
+func (r *repository) FindByID(id uint) (*{{pascalCase moduleName}}, error) {
+	var model {{pascalCase moduleName}}
+	err := r.db.First(&model, id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &model, nil
+}
+
+func (r *repository) Delete(id uint) error {
+	return r.db.Delete(&{{pascalCase moduleName}}{}, id).Error
+}
+{{else}}
+type repository struct {
+	mu    sync.RWMutex
+	items map[string]*{{pascalCase moduleName}}
+}
+
+func NewRepository() Repository {
+	return &repository{items: make(map[string]*{{pascalCase moduleName}})}
+}
+
+func (r *repository) Save(model *{{pascalCase moduleName}}) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.items[model.ID] = model
+	return nil
+}
+
+func (r *repository) FindAll() ([]{{pascalCase moduleName}}, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	result := make([]{{pascalCase moduleName}}, 0, len(r.items))
+	for _, m := range r.items {
+		result = append(result, *m)
+	}
+	return result, nil
+}
+
+func (r *repository) FindByID(id string) (*{{pascalCase moduleName}}, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	if m, ok := r.items[id]; ok {
+		return m, nil
+	}
+	return nil, nil
+}
+
+func (r *repository) Delete(id string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	delete(r.items, id)
+	return nil
+}
+{{/if}}

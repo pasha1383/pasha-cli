@@ -1,0 +1,45 @@
+.PHONY: build run dev
+
+build:
+	go build -o bin/{{projectName}} ./cmd
+
+run:
+	go run ./cmd
+
+dev:
+	air
+
+{{#if useTests}}
+.PHONY: test test-cover
+
+test:
+	go test ./... -v
+
+test-cover:
+	go test ./... -coverprofile=coverage.out
+	go tool cover -html=coverage.out -o coverage.html
+{{/if}}
+
+{{#if useLint}}
+.PHONY: lint
+
+lint:
+	golangci-lint run
+{{/if}}
+
+{{#if useSwagger}}
+.PHONY: swagger
+
+swagger:
+	swag init -g cmd/main.go -o internal/docs
+{{/if}}
+
+{{#if useDocker}}
+.PHONY: infra-up infra-down
+
+infra-up:
+	docker compose up -d
+
+infra-down:
+	docker compose down
+{{/if}}

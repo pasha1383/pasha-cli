@@ -1,0 +1,18 @@
+"""Redis client singleton."""
+
+from redis.asyncio import Redis
+
+from src.config.settings import settings
+
+_redis: Redis | None = None
+
+
+async def get_redis() -> Redis:
+    global _redis
+    if _redis is None:
+        _redis = Redis(
+            host=settings.redis_host,
+            port=settings.redis_port,
+            decode_responses=True,
+        )
+    return _redis

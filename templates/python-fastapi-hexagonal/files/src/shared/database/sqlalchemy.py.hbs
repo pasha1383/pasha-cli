@@ -1,0 +1,33 @@
+"""SQLAlchemy async database setup."""
+
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import DeclarativeBase
+
+engine = None
+async_session_factory: async_sessionmaker[AsyncSession] | None = None
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+async def init_db(settings):
+    global engine, async_session_factory
+    engine = create_async_engine(settings.database_url, echo=False)
+    async_session_factory = async_sessionmaker(engine, expire_on_commit=False)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+
+async def get_session() -> AsyncSession:
+    if async_session_factory is None:
+        raise RuntimeError("Database not initialized")
+    async with async_session_factory() as session:
+        yield session
+
+
+async def close_db():
+    global engine
+    if engine:
+        await engine.dispose()
+        engine = None

@@ -1,0 +1,106 @@
+package main
+
+import (
+	"log"
+
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	"{{github}}/{{projectName}}/internal/config"
+{{#if hasSharedInfra}}
+{{/if}}
+{{#if ormGorm}}
+	"{{github}}/{{projectName}}/internal/shared/database"
+{{/if}}
+{{#if useRedis}}
+	"{{github}}/{{projectName}}/internal/shared/cache"
+{{/if}}
+{{#if useAuth}}
+	localmw "{{github}}/{{projectName}}/internal/middleware"
+{{/if}}
+{{#if useRateLimit}}
+	localmw "{{github}}/{{projectName}}/internal/middleware"
+{{/if}}
+{{#if useHealthCheck}}
+	"{{github}}/{{projectName}}/internal/shared/health"
+{{/if}}
+{{#if useSwagger}}
+	_ "{{github}}/{{projectName}}/internal/docs"
+	"github.com/swaggo/echo-swagger"
+{{/if}}
+{{#each modules}}
+	"{{../github}}/{{../projectName}}/internal/{{this}}"
+{{/each}}
+)
+
+func main() {
+	cfg := config.Load()
+
+	e := echo.New()
+	e.HideBanner = true
+
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+{{#if useRateLimit}}
+{{#if ormNone}}
+	e.Use(localmw.NewRateLimiter(cfg.RateLimitRPS, cfg.RateLimitBurst))
+{{/if}}
+{{/if}}
+
+{{#if ormGorm}}
+	db, err := database.Connect(cfg)
+	if err != nil {
+		log.Fatalf("failed to connect to database: %v", err)
+	}
+{{/if}}
+
+{{#if useRedis}}
+	redisClient, err := cache.NewRedisClient(cfg)
+	if err != nil {
+		log.Fatalf("failed to connect to redis: %v", err)
+	}
+	_ = redisClient
+{{/if}}
+
+{{#if useAuth}}
+	authMw := localmw.NewAuthMiddleware(cfg.JWTSecret)
+{{/if}}
+
+{{#if useRateLimit}}
+{{#if ormGorm}}
+{{#if useAuth}}
+	rateLimitMw := localmw.NewRateLimiter(cfg.RateLimitRPS, cfg.RateLimitBurst)
+{{else}}
+	e.Use(localmw.NewRateLimiter(cfg.RateLimitRPS, cfg.RateLimitBurst))
+{{/if}}
+{{/if}}
+{{/if}}
+
+{{#if useHealthCheck}}
+{{#if ormGorm}}
+	healthHandler := health.NewHandler(db)
+{{else}}
+	healthHandler := health.NewHandler(nil)
+{{/if}}
+	e.GET("/health", healthHandler.Check)
+{{/if}}
+
+{{#if useSwagger}}
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
+{{/if}}
+
+	api := e.Group("/api")
+{{#if useAuth}}
+	api.Use(authMw.Handler())
+{{/if}}
+
+{{#each modules}}
+	{
+		r := api.Group("/{{this}}")
+		{{snakeCase this}}.RegisterRoutes(r{{#if ../ormGorm}}, db{{/if}})
+	}
+{{/each}}
+
+	addr := ":" + cfg.Port
+	log.Printf("server starting on %s", addr)
+	e.Logger.Fatal(e.Start(addr))
+}

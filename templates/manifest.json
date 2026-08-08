@@ -1,5 +1,37 @@
 {
   "languages": {
+    "go": {
+      "label": "Go",
+      "frameworks": {
+        "gin": {
+          "label": "Gin",
+          "architectures": {
+            "layered": {
+              "label": "Layered (Handler-Service-Repository)",
+              "template": "go-gin-layered"
+            }
+          }
+        },
+        "echo": {
+          "label": "Echo",
+          "architectures": {
+            "layered": {
+              "label": "Layered (Handler-Service-Repository)",
+              "template": "go-echo-layered"
+            }
+          }
+        },
+        "fiber": {
+          "label": "Fiber",
+          "architectures": {
+            "layered": {
+              "label": "Layered (Handler-Service-Repository)",
+              "template": "go-fiber-layered"
+            }
+          }
+        }
+      }
+    },
     "node": {
       "label": "Node.js / TypeScript",
       "frameworks": {
@@ -51,6 +83,33 @@
             "hexagonal": {
               "label": "Hexagonal / DDD",
               "template": "node-fastify-hexagonal"
+            }
+          }
+        }
+      }
+    },
+    "python": {
+      "label": "Python",
+      "frameworks": {
+        "django": {
+          "label": "Django",
+          "architectures": {
+            "mvc": {
+              "label": "MVC",
+              "template": "python-django-mvc"
+            }
+          }
+        },
+        "fastapi": {
+          "label": "FastAPI",
+          "architectures": {
+            "layered": {
+              "label": "Layered (Router-Service-Repository)",
+              "template": "python-fastapi-layered"
+            },
+            "hexagonal": {
+              "label": "Hexagonal / DDD",
+              "template": "python-fastapi-hexagonal"
             }
           }
         }

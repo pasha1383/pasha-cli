@@ -1,0 +1,14 @@
+module {{github}}/{{projectName}}
+
+go 1.22
+
+require (
+	github.com/gin-gonic/gin v1.10.0
+{{#if useSwagger}}
+	github.com/swaggo/files v1.0.1
+	github.com/swaggo/gin-swagger v1.6.0
+{{/if}}
+{{#each goModules}}
+	{{module}} {{version}}
+{{/each}}
+)

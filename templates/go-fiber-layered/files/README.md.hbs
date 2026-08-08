@@ -1,0 +1,88 @@
+# {{projectName}}
+
+{{description}}
+
+Built with pasha CLI — **Layered** architecture on Go + Fiber.
+
+## Stack
+
+- **Framework:** Fiber
+{{#if ormNone}}
+- **Data layer:** in-memory repositories
+{{else}}
+- **ORM:** GORM
+{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+{{#if hasValidation}}
+- **Validation:** go-playground/validator
+{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis
+{{/if}}
+{{#if hasBroker}}
+- **Messaging:** {{broker}}
+{{/if}}
+{{#if useAuth}}
+- **Auth:** JWT (golang-jwt)
+{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/swagger/index.html`
+{{/if}}
+
+## Run
+
+```bash
+cp .env.example .env
+{{#if useDocker}}
+make infra-up          # start docker services
+{{/if}}
+go mod tidy
+{{#if ormGorm}}
+# GORM auto-migration runs on startup — no manual migration needed
+{{/if}}
+make run                # start the server
+```
+
+Or use Air for hot reload:
+
+```bash
+go install github.com/air-verse/air@latest
+make dev
+```
+
+## Modules
+
+{{#each modules}}
+- `{{this}}` → `http://localhost:8080/api/{{this}}`
+{{/each}}
+
+## Structure
+
+```
+cmd/
+└── main.go                  ← entry point, sets up router
+
+internal/
+├── config/config.go           ← reads env
+├── middleware/                 ← auth, rate limiting
+├── errors/app_error.go         ← error types and helpers
+├── shared/                     ← database, cache, health
+│   ├── database/
+│   ├── cache/
+│   └── health/
+└── <module>/
+    ├── model.go             ← GORM model or plain struct
+    ├── repository.go        ← data access (interface + impl)
+    ├── service.go           ← business logic
+    ├── handler.go           ← Fiber handler functions
+    ├── dto.go               ← request/response DTOs
+    └── routes.go            ← route registration
+```
+
+Call direction: `routes` constructs `repository → service → handler`, once per module. A layer only ever talks to the one directly below it.
+
+---
+
+Made with ❤️ by {{author}}

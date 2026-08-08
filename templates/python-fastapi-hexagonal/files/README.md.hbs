@@ -1,0 +1,70 @@
+# {{projectName}}
+
+{{description}}
+
+Built with pasha CLI — **Hexagonal / DDD** architecture on FastAPI.
+
+## Stack
+
+{{#if ormSqlalchemy}}- **ORM:** SQLAlchemy (async){{/if}}
+{{#if ormTortoise}}- **ORM:** Tortoise ORM{{/if}}
+{{#if ormNone}}- **Data layer:** in-memory repositories{{/if}}
+{{#if hasDatabase}}- **Database:** {{database}}{{/if}}
+{{#if hasValidation}}- **Validation:** Pydantic v2{{/if}}
+{{#if useRedis}}- **Cache:** Redis{{/if}}
+{{#if hasBroker}}- **Messaging:** {{broker}}{{/if}}
+
+## Run
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+{{#if devRequirementsTxt}}
+pip install -r dev-requirements.txt
+{{/if}}
+
+cp .env.example .env
+{{#if useDocker}}
+docker compose up -d
+{{/if}}
+uvicorn src.main:create_app --reload --factory --host 0.0.0.0 --port 8000
+```
+
+## Modules
+
+{{#each modules}}
+- `{{this}}` → `http://localhost:8000/{{this}}`
+{{/each}}
+
+## Structure
+
+```
+src/
+├── main.py                          ← uvicorn entry point
+├── app.py                            ← FastAPI app factory
+├── config/settings.py                ← env loading
+├── errors/app_error.py               ← error classes
+├── shared/
+│   ├── database/<orm>.py             ← ORM setup
+│   ├── cache/redis_client.py         ← Redis client
+│   ├── auth/auth_dependency.py       ← JWT auth dependency
+│   └── health/health_router.py       ← health check
+├── domain/<module>/
+│   ├── <module>_entity.py            ← domain entity (pure Python)
+│   └── <module>_repository_interface.py
+├── application/<module>/
+│   ├── create_<module>_use_case.py   ← command use case
+│   ├── get_<module>_use_case.py      ← query use case
+│   └── create_<module>_use_case_test.py
+└── infrastructure/<module>/
+    ├── <module>_repository.py        ← persistence adapter
+    ├── <module>_controller.py        ← FastAPI router
+    └── <module>_schema.py            ← Pydantic DTOs
+```
+
+Call direction: `infrastructure → application → domain`. Domain never imports
+from infrastructure or application.
+
+---
+Made with ❤️ by {{author}}

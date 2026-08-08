@@ -1,0 +1,15 @@
+# Domain Layer
+
+Pure Python — no framework, no database, no ORM imports.
+
+Rules:
+- Every entity is a plain class (`__init__` + optional `__eq__`).
+- Repository interfaces are abstract (`abc.ABC`) — define the contract,
+  never the implementation.
+- Domain NEVER imports from `application/` or `infrastructure/`.
+- `application/` may import from domain.
+- `infrastructure/` may import from both domain and application.
+
+Files per bounded context:
+- `<context>_entity.py` — the domain entity
+- `<context>_repository_interface.py` — abstract repository port

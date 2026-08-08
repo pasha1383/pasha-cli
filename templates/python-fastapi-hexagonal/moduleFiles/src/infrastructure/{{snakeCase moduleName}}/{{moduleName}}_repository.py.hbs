@@ -1,0 +1,103 @@
+{{#if ormSqlalchemy}}
+from sqlalchemy import Column, Integer, String
+
+from src.domain.{{snakeCase moduleName}}.{{moduleName}}_entity import {{pascalCase moduleName}}
+from src.domain.{{snakeCase moduleName}}.{{moduleName}}_repository_interface import {{pascalCase moduleName}}RepositoryInterface
+from src.shared.database.sqlalchemy import Base
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+
+
+class {{pascalCase moduleName}}Model(Base):
+    __tablename__ = "{{snakeCase moduleName}}"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(255), nullable=False)
+
+
+class {{pascalCase moduleName}}Repository({{pascalCase moduleName}}RepositoryInterface):
+    def __init__(self, session: AsyncSession):
+        self._session = session
+
+    async def save(self, entity: {{pascalCase moduleName}}) -> {{pascalCase moduleName}}:
+        model = {{pascalCase moduleName}}Model(id=entity.id, name=entity.name) if entity.id else {{pascalCase moduleName}}Model(name=entity.name)
+        self._session.add(model)
+        await self._session.flush()
+        entity.id = model.id
+        return entity
+
+    async def find_all(self) -> list[{{pascalCase moduleName}}]:
+        result = await self._session.execute(select({{pascalCase moduleName}}Model))
+        models = result.scalars().all()
+        return [{{pascalCase moduleName}}(id=m.id, name=m.name) for m in models]
+
+    async def find_by_id(self, pk: int) -> {{pascalCase moduleName}} | None:
+        model = await self._session.get({{pascalCase moduleName}}Model, pk)
+        return {{pascalCase moduleName}}(id=model.id, name=model.name) if model else None
+
+    async def delete(self, pk: int) -> None:
+        model = await self._session.get({{pascalCase moduleName}}Model, pk)
+        if model:
+            await self._session.delete(model)
+            await self._session.flush()
+{{/if}}
+{{#if ormTortoise}}
+from tortoise import fields
+from tortoise.models import Model
+
+from src.domain.{{snakeCase moduleName}}.{{moduleName}}_entity import {{pascalCase moduleName}}
+from src.domain.{{snakeCase moduleName}}.{{moduleName}}_repository_interface import {{pascalCase moduleName}}RepositoryInterface
+
+
+class {{pascalCase moduleName}}Model(Model):
+    id = fields.IntField(pk=True)
+    name = fields.CharField(max_length=255)
+
+    class Meta:
+        table = "{{snakeCase moduleName}}"
+
+
+class {{pascalCase moduleName}}Repository({{pascalCase moduleName}}RepositoryInterface):
+    async def save(self, entity: {{pascalCase moduleName}}) -> {{pascalCase moduleName}}:
+        model = {{pascalCase moduleName}}Model(id=entity.id, name=entity.name) if entity.id else {{pascalCase moduleName}}Model(name=entity.name)
+        await model.save()
+        entity.id = model.id
+        return entity
+
+    async def find_all(self) -> list[{{pascalCase moduleName}}]:
+        models = await {{pascalCase moduleName}}Model.all()
+        return [{{pascalCase moduleName}}(id=m.id, name=m.name) for m in models]
+
+    async def find_by_id(self, pk: int) -> {{pascalCase moduleName}} | None:
+        model = await {{pascalCase moduleName}}Model.get_or_none(id=pk)
+        return {{pascalCase moduleName}}(id=model.id, name=model.name) if model else None
+
+    async def delete(self, pk: int) -> None:
+        await {{pascalCase moduleName}}Model.filter(id=pk).delete()
+{{/if}}
+{{#if ormNone}}
+from src.domain.{{snakeCase moduleName}}.{{moduleName}}_entity import {{pascalCase moduleName}}
+from src.domain.{{snakeCase moduleName}}.{{moduleName}}_repository_interface import {{pascalCase moduleName}}RepositoryInterface
+
+
+class {{pascalCase moduleName}}Repository({{pascalCase moduleName}}RepositoryInterface):
+    def __init__(self):
+        self._items: dict[int, {{pascalCase moduleName}}] = {}
+        self._next_id = 1
+
+    async def save(self, entity: {{pascalCase moduleName}}) -> {{pascalCase moduleName}}:
+        if entity.id == 0:
+            entity.id = self._next_id
+            self._next_id += 1
+        self._items[entity.id] = entity
+        return entity
+
+    async def find_all(self) -> list[{{pascalCase moduleName}}]:
+        return list(self._items.values())
+
+    async def find_by_id(self, pk: int) -> {{pascalCase moduleName}} | None:
+        return self._items.get(pk)
+
+    async def delete(self, pk: int) -> None:
+        self._items.pop(pk, None)
+{{/if}}

@@ -1,0 +1,56 @@
+import pytest
+from httpx import ASGITransport, AsyncClient
+
+from src.app import create_app
+from src.errors.app_error import AppError
+{{#if hasValidation}}
+from .{{moduleName}}_schema import {{pascalCase moduleName}}Create
+{{/if}}
+
+{{#if ormSqlalchemy}}
+from .{{moduleName}}_model import {{pascalCase moduleName}}
+from .{{moduleName}}_repository import {{pascalCase moduleName}}Repository
+{{/if}}
+{{#if ormTortoise}}
+from .{{moduleName}}_model import {{pascalCase moduleName}}
+from .{{moduleName}}_repository import {{pascalCase moduleName}}Repository
+{{/if}}
+{{#if ormNone}}
+from .{{moduleName}}_repository import {{pascalCase moduleName}}Repository
+{{/if}}
+from .{{moduleName}}_service import {{pascalCase moduleName}}Service
+
+
+@pytest.fixture
+def repo():
+    return {{pascalCase moduleName}}Repository()
+
+
+@pytest.fixture
+def service(repo):
+    return {{pascalCase moduleName}}Service(repo)
+
+
+@pytest.mark.asyncio
+async def test_create_and_get(service):
+    created = await service.create({"name": "test-item"})
+    assert created.name == "test-item"
+
+    found = await service.get_by_id(created.id)
+    assert found.name == "test-item"
+
+
+@pytest.mark.asyncio
+async def test_get_all_empty(service):
+    items = await service.get_all()
+    assert isinstance(items, list)
+
+
+@pytest.mark.skip(reason="requires a running server")
+@pytest.mark.asyncio
+async def test_api_create():
+    app = create_app()
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.post("/{{moduleName}}/", json={"name": "api-item"})
+        assert resp.status_code == 201

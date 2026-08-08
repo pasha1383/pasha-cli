@@ -1,0 +1,11 @@
+from src.domain.{{snakeCase moduleName}}.{{moduleName}}_entity import {{pascalCase moduleName}}
+from src.domain.{{snakeCase moduleName}}.{{moduleName}}_repository_interface import {{pascalCase moduleName}}RepositoryInterface
+
+
+class Create{{pascalCase moduleName}}UseCase:
+    def __init__(self, repository: {{pascalCase moduleName}}RepositoryInterface):
+        self._repo = repository
+
+    async def execute(self, name: str) -> {{pascalCase moduleName}}:
+        entity = {{pascalCase moduleName}}(id=0, name=name)
+        return await self._repo.save(entity)

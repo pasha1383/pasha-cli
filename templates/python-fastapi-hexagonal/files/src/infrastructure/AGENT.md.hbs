@@ -1,0 +1,18 @@
+# Infrastructure Layer
+
+Persistence adapters, controllers (FastAPI routers), and DTOs — the "how".
+
+Rules:
+- Controllers (FastAPI routers) in `<context>_controller.py` — register
+  endpoints, call use cases, return responses.
+- `<context>_repository.py` implements the domain repository interface
+  against a real database (SQLAlchemy, Tortoise, or in-memory).
+- `<context>_schema.py` defines Pydantic request/response DTOs — keep them
+  here, NOT in domain.
+- Infrastructure may import from `domain/`, `application/`, `shared/`,
+  and `config/`.
+
+Files per bounded context:
+- `<context>_controller.py` — FastAPI router (endpoints)
+- `<context>_repository.py` — persistence adapter implementing the interface
+- `<context>_schema.py` — Pydantic DTOs (optional, gated on `hasValidation`)

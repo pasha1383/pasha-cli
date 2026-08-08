@@ -21,7 +21,18 @@
     "src/routes/AGENT.md.hbs": "useAgentDocs",
     "src/middlewares/validate-body.middleware.ts.hbs": "useZod",
     "src/middlewares/handle-validation-errors.middleware.ts.hbs": "useExpressValidator",
-    "src/routes/{{moduleName}}/{{moduleName}}.validation.ts.hbs": "hasValidation"
+    "src/routes/{{moduleName}}/{{moduleName}}.validation.ts.hbs": "hasValidation",
+    "src/config/swagger.ts.hbs": "useSwagger",
+    ".eslintrc.js": "useLint",
+    ".prettierrc": "useLint",
+    "jest.config.ts.hbs": "useTests",
+    "jest.e2e.config.ts.hbs": "useTests",
+    "test": "useTests",
+    ".github": "useCI",
+    "src/shared/auth": "useAuth",
+    "src/shared/health": "useHealthCheck",
+    "Dockerfile.hbs": "useAppDockerfile",
+    ".dockerignore.hbs": "useAppDockerfile"
   },
   "postInstall": ["npm install"],
   "gitInit": true

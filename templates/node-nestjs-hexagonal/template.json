@@ -6,7 +6,7 @@
     "git"
   ],
   "shared": "_shared/nestjs",
-  "stackFeatures": true,
+  "stackFeatures": "nestjs",
   "modules": {
     "enabled": true,
     "message": "Module/entity name (e.g. product, user, order)",

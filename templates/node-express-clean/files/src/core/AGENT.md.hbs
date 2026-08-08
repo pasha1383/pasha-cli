@@ -1,0 +1,24 @@
+# AGENT.md — src/core/
+
+Business rules. Zero framework dependencies. Zero imports from `adapters/`.
+
+## What lives here
+
+- `entities/` — domain entities. Pure objects that represent business
+  concepts. They carry data and any domain invariants.
+- `ports/` — abstract interfaces (contracts) the core needs. Typically a
+  repository port: `save`, `findAll`, `findById`. The core declares what it
+  needs; adapters provide the implementation.
+- `use-cases/<module>/` — application-specific business rules. One class per
+  operation (e.g. `CreateProductUseCase`, `GetProductsUseCase`). Each use-case
+  receives its repository through its constructor.
+
+## Rules
+
+- **Never import Express.** No `Request`, `Response`, `NextFunction`.
+- **Never depend on an adapter.** If a use-case needs data, it declares a
+  port in `ports/` and receives the implementation at construction time.
+- Entities are plain TypeScript classes — no ORM decorators, no persistence
+  annotations.
+- Use-case tests go next to the use-case (`create-product.use-case.spec.ts`)
+  so they are easy to find.

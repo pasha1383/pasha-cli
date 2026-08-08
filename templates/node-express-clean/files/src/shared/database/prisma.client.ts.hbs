@@ -1,0 +1,8 @@
+import { PrismaClient } from '@prisma/client';
+
+/**
+ * A single shared instance. Import { prisma } wherever a repository needs
+ * it — do not `new PrismaClient()` again elsewhere, or you get a separate
+ * connection pool per instance.
+ */
+export const prisma = new PrismaClient();

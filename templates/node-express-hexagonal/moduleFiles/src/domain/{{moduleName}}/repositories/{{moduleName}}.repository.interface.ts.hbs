@@ -1,0 +1,11 @@
+import { {{pascalCase moduleName}} } from '../entities/{{moduleName}}.entity';
+
+/**
+ * Port. The domain declares what it needs; the infrastructure layer provides
+ * the concrete implementation. This keeps the dependency arrow pointing inward.
+ */
+export interface I{{pascalCase moduleName}}Repository {
+  save(entity: {{pascalCase moduleName}}): Promise<void>;
+  findAll(): Promise<{{pascalCase moduleName}}[]>;
+  findById(id: string): Promise<{{pascalCase moduleName}} | null>;
+}

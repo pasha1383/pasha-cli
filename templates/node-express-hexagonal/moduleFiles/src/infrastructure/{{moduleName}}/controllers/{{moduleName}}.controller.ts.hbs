@@ -1,0 +1,36 @@
+import { NextFunction, Request, Response } from 'express';
+import { Create{{pascalCase moduleName}}UseCase } from '../../../application/{{moduleName}}/use-cases/create-{{moduleName}}.use-case';
+import { Get{{pascalCase moduleName}}sUseCase } from '../../../application/{{moduleName}}/use-cases/get-{{moduleName}}s.use-case';
+
+export class {{pascalCase moduleName}}Controller {
+  constructor(
+    private readonly create{{pascalCase moduleName}}: Create{{pascalCase moduleName}}UseCase,
+    private readonly get{{pascalCase moduleName}}s: Get{{pascalCase moduleName}}sUseCase,
+  ) {}
+
+  create = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const entity = await this.create{{pascalCase moduleName}}.execute(req.body.name);
+      res.status(201).json(entity);
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  findAll = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const entities = await this.get{{pascalCase moduleName}}s.execute();
+      res.json(entities);
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  findOne = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      res.json({ id: req.params.id });
+    } catch (err) {
+      next(err);
+    }
+  };
+}

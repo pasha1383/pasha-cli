@@ -1,0 +1,40 @@
+import { NextFunction, Request, Response } from 'express';
+import { Create{{pascalCase moduleName}}UseCase } from '../../../core/use-cases/{{moduleName}}/create-{{moduleName}}.use-case';
+import { Get{{pascalCase moduleName}}sUseCase } from '../../../core/use-cases/{{moduleName}}/get-{{moduleName}}s.use-case';
+import { {{pascalCase moduleName}}Presenter, {{pascalCase moduleName}}View } from '../presenters/{{moduleName}}.presenter';
+
+export class {{pascalCase moduleName}}Controller {
+  constructor(
+    private readonly create{{pascalCase moduleName}}: Create{{pascalCase moduleName}}UseCase,
+    private readonly get{{pascalCase moduleName}}s: Get{{pascalCase moduleName}}sUseCase,
+    private readonly presenter: {{pascalCase moduleName}}Presenter,
+  ) {}
+
+  create = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const entity = await this.create{{pascalCase moduleName}}.execute(req.body.name);
+      const view: {{pascalCase moduleName}}View = this.presenter.toView(entity);
+      res.status(201).json(view);
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  findAll = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const entities = await this.get{{pascalCase moduleName}}s.execute();
+      const views: {{pascalCase moduleName}}View[] = this.presenter.toViewList(entities);
+      res.json(views);
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  findOne = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      res.json({ id: req.params.id });
+    } catch (err) {
+      next(err);
+    }
+  };
+}

@@ -1,0 +1,58 @@
+# {{projectName}}
+
+{{description}}
+
+Built with pasha CLI — **Hexagonal / DDD** architecture on Express.
+
+## Stack
+
+- **Data layer:** {{#if ormNone}}in-memory repositories{{else}}{{orm}}{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+- **Validation:** {{#if hasValidation}}{{validation}}{{else}}none{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis
+{{/if}}
+{{#if hasBroker}}
+- **Messaging:** {{broker}}
+{{/if}}
+
+## Run
+
+```bash
+cp .env.example .env
+{{#if useDocker}}
+npm run infra:up          # start docker services
+{{/if}}
+npm install
+{{#if ormPrisma}}
+npm run prisma:migrate    # create the database schema
+{{/if}}
+npm run start:dev
+```
+
+## Modules
+
+{{#each modules}}
+- `{{this}}` → `http://localhost:3000/{{this}}`
+{{/each}}
+
+## Structure
+
+```
+src/
+├── main.ts                  ← starts the server (and ORM connection, if any)
+├── app.ts                   ← composition root — wires everything manually (no DI container)
+├── config/env.ts            ← the only file that reads process.env
+├── middlewares/              ← error handling, validation glue
+├── shared/                   ← database/cache clients used by more than one module
+├── domain/<module>/          ← entities + repository interfaces — pure business, zero dependencies
+├── application/<module>/     ← use-cases + DTOs — orchestrates domain objects
+└── infrastructure/<module>/  ← controllers, routes, persistence — all framework/I/O details
+```
+
+Dependency rule: `domain/` → nothing. `application/` → `domain/` only. `infrastructure/` → `application/` and `domain/`. The composition root (`app.ts`) wires everything.
+
+---
+Made with ❤️ by {{author}}

@@ -1,0 +1,111 @@
+import express, { Express } from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import { errorHandler, notFoundHandler } from './middlewares/error-handler.middleware';
+{{#if useRateLimit}}
+import rateLimit from 'express-rate-limit';
+import { env } from './config/env';
+{{/if}}
+{{#if useSwagger}}
+import { setupSwagger } from './config/swagger';
+{{/if}}
+{{#if useAuth}}
+import { authRouter } from './shared/auth/auth.middleware';
+{{/if}}
+{{#if useHealthCheck}}
+import { healthRouter } from './shared/health/health.routes';
+{{/if}}
+{{#each modules}}
+{{#if ../ormPrisma}}
+import { {{pascalCase this}}PrismaRepository } from './adapters/{{this}}/repositories/{{this}}.repository';
+{{/if}}
+{{#if ../ormTypeorm}}
+import { {{pascalCase this}}TypeormRepository } from './adapters/{{this}}/repositories/{{this}}.repository';
+{{/if}}
+{{#if ../ormMongoose}}
+import { {{pascalCase this}}MongooseRepository } from './adapters/{{this}}/repositories/{{this}}.repository';
+{{/if}}
+{{#if ../ormNone}}
+import { {{pascalCase this}}InMemoryRepository } from './adapters/{{this}}/repositories/{{this}}.repository';
+{{/if}}
+import { Create{{pascalCase this}}UseCase } from './core/use-cases/{{this}}/create-{{this}}.use-case';
+import { Get{{pascalCase this}}sUseCase } from './core/use-cases/{{this}}/get-{{this}}s.use-case';
+import { {{pascalCase this}}Presenter } from './adapters/{{this}}/presenters/{{this}}.presenter';
+import { {{pascalCase this}}Controller } from './adapters/{{this}}/controllers/{{this}}.controller';
+import { {{camelCase this}}Routes } from './adapters/{{this}}/routes/{{this}}.routes';
+{{/each}}
+
+/**
+ * Builds the Express app without starting the server — kept separate from
+ * main.ts so tests can import it and drive requests with supertest without
+ * binding a real port.
+ *
+ * This is the composition root: all dependencies are manually wired here and
+ * nowhere else. There is no DI container — every `new` call is explicit and
+ * visible, which makes the full object graph traceable from this one file.
+ */
+export function createApp(): Express {
+  const app = express();
+
+  app.use(helmet());
+  app.use(cors());
+  app.use(express.json());
+  app.use(morgan('dev'));
+
+{{#if useRateLimit}}
+  app.use(
+    rateLimit({
+      windowMs: env.rateLimitWindowMs,
+      max: env.rateLimitMax,
+      standardHeaders: true,
+      legacyHeaders: false,
+    }),
+  );
+{{/if}}
+
+{{#if useHealthCheck}}
+  app.use(healthRouter);
+{{/if}}
+
+{{#if useAuth}}
+  app.use(authRouter);
+{{/if}}
+
+  // ------------------------------------------------------------------
+  // Module wiring — one block per feature. Repository → Use Cases →
+  // Presenter → Controller → Routes. Every wire is manual and visible.
+  // ------------------------------------------------------------------
+{{#each modules}}
+  {{#if ../ormPrisma}}
+  const {{camelCase this}}Repo = new {{pascalCase this}}PrismaRepository();
+  {{/if}}
+  {{#if ../ormTypeorm}}
+  const {{camelCase this}}Repo = new {{pascalCase this}}TypeormRepository();
+  {{/if}}
+  {{#if ../ormMongoose}}
+  const {{camelCase this}}Repo = new {{pascalCase this}}MongooseRepository();
+  {{/if}}
+  {{#if ../ormNone}}
+  const {{camelCase this}}Repo = new {{pascalCase this}}InMemoryRepository();
+  {{/if}}
+  const create{{pascalCase this}}UseCase = new Create{{pascalCase this}}UseCase({{camelCase this}}Repo);
+  const get{{pascalCase this}}sUseCase = new Get{{pascalCase this}}sUseCase({{camelCase this}}Repo);
+  const {{camelCase this}}Presenter = new {{pascalCase this}}Presenter();
+  const {{camelCase this}}Controller = new {{pascalCase this}}Controller(
+    create{{pascalCase this}}UseCase,
+    get{{pascalCase this}}sUseCase,
+    {{camelCase this}}Presenter,
+  );
+  app.use('/{{this}}', {{camelCase this}}Routes({{camelCase this}}Controller));
+{{/each}}
+
+{{#if useSwagger}}
+  setupSwagger(app);
+{{/if}}
+
+  app.use(notFoundHandler);
+  app.use(errorHandler);
+
+  return app;
+}

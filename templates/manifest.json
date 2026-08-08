@@ -26,6 +26,31 @@
             "layered": {
               "label": "Layered (Controller-Service-Repository)",
               "template": "node-express-layered"
+            },
+            "clean": {
+              "label": "Clean Architecture",
+              "template": "node-express-clean"
+            },
+            "hexagonal": {
+              "label": "Hexagonal / DDD",
+              "template": "node-express-hexagonal"
+            }
+          }
+        },
+        "fastify": {
+          "label": "Fastify",
+          "architectures": {
+            "layered": {
+              "label": "Layered (Plugin-per-Module)",
+              "template": "node-fastify-layered"
+            },
+            "clean": {
+              "label": "Clean Architecture",
+              "template": "node-fastify-clean"
+            },
+            "hexagonal": {
+              "label": "Hexagonal / DDD",
+              "template": "node-fastify-hexagonal"
             }
           }
         }

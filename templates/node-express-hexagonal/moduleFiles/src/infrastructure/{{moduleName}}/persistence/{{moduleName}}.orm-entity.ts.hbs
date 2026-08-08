@@ -1,0 +1,14 @@
+import { Column, Entity, PrimaryColumn } from 'typeorm';
+
+/**
+ * Persistence model. Deliberately separate from the domain entity so the
+ * database schema can change without leaking into the domain layer.
+ */
+@Entity('{{snakeCase moduleName}}')
+export class {{pascalCase moduleName}}OrmEntity {
+  @PrimaryColumn('varchar')
+  id!: string;
+
+  @Column('varchar')
+  name!: string;
+}

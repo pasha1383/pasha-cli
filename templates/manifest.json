@@ -19,6 +19,15 @@
               "template": "node-nestjs-hexagonal"
             }
           }
+        },
+        "express": {
+          "label": "Express",
+          "architectures": {
+            "layered": {
+              "label": "Layered (Controller-Service-Repository)",
+              "template": "node-express-layered"
+            }
+          }
         }
       }
     }

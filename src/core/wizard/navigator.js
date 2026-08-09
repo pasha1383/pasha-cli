@@ -22,6 +22,7 @@ class Navigator {
     this._ctx = {};
     this._history = [];
     this._pendingAction = null;
+    this._visitCount = new Map();
   }
 
   get totalSteps() {
@@ -61,6 +62,18 @@ class Navigator {
 
     while (this._currentIndex < this._steps.length) {
       const step = this._steps[this._currentIndex];
+
+      // Loop guard: if we visit the same step too many times, the wizard has a bug
+      const key = step.name;
+      const count = (this._visitCount.get(key) || 0) + 1;
+      this._visitCount.set(key, count);
+      if (count > 20) {
+        const msg = `Navigator loop detected on step "${step.label}" (visited ${count} times). ` +
+          `This is a bug in the wizard — accumulated answers: ${JSON.stringify(Object.keys(this._ctx))}`;
+        console.warn(msg);
+        break;
+      }
+
       this._pendingAction = null;
 
       try {

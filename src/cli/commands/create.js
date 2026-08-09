@@ -70,119 +70,207 @@ async function ensurePrerequisites(tools) {
   return true;
 }
 
-async function askCoreStack(fm, ctx, nav, startStep = 0) {
+// ---- Stack sub-navigator ----
+//
+// The Stack step is a composite of 6-7 sub-prompts (ORM, database, validation,
+// Redis, broker, AGENT docs, extras).  It uses its own internal step index so
+// that "back" means "go to the previous sub-prompt", not "abort the entire
+// Stack step and return to Project Info".
+//
+// Only back from the very first select sub-prompt (ORM, when multiple choices
+// exist) propagates upwards as '__back__' to the outer wizard navigator.
+//
+// Extras is a checkbox — a navigation sentinel must never be a selectable
+// value in a multi-select, so the extras prompt does NOT offer a back choice.
+// Instead the message shows "(space to toggle, enter to submit)".
+
+function _buildStackSteps(fm, ctx, nav) {
+  const ormChoices = fm.ormChoices(ctx.framework);
+  const steps = [];
+
+  // 0: ORM (single-select or auto)
+  if (ormChoices.length > 1) {
+    steps.push({
+      name: 'orm',
+      label: 'ORM',
+      run: async (c) => {
+        const a = await prompt([{
+          type: 'list', name: 'orm', message: 'Data layer / ORM?',
+          choices: withBack(ormChoices, nav),
+          default: c.orm || undefined,
+        }]);
+        if (a.orm === '__back__') return '__back__';
+        return { orm: a.orm };
+      },
+    });
+  } else {
+    steps.push({
+      name: 'orm',
+      label: 'ORM',
+      run: async () => {
+        const val = ormChoices[0].value;
+        log.info(`   ORM: ${ormChoices[0].name} (the only option for ${ctx.framework})`);
+        return { orm: val };
+      },
+    });
+  }
+
+  // 1: Database (single-select or auto)
+  steps.push({
+    name: 'database',
+    label: 'Database',
+    run: async (c) => {
+      const orm = c.orm;
+      if (!orm || orm === 'none') return { database: 'none' };
+      const dbChoices = fm.databaseChoices(orm);
+      if (dbChoices.length === 0) return { database: 'none' };
+      if (dbChoices.length === 1) {
+        log.info(`   Database: ${dbChoices[0].name} (the only option ${orm} supports)`);
+        return { database: dbChoices[0].value };
+      }
+      const a = await prompt([{
+        type: 'list', name: 'database', message: 'Database?',
+        choices: withBack(dbChoices, nav),
+        default: (c.database && c.database !== 'none') ? c.database : undefined,
+      }]);
+      if (a.database === '__back__') return '__back__';
+      return { database: a.database };
+    },
+  });
+
+  // 2: Validation (single-select)
+  steps.push({
+    name: 'validation',
+    label: 'Validation',
+    run: async (c) => {
+      const a = await prompt([{
+        type: 'list', name: 'validation', message: 'Validation & transformation?',
+        choices: withBack(fm.validationChoices(), nav),
+        default: c.validation || undefined,
+      }]);
+      if (a.validation === '__back__') return '__back__';
+      return { validation: a.validation };
+    },
+  });
+
+  // 3: Redis (confirm — no back)
+  steps.push({
+    name: 'redis',
+    label: 'Redis',
+    run: async (c) => {
+      const a = await prompt([{
+        type: 'confirm', name: 'useRedis', message: 'Add Redis for caching?',
+        default: c.useRedis !== undefined ? Boolean(c.useRedis) : false,
+      }]);
+      return { useRedis: a.useRedis };
+    },
+  });
+
+  // 4: Broker (single-select or auto)
+  const brokerChoices = fm.brokerChoices();
+  if (brokerChoices.length > 1) {
+    steps.push({
+      name: 'broker',
+      label: 'Broker',
+      run: async (c) => {
+        const a = await prompt([{
+          type: 'list', name: 'broker', message: 'Message broker?',
+          choices: withBack(brokerChoices, nav),
+          default: c.broker || undefined,
+        }]);
+        if (a.broker === '__back__') return '__back__';
+        return { broker: a.broker };
+      },
+    });
+  } else {
+    steps.push({
+      name: 'broker',
+      label: 'Broker',
+      run: async () => ({ broker: 'none' }),
+    });
+  }
+
+  // 5: AGENT docs (confirm — no back)
+  steps.push({
+    name: 'agentdocs',
+    label: 'AGENT Docs',
+    run: async (c) => {
+      const a = await prompt([{
+        type: 'confirm', name: 'useAgentDocs',
+        message: 'Generate AGENT.md files for AI-assisted development?',
+        default: c.useAgentDocs !== undefined ? c.useAgentDocs : true,
+      }]);
+      return { useAgentDocs: a.useAgentDocs };
+    },
+  });
+
+  // 6: Extras (checkbox — no back choice)
+  if (fm.extraFeatureChoices) {
+    steps.push({
+      name: 'extras',
+      label: 'Extras',
+      run: async (c) => {
+        const choices = fm.extraFeatureChoices().map(ch => ({
+          name: ch.name,
+          value: ch.value,
+          checked: c.extras ? c.extras.includes(ch.value) : ch.checked,
+        }));
+        const a = await prompt([{
+          type: 'checkbox', name: 'extras',
+          message: 'Additional features (space to toggle, enter to submit)?',
+          choices,
+        }]);
+        return { extras: a.extras };
+      },
+    });
+  }
+
+  return steps;
+}
+
+async function runStackWizard(ctx, nav) {
+  const tf = ctx._templateConfig;
+  const flavor = tf.stackFeatures;
+  if (!flavor) return {};
+
+  const fm = resolveFeatures(flavor);
+  const steps = _buildStackSteps(fm, ctx, nav);
+
   section('Stack Configuration');
 
-  const ormChoices = fm.ormChoices(ctx.framework);
-
-  // Persistent state so each sub-step remembers its answer across step-by-step back
+  let index = 0;
+  const total = steps.length;
   const answers = {
     orm: ctx.orm || undefined,
     database: ctx.database || undefined,
     validation: ctx.validation || undefined,
-    useRedis: ctx.useRedis !== undefined ? ctx.useRedis : undefined,
+    useRedis: ctx.useRedis,
     broker: ctx.broker || undefined,
-    useAgentDocs: ctx.useAgentDocs !== undefined ? ctx.useAgentDocs : undefined,
+    useAgentDocs: ctx.useAgentDocs,
+    extras: ctx.extras || undefined,
   };
 
-  // Sub-step index: 0=orm, 1=database, 2=validation, 3=redis, 4=broker, 5=agentdocs
-  // On back: decrement (go to previous sub-step). On forward: increment.
-  // Only back from step 0 returns '__back__' to the wizard navigator.
-  let step = startStep;
+  while (index >= 0 && index < total) {
+    const step = steps[index];
 
-  while (step >= 0 && step <= 5) {
-    switch (step) {
-      // ---- 0: ORM ----
-      case 0:
-        if (ormChoices.length === 1) {
-          answers.orm = ormChoices[0].value;
-          log.info(`   ORM: ${ormChoices[0].name} (the only option for ${ctx.framework})`);
-          step++;
-        } else {
-          const a = await prompt([{
-            type: 'list', name: 'orm', message: 'Data layer / ORM?',
-            choices: withBack(ormChoices, nav),
-            default: answers.orm || undefined,
-          }]);
-          if (a.orm === '__back__') return '__back__';
-          answers.orm = a.orm;
-          step++;
-        }
-        break;
+    try {
+      const result = await step.run(answers);
 
-      // ---- 1: Database ----
-      case 1:
-        if (answers.orm !== 'none') {
-          const dbChoices = fm.databaseChoices(answers.orm);
-          if (dbChoices.length === 1) {
-            answers.database = dbChoices[0].value;
-            log.info(`   Database: ${dbChoices[0].name} (the only option ${answers.orm} supports)`);
-            step++;
-          } else {
-            const a = await prompt([{
-              type: 'list', name: 'database', message: 'Database?',
-              choices: withBack(dbChoices, nav),
-              default: (answers.database && answers.database !== 'none') ? answers.database : undefined,
-            }]);
-            if (a.database === '__back__') { step--; break; }
-            answers.database = a.database;
-            step++;
-          }
-        } else {
-          answers.database = 'none';
-          step++;
-        }
-        break;
-
-      // ---- 2: Validation ----
-      case 2: {
-        const a = await prompt([{
-          type: 'list', name: 'validation', message: 'Validation & transformation?',
-          choices: withBack(fm.validationChoices(), nav),
-          default: answers.validation || undefined,
-        }]);
-        if (a.validation === '__back__') { step--; break; }
-        answers.validation = a.validation;
-        step++;
-        break;
+      if (result === '__back__') {
+        if (index === 0) return '__back__';
+        index--;
+        continue;
       }
 
-      // ---- 3: Redis ----
-      case 3: {
-        const a = await prompt([{
-          type: 'confirm', name: 'useRedis', message: 'Add Redis for caching?',
-          default: answers.useRedis !== undefined ? Boolean(answers.useRedis) : false,
-        }]);
-        // Confirm has no back — just move forward
-        answers.useRedis = a.useRedis;
-        step++;
-        break;
+      if (result && typeof result === 'object' && !Array.isArray(result)) {
+        Object.assign(answers, result);
       }
 
-      // ---- 4: Broker ----
-      case 4: {
-        const a = await prompt([{
-          type: 'list', name: 'broker', message: 'Message broker?',
-          choices: withBack(fm.brokerChoices(), nav),
-          default: answers.broker || undefined,
-        }]);
-        if (a.broker === '__back__') { step--; break; }
-        answers.broker = a.broker;
-        step++;
-        break;
-      }
-
-      // ---- 5: AGENT.md ----
-      case 5: {
-        const a = await prompt([{
-          type: 'confirm', name: 'useAgentDocs',
-          message: 'Generate AGENT.md files for AI-assisted development?',
-          default: answers.useAgentDocs !== undefined ? answers.useAgentDocs : true,
-        }]);
-        answers.useAgentDocs = a.useAgentDocs;
-        step++;
-        break;
-      }
+      index++;
+    } catch (err) {
+      if (err.name === 'ExitPromptError') throw err;
+      log.fail(`Stack step "${step.label}" failed: ${err.message}`);
+      index++;
     }
   }
 
@@ -193,55 +281,8 @@ async function askCoreStack(fm, ctx, nav, startStep = 0) {
     useRedis: answers.useRedis,
     broker: answers.broker || 'none',
     useAgentDocs: answers.useAgentDocs,
+    extras: answers.extras || [],
   };
-}
-
-async function askStack(ctx, nav) {
-  const tf = ctx._templateConfig;
-  const flavor = tf.stackFeatures;
-  if (!flavor) return {};
-
-  const fm = resolveFeatures(flavor);
-
-  let extras = ctx.extras;
-
-  // Track how many times we backed out of extras.
-  // 0 = first pass (full stack from step 0).
-  // 1 = first extras back → re-enter at agentdocs (step 5).
-  // 2 = second extras back → re-enter at broker (step 4).
-  // 3 = third back → redis (step 3), etc.
-  // 7 = backed past ORM → return '__back__' to wizard.
-  let extrasBackCount = 0;
-
-  while (true) {
-    // Compute start step for askCoreStack based on how many times extras was backed out of.
-    // 0 back → step 0 (full pass). 1 back → step 5. 2 back → step 4. etc.
-    const startStep = extrasBackCount === 0 ? 0 : Math.max(0, 5 - (extrasBackCount - 1));
-
-    const core = await askCoreStack(fm, ctx, nav, startStep);
-    if (core === '__back__') return '__back__';
-
-    if (fm.extraFeatureChoices) {
-      const choices = fm.extraFeatureChoices().map(c => ({
-        ...c,
-        checked: extras ? extras.includes(c.value) : c.checked,
-      }));
-
-      const answer = await prompt([{
-        type: 'checkbox', name: 'extras',
-        message: 'Additional features (space to toggle)?',
-        choices: withBack(choices, nav),
-      }]);
-      if (answer.extras.includes('__back__')) {
-        extrasBackCount++;
-        if (startStep <= 0 && extrasBackCount > 6) return '__back__';
-        continue;
-      }
-      extras = answer.extras;
-    }
-
-    return Object.assign({}, core, { extras: extras || [] });
-  }
 }
 
 async function askModules(ctx, nav) {
@@ -571,8 +612,7 @@ async function stepProject(ctx, nav) {
 
 async function stepStack(ctx, nav) {
   progressHeader(nav.currentIndex + 1, nav.totalSteps, nav.currentStep.label);
-  const result = await askStack(ctx, nav);
-  return result;
+  return runStackWizard(ctx, nav);
 }
 
 async function stepModules(ctx, nav) {

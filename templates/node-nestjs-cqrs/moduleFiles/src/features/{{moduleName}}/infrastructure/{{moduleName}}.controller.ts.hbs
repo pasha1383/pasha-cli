@@ -1,0 +1,82 @@
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+{{#if useSwagger}}
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+{{/if}}
+import { CommandBus } from './bus';
+import { QueryBus } from './bus';
+import { Create{{pascalCase moduleName}}Dto } from '../dto/create-{{moduleName}}.dto';
+import { {{pascalCase moduleName}}ResponseDto } from '../dto/{{moduleName}}.response';
+import { Create{{pascalCase moduleName}}Command } from '../commands/create-{{moduleName}}.command';
+import { Update{{pascalCase moduleName}}Command } from '../commands/update-{{moduleName}}.command';
+import { Delete{{pascalCase moduleName}}Command } from '../commands/delete-{{moduleName}}.handler';
+import { Get{{pascalCase moduleName}}Query } from '../queries/get-{{moduleName}}.query';
+import { List{{pascalCase moduleName}}sQuery } from '../queries/list-{{moduleName}}s.query';
+
+{{#if useSwagger}}
+@ApiTags('{{moduleName}}')
+{{/if}}
+@Controller('{{moduleName}}')
+export class {{pascalCase moduleName}}Controller {
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
+
+  @Post()
+{{#if useSwagger}}
+  @ApiOperation({ summary: 'Create a {{moduleName}}' })
+  @ApiResponse({ status: 201, description: 'Created.' })
+{{/if}}
+  async create(@Body() dto: Create{{pascalCase moduleName}}Dto): Promise<{ id: string }> {
+    const command = new Create{{pascalCase moduleName}}Command(dto.name);
+    const event = await this.commandBus.execute<{ {{camelCase moduleName}}: { id: string } }>(command);
+    return { id: event.{{camelCase moduleName}}.id };
+  }
+
+  @Get()
+{{#if useSwagger}}
+  @ApiOperation({ summary: 'List all {{moduleName}} records' })
+  @ApiResponse({ status: 200, type: [{{pascalCase moduleName}}ResponseDto] })
+{{/if}}
+  findAll(@Query('limit') limit?: string, @Query('offset') offset?: string): Promise<{{pascalCase moduleName}}ResponseDto[]> {
+    const query = new List{{pascalCase moduleName}}sQuery(
+      limit ? parseInt(limit, 10) : undefined,
+      offset ? parseInt(offset, 10) : undefined,
+    );
+    return this.queryBus.execute<{{pascalCase moduleName}}ResponseDto[]>(query);
+  }
+
+  @Get(':id')
+{{#if useSwagger}}
+  @ApiOperation({ summary: 'Get a {{moduleName}} by id' })
+  @ApiResponse({ status: 200, type: {{pascalCase moduleName}}ResponseDto })
+{{/if}}
+  findOne(@Param('id') id: string): Promise<{{pascalCase moduleName}}ResponseDto> {
+    const query = new Get{{pascalCase moduleName}}Query(id);
+    return this.queryBus.execute<{{pascalCase moduleName}}ResponseDto>(query);
+  }
+
+  @Patch(':id')
+{{#if useSwagger}}
+  @ApiOperation({ summary: 'Update a {{moduleName}}' })
+  @ApiResponse({ status: 200, type: {{pascalCase moduleName}}ResponseDto })
+{{/if}}
+  async update(@Param('id') id: string, @Body() dto: Create{{pascalCase moduleName}}Dto): Promise<{{pascalCase moduleName}}ResponseDto> {
+    const command = new Update{{pascalCase moduleName}}Command(id, dto.name);
+    const event = await this.commandBus.execute<{ {{camelCase moduleName}}: { id: string; name: string; createdAt: string; updatedAt: string } }>(command);
+    // Re-query to return a clean response
+    const query = new Get{{pascalCase moduleName}}Query(id);
+    return this.queryBus.execute<{{pascalCase moduleName}}ResponseDto>(query);
+  }
+
+  @Delete(':id')
+{{#if useSwagger}}
+  @ApiOperation({ summary: 'Delete a {{moduleName}}' })
+  @ApiResponse({ status: 200, description: 'Deleted.' })
+{{/if}}
+  async remove(@Param('id') id: string): Promise<{ id: string }> {
+    const command = new Delete{{pascalCase moduleName}}Command(id);
+    const event = await this.commandBus.execute<{ id: string }>(command);
+    return { id: event.id };
+  }
+}

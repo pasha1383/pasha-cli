@@ -1,0 +1,24 @@
+import { Inject, Injectable } from '@nestjs/common';
+import { randomUUID } from 'crypto';
+import { {{pascalCase moduleName}} } from '../domain/{{moduleName}}.entity';
+import {
+  I{{pascalCase moduleName}}Repository,
+  {{constantCase moduleName}}_REPOSITORY,
+} from '../domain/{{moduleName}}.repository.interface';
+import { {{pascalCase moduleName}}CreatedEvent } from '../domain/{{moduleName}}.events';
+import { Create{{pascalCase moduleName}}Command } from './create-{{moduleName}}.command';
+import { ICommandHandler } from '../infrastructure/bus';
+
+@Injectable()
+export class Create{{pascalCase moduleName}}Handler implements ICommandHandler<Create{{pascalCase moduleName}}Command, {{pascalCase moduleName}}CreatedEvent> {
+  constructor(
+    @Inject({{constantCase moduleName}}_REPOSITORY)
+    private readonly repo: I{{pascalCase moduleName}}Repository,
+  ) {}
+
+  async execute(command: Create{{pascalCase moduleName}}Command): Promise<{{pascalCase moduleName}}CreatedEvent> {
+    const entity = new {{pascalCase moduleName}}(randomUUID(), command.name);
+    await this.repo.save(entity);
+    return new {{pascalCase moduleName}}CreatedEvent(entity);
+  }
+}

@@ -1,0 +1,28 @@
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  I{{pascalCase moduleName}}Repository,
+  {{constantCase moduleName}}_REPOSITORY,
+} from '../domain/{{moduleName}}.repository.interface';
+import { {{pascalCase moduleName}}DeletedEvent } from '../domain/{{moduleName}}.events';
+import { ICommandHandler } from '../infrastructure/bus';
+
+export class Delete{{pascalCase moduleName}}Command {
+  constructor(public readonly id: string) {}
+}
+
+@Injectable()
+export class Delete{{pascalCase moduleName}}Handler implements ICommandHandler<Delete{{pascalCase moduleName}}Command, {{pascalCase moduleName}}DeletedEvent> {
+  constructor(
+    @Inject({{constantCase moduleName}}_REPOSITORY)
+    private readonly repo: I{{pascalCase moduleName}}Repository,
+  ) {}
+
+  async execute(command: Delete{{pascalCase moduleName}}Command): Promise<{{pascalCase moduleName}}DeletedEvent> {
+    const entity = await this.repo.findById(command.id);
+    if (!entity) {
+      throw new NotFoundException(`{{pascalCase moduleName}} with id ${command.id} not found`);
+    }
+    await this.repo.delete(command.id);
+    return new {{pascalCase moduleName}}DeletedEvent(command.id);
+  }
+}

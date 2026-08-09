@@ -1,0 +1,88 @@
+import { Module, OnModuleInit } from '@nestjs/common';
+{{#if ormTypeorm}}
+import { TypeOrmModule } from '@nestjs/typeorm';
+{{/if}}
+{{#if ormMongoose}}
+import { MongooseModule } from '@nestjs/mongoose';
+{{/if}}
+import { {{pascalCase moduleName}}Controller } from './infrastructure/{{moduleName}}.controller';
+import { CommandBus, QueryBus } from './infrastructure/bus';
+import { Create{{pascalCase moduleName}}Handler } from './commands/create-{{moduleName}}.handler';
+import { Update{{pascalCase moduleName}}Handler } from './commands/update-{{moduleName}}.handler';
+import { Delete{{pascalCase moduleName}}Handler } from './commands/delete-{{moduleName}}.handler';
+import { Get{{pascalCase moduleName}}Handler } from './queries/get-{{moduleName}}.handler';
+import { List{{pascalCase moduleName}}sHandler } from './queries/list-{{moduleName}}s.handler';
+import { {{constantCase moduleName}}_REPOSITORY } from './domain/{{moduleName}}.repository.interface';
+import { Create{{pascalCase moduleName}}Command } from './commands/create-{{moduleName}}.command';
+import { Update{{pascalCase moduleName}}Command } from './commands/update-{{moduleName}}.command';
+import { Delete{{pascalCase moduleName}}Command } from './commands/delete-{{moduleName}}.handler';
+import { Get{{pascalCase moduleName}}Query } from './queries/get-{{moduleName}}.query';
+import { List{{pascalCase moduleName}}sQuery } from './queries/list-{{moduleName}}s.query';
+{{#if ormNone}}
+import { {{pascalCase moduleName}}InMemoryRepository } from './infrastructure/{{moduleName}}.repository';
+{{/if}}
+{{#if ormPrisma}}
+import { {{pascalCase moduleName}}PrismaRepository } from './infrastructure/{{moduleName}}.prisma.repository';
+{{/if}}
+{{#if ormTypeorm}}
+import { {{pascalCase moduleName}}OrmEntity } from './infrastructure/{{moduleName}}.orm-entity';
+import { {{pascalCase moduleName}}TypeormRepository } from './infrastructure/{{moduleName}}.typeorm.repository';
+{{/if}}
+{{#if ormMongoose}}
+import { {{pascalCase moduleName}}Model, {{pascalCase moduleName}}Schema } from './infrastructure/{{moduleName}}.schema';
+import { {{pascalCase moduleName}}MongooseRepository } from './infrastructure/{{moduleName}}.mongoose.repository';
+{{/if}}
+
+@Module({
+{{#if ormTypeorm}}
+  imports: [TypeOrmModule.forFeature([{{pascalCase moduleName}}OrmEntity])],
+{{/if}}
+{{#if ormMongoose}}
+  imports: [MongooseModule.forFeature([{ name: {{pascalCase moduleName}}Model.name, schema: {{pascalCase moduleName}}Schema }])],
+{{/if}}
+  controllers: [{{pascalCase moduleName}}Controller],
+  providers: [
+    CommandBus,
+    QueryBus,
+    Create{{pascalCase moduleName}}Handler,
+    Update{{pascalCase moduleName}}Handler,
+    Delete{{pascalCase moduleName}}Handler,
+    Get{{pascalCase moduleName}}Handler,
+    List{{pascalCase moduleName}}sHandler,
+    {
+      provide: {{constantCase moduleName}}_REPOSITORY,
+{{#if ormNone}}
+      useClass: {{pascalCase moduleName}}InMemoryRepository,
+{{/if}}
+{{#if ormPrisma}}
+      useClass: {{pascalCase moduleName}}PrismaRepository,
+{{/if}}
+{{#if ormTypeorm}}
+      useClass: {{pascalCase moduleName}}TypeormRepository,
+{{/if}}
+{{#if ormMongoose}}
+      useClass: {{pascalCase moduleName}}MongooseRepository,
+{{/if}}
+    },
+  ],
+  exports: [{{constantCase moduleName}}_REPOSITORY],
+})
+export class {{pascalCase moduleName}}Module implements OnModuleInit {
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+    private readonly createHandler: Create{{pascalCase moduleName}}Handler,
+    private readonly updateHandler: Update{{pascalCase moduleName}}Handler,
+    private readonly deleteHandler: Delete{{pascalCase moduleName}}Handler,
+    private readonly getHandler: Get{{pascalCase moduleName}}Handler,
+    private readonly listHandler: List{{pascalCase moduleName}}sHandler,
+  ) {}
+
+  onModuleInit(): void {
+    this.commandBus.register(Create{{pascalCase moduleName}}Command, this.createHandler);
+    this.commandBus.register(Update{{pascalCase moduleName}}Command, this.updateHandler);
+    this.commandBus.register(Delete{{pascalCase moduleName}}Command, this.deleteHandler);
+    this.queryBus.register(Get{{pascalCase moduleName}}Query, this.getHandler);
+    this.queryBus.register(List{{pascalCase moduleName}}sQuery, this.listHandler);
+  }
+}

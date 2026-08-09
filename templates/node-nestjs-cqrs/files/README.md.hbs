@@ -1,0 +1,66 @@
+# {{projectName}}
+
+{{description}}
+
+Built with pasha CLI — **CQRS** architecture on NestJS.
+
+## Stack
+
+- **Data layer:** {{#if ormNone}}in-memory repositories{{else}}{{orm}}{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+- **Validation:** {{#if hasValidation}}{{validation}}{{else}}none{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis
+{{/if}}
+{{#if hasBroker}}
+- **Messaging:** {{broker}}
+{{/if}}
+
+## Run
+
+```bash
+cp .env.example .env
+{{#if useDocker}}
+npm run infra:up          # start docker services
+{{/if}}
+npm install
+{{#if ormPrisma}}
+npm run prisma:migrate    # create the database schema
+{{/if}}
+npm run start:dev
+```
+
+## Modules
+
+{{#each modules}}
+- `{{this}}` → `http://localhost:3000/{{this}}`
+{{/each}}
+
+## Structure (CQRS)
+
+Each module splits reads and writes into separate paths:
+
+```
+src/
+├── features/<module>/           ← per-feature vertical slice
+│   ├── commands/                 ← write path (mutate state)
+│   ├── queries/                  ← read path (query state)
+│   ├── domain/                   ← entity, repository port, events
+│   ├── infrastructure/           ← controller, repository impl, bus
+│   └── dto/                      ← HTTP request/response shapes
+```
+
+**Write path:** Controller → Command → CommandBus → Handler → Repository
+**Read path:**  Controller → Query → QueryBus → Handler → Repository
+
+The controller never touches the repository directly — everything flows through the bus.
+Each handler is a single-responsibility class: one command = one handler, one query = one handler.
+
+Repository implementations are in-memory by default. To connect a real database, write a new
+implementation of the repository interface and swap it in the module's DI wiring — since
+handlers only depend on the interface, nothing else needs to change.
+
+---
+Made with ❤️ by {{author}}

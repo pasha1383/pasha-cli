@@ -1,0 +1,34 @@
+import { Injectable } from '@nestjs/common';
+import { {{pascalCase moduleName}} } from '../../domain/{{moduleName}}.entity';
+import { I{{pascalCase moduleName}}Repository } from '../../domain/{{moduleName}}.repository.interface';
+import { PrismaService } from '../../../shared/database/prisma.service';
+
+@Injectable()
+export class {{pascalCase moduleName}}PrismaRepository implements I{{pascalCase moduleName}}Repository {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async save(entity: {{pascalCase moduleName}}): Promise<void> {
+    await this.prisma.{{camelCase moduleName}}.upsert({
+      where: { id: entity.id },
+      create: { id: entity.id, name: entity.name },
+      update: { name: entity.name },
+    });
+  }
+
+  async findById(id: string): Promise<{{pascalCase moduleName}} | null> {
+    const row = await this.prisma.{{camelCase moduleName}}.findUnique({ where: { id } });
+    if (!row) return null;
+    return new {{pascalCase moduleName}}(row.id, row.name, row.createdAt, row.updatedAt);
+  }
+
+  async findAll(): Promise<{{pascalCase moduleName}}[]> {
+    const rows = await this.prisma.{{camelCase moduleName}}.findMany();
+    return rows.map((r: { id: string; name: string; createdAt: Date; updatedAt: Date }) =>
+      new {{pascalCase moduleName}}(r.id, r.name, r.createdAt, r.updatedAt),
+    );
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.{{camelCase moduleName}}.delete({ where: { id } });
+  }
+}

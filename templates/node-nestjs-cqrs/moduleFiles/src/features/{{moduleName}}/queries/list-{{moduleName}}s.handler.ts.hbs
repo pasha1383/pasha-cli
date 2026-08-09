@@ -1,0 +1,30 @@
+import { Inject, Injectable } from '@nestjs/common';
+import {
+  I{{pascalCase moduleName}}Repository,
+  {{constantCase moduleName}}_REPOSITORY,
+} from '../domain/{{moduleName}}.repository.interface';
+import { List{{pascalCase moduleName}}sQuery } from './list-{{moduleName}}s.query';
+import { {{pascalCase moduleName}}ResponseDto } from '../dto/{{moduleName}}.response';
+import { IQueryHandler } from '../infrastructure/bus';
+
+@Injectable()
+export class List{{pascalCase moduleName}}sHandler implements IQueryHandler<List{{pascalCase moduleName}}sQuery, {{pascalCase moduleName}}ResponseDto[]> {
+  constructor(
+    @Inject({{constantCase moduleName}}_REPOSITORY)
+    private readonly repo: I{{pascalCase moduleName}}Repository,
+  ) {}
+
+  async execute(query: List{{pascalCase moduleName}}sQuery): Promise<{{pascalCase moduleName}}ResponseDto[]> {
+    const entities = await this.repo.findAll();
+    const results = query.limit != null
+      ? entities.slice(query.offset ?? 0, (query.offset ?? 0) + query.limit)
+      : entities;
+
+    return results.map((entity) => ({
+      id: entity.id,
+      name: entity.name,
+      createdAt: entity.createdAt.toISOString(),
+      updatedAt: entity.updatedAt.toISOString(),
+    }));
+  }
+}

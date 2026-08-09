@@ -299,6 +299,33 @@ async function renderProject(ctx) {
   return outDir;
 }
 
+async function writePashaJson(outDir, fullCtx) {
+  try {
+    await fs.writeJson(path.join(outDir, '.pasha.json'), {
+      version: require('../../../package.json').version,
+      template: fullCtx._templateName,
+      stackFeatures: fullCtx._stackFlavor,
+      language: fullCtx.language,
+      framework: fullCtx.framework,
+      architecture: fullCtx.architecture,
+      context: {
+        projectName: fullCtx.projectName,
+        author: fullCtx.author,
+        github: fullCtx.github,
+        description: fullCtx.description,
+        orm: fullCtx.orm,
+        database: fullCtx.database,
+        validation: fullCtx.validation,
+        useRedis: Boolean(fullCtx.useRedis),
+        broker: fullCtx.broker || 'none',
+        useAgentDocs: fullCtx.useAgentDocs !== false,
+        extras: fullCtx.extras || [],
+        modules: fullCtx.modules || [],
+      },
+    }, { spaces: 2 });
+  } catch (e) { /* non-critical */ }
+}
+
 async function renderProjectDry(ctx) {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'pasha-dry-'));
   const tc = ctx._templateConfig;
@@ -559,6 +586,7 @@ async function runMicroservices(ctx) {
     const outDir = await renderProject(svc);
     done(outDir, svc);
     await history.saveSession(svc);
+    await writePashaJson(outDir, svc);
   }
 
   console.log('');
@@ -654,6 +682,7 @@ async function createNonInteractive(opts) {
     const outDir = await renderProject(fullCtx);
     await history.saveSession(fullCtx);
     done(outDir, fullCtx);
+    await writePashaJson(outDir, fullCtx);
   }
 }
 
@@ -784,6 +813,7 @@ async function createInteractive(opts) {
     const outDir = await renderProject(ctx);
     await history.saveSession(ctx);
     done(outDir, ctx);
+    await writePashaJson(outDir, ctx);
   }
 }
 

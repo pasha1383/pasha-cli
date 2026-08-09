@@ -53,10 +53,22 @@ program
   });
 
 program
-  .command('add <what>')
+  .command('add <what> [name]')
   .description('Add a module or feature to an existing project')
-  .action(async (what) => {
-    log.info(`'pasha add' will be available in a future release.`);
+  .action(async (what, name) => {
+    try {
+      if (what === 'module') {
+        const { add } = require('./commands/add');
+        await add({ args: name ? [name] : [] });
+      } else if (what === 'feature') {
+        log.info("'pasha add feature' will be available in a future release.");
+      } else {
+        log.fail(`Unknown add target: "${what}". Use "module" or "feature".`);
+      }
+    } catch (err) {
+      log.fail(err.message);
+      process.exit(1);
+    }
   });
 
 program

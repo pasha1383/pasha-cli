@@ -1,0 +1,48 @@
+import { Injectable } from '@nestjs/common';
+
+export interface StoredEvent {
+  id: string;
+  aggregateId: string;
+  aggregateType: string;
+  eventType: string;
+  payload: object;
+  version: number;
+  createdAt: Date;
+}
+
+@Injectable()
+export class EventStore {
+  private readonly events: StoredEvent[] = [];
+
+  async append(aggregateId: string, aggregateType: string, events: object[], expectedVersion: number): Promise<void> {
+    const currentVersion = this.getCurrentVersion(aggregateId);
+    if (expectedVersion !== -1 && currentVersion !== expectedVersion) {
+      throw new Error(
+        `Concurrency conflict: expected version ${expectedVersion}, got ${currentVersion}`,
+      );
+    }
+
+    let nextVersion = currentVersion + 1;
+    for (const event of events) {
+      this.events.push({
+        id: `${aggregateId}-${nextVersion}`,
+        aggregateId,
+        aggregateType,
+        eventType: event.constructor.name,
+        payload: event,
+        version: nextVersion,
+        createdAt: new Date(),
+      });
+      nextVersion++;
+    }
+  }
+
+  async getEvents(aggregateId: string): Promise<StoredEvent[]> {
+    return this.events.filter((e) => e.aggregateId === aggregateId);
+  }
+
+  private getCurrentVersion(aggregateId: string): number {
+    const events = this.events.filter((e) => e.aggregateId === aggregateId);
+    return events.length === 0 ? -1 : events[events.length - 1].version;
+  }
+}

@@ -1,0 +1,18 @@
+import { Injectable } from '@nestjs/common';
+import { Create{{pascalCase moduleName}}Command } from './create-{{moduleName}}.command';
+import { {{pascalCase moduleName}}Aggregate } from '../aggregates/{{moduleName}}.aggregate';
+import { EventStore } from '../event-store/event-store';
+
+@Injectable()
+export class Create{{pascalCase moduleName}}Handler {
+  constructor(private readonly eventStore: EventStore) {}
+
+  async execute(command: Create{{pascalCase moduleName}}Command): Promise<string> {
+    const aggregate = {{pascalCase moduleName}}Aggregate.create(command.name);
+    const events = aggregate.getUncommittedEvents();
+
+    await this.eventStore.append(aggregate.id, '{{pascalCase moduleName}}', events, -1);
+
+    return aggregate.id;
+  }
+}

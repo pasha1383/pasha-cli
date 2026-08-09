@@ -1,0 +1,67 @@
+# {{projectName}}
+
+{{description}}
+
+Built with pasha CLI — **Event-Driven / Event Sourcing** architecture on NestJS.
+
+## Stack
+
+- **Data layer:** event store (in-memory) + projection read models
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+- **Validation:** {{#if hasValidation}}{{validation}}{{else}}none{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis
+{{/if}}
+{{#if hasBroker}}
+- **Messaging:** {{broker}}
+{{/if}}
+
+## Run
+
+```bash
+cp .env.example .env
+{{#if useDocker}}
+npm run infra:up          # start docker services
+{{/if}}
+npm install
+{{#if ormPrisma}}
+npm run prisma:migrate    # create the database schema
+{{/if}}
+npm run start:dev
+```
+
+## Modules
+
+{{#each modules}}
+- `{{this}}` → `http://localhost:3000/{{this}}`
+{{/each}}
+
+## Structure (Event-Driven / Event Sourcing)
+
+```
+src/
+├── features/<module>/           ← per-feature slice
+│   ├── commands/                 ← command + handler (write path)
+│   ├── events/                   ← domain event classes
+│   ├── aggregates/               ← event-sourced aggregate
+│   ├── projections/              ← read model builder
+│   ├── event-store/              ← append-only event log
+│   ├── dto/                      ← HTTP request shapes
+│   └── infrastructure/           ← controller, module, outbox
+```
+
+**Write path:** Controller → Command → Handler → Aggregate → Event Store → Outbox → Broker
+**Read path:**  Controller → Projection (denormalized read model)
+
+Domain events are the single source of truth. Every state change is an immutable event appended
+to the event store. Aggregates rebuild their state by replaying events. Projections subscribe
+to events and maintain fast, denormalized read models.
+
+The outbox pattern guarantees that events are reliably published to Kafka/RabbitMQ even if
+the broker is temporarily unavailable — events are written to the outbox table atomically
+with the event store and published asynchronously.
+
+---
+Made with ❤️ by {{author}}

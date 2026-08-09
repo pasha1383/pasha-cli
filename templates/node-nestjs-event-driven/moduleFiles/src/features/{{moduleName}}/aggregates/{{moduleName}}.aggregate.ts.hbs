@@ -1,0 +1,85 @@
+import { randomUUID } from 'crypto';
+import { {{pascalCase moduleName}}CreatedEvent } from '../events/{{moduleName}}-created.event';
+import { {{pascalCase moduleName}}UpdatedEvent } from '../events/{{moduleName}}-updated.event';
+import { {{pascalCase moduleName}}DeletedEvent } from '../events/{{moduleName}}-deleted.event';
+
+type {{pascalCase moduleName}}Event = {{pascalCase moduleName}}CreatedEvent | {{pascalCase moduleName}}UpdatedEvent | {{pascalCase moduleName}}DeletedEvent;
+
+export class {{pascalCase moduleName}}Aggregate {
+  private _id: string;
+  private _name: string;
+  private _createdAt: Date;
+  private _updatedAt: Date;
+  private _deleted: boolean;
+  private _version: number;
+  private _uncommittedEvents: {{pascalCase moduleName}}Event[];
+
+  private constructor(stream: {{pascalCase moduleName}}Event[]) {
+    this._uncommittedEvents = [];
+    this.loadFromHistory(stream);
+  }
+
+  static create(name: string): {{pascalCase moduleName}}Aggregate {
+    const instance = Object.create({{pascalCase moduleName}}Aggregate.prototype);
+    instance._uncommittedEvents = [];
+    instance._version = -1;
+    instance._deleted = false;
+    instance.applyChange(new {{pascalCase moduleName}}CreatedEvent(randomUUID(), name));
+    return instance;
+  }
+
+  static fromHistory(events: {{pascalCase moduleName}}Event[]): {{pascalCase moduleName}}Aggregate {
+    return new {{pascalCase moduleName}}Aggregate(events);
+  }
+
+  get id(): string { return this._id; }
+  get name(): string { return this._name; }
+  get deleted(): boolean { return this._deleted; }
+  get version(): number { return this._version; }
+
+  updateName(name: string): void {
+    if (this._deleted) throw new Error('Cannot update a deleted {{moduleName}}');
+    this.applyChange(new {{pascalCase moduleName}}UpdatedEvent(this._id, name));
+  }
+
+  delete(): void {
+    if (this._deleted) throw new Error('{{pascalCase moduleName}} already deleted');
+    this.applyChange(new {{pascalCase moduleName}}DeletedEvent(this._id));
+  }
+
+  getUncommittedEvents(): {{pascalCase moduleName}}Event[] {
+    return [...this._uncommittedEvents];
+  }
+
+  markEventsAsCommitted(): void {
+    this._uncommittedEvents = [];
+  }
+
+  private loadFromHistory(events: {{pascalCase moduleName}}Event[]): void {
+    for (const event of events) {
+      this.apply(event);
+      this._version++;
+    }
+  }
+
+  private applyChange(event: {{pascalCase moduleName}}Event): void {
+    this.apply(event);
+    this._uncommittedEvents.push(event);
+    this._version++;
+  }
+
+  private apply(event: {{pascalCase moduleName}}Event): void {
+    if (event instanceof {{pascalCase moduleName}}CreatedEvent) {
+      this._id = event.aggregateId;
+      this._name = event.name;
+      this._createdAt = event.createdAt;
+      this._updatedAt = event.createdAt;
+      this._deleted = false;
+    } else if (event instanceof {{pascalCase moduleName}}UpdatedEvent) {
+      this._name = event.name;
+      this._updatedAt = event.updatedAt;
+    } else if (event instanceof {{pascalCase moduleName}}DeletedEvent) {
+      this._deleted = true;
+    }
+  }
+}

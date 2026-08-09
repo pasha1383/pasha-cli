@@ -1,0 +1,30 @@
+{{#if useClassValidator}}
+import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
+{{#if useSwagger}}
+import { ApiProperty } from '@nestjs/swagger';
+{{/if}}
+
+export class Create{{pascalCase moduleName}}Dto {
+{{#if useSwagger}}
+  @ApiProperty({ example: 'sample-{{moduleName}}', maxLength: 255 })
+{{/if}}
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(255)
+  name!: string;
+}
+{{else}}
+{{#if useZod}}
+import { z } from 'zod';
+
+export const create{{pascalCase moduleName}}Schema = z.object({
+  name: z.string().min(1).max(255),
+});
+
+export type Create{{pascalCase moduleName}}Dto = z.infer<typeof create{{pascalCase moduleName}}Schema>;
+{{else}}
+export class Create{{pascalCase moduleName}}Dto {
+  name!: string;
+}
+{{/if}}
+{{/if}}

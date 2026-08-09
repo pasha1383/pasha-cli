@@ -1,0 +1,28 @@
+# {{projectName}}
+
+Built with pasha CLI — **Event-Driven / Event Sourcing** on NestJS.
+
+## Core principles
+
+- **Domain events are the source of truth** — every state change is recorded as an immutable event
+- **CQRS read/write split** — commands produce events, queries read from projections
+- **Event Store** — append-only log, stores all events keyed by aggregate ID
+- **Aggregates** — rebuild state by replaying events, emit uncommitted events on mutation
+- **Projections** — build denormalized read models from events (in-memory, swappable to Redis/DB)
+- **Outbox pattern** — events are written to store + outbox in same transaction (where DB-backed), then published to the message broker asynchronously
+
+## Module structure
+
+```
+src/features/<module>/
+├── commands/         ← command + handler (validate → load aggregate → mutate → append events)
+├── events/           ← domain event classes (data classes)
+├── aggregates/       ← event-sourced aggregate (rebuilds from event stream)
+├── projections/      ← builds read model from events
+├── event-store/      ← append/get events (immutable log)
+├── dto/              ← HTTP request shapes
+└── infrastructure/
+    ├── <module>.controller.ts
+    ├── <module>.module.ts
+    └── outbox/       ← publishes events to broker
+```

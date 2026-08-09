@@ -1,0 +1,30 @@
+import { Injectable } from '@nestjs/common';
+import { StoredEvent } from '../../event-store/event-store';
+
+@Injectable()
+export class OutboxService {
+  private readonly outbox: StoredEvent[] = [];
+
+  async enqueue(event: StoredEvent): Promise<void> {
+    this.outbox.push(event);
+  }
+
+  async getPending(): Promise<StoredEvent[]> {
+    const pending = [...this.outbox];
+    this.outbox.length = 0;
+    return pending;
+  }
+
+  // Call this from a periodic scheduler or cron job
+  async publishPending(): Promise<void> {
+    const pending = await this.getPending();
+    for (const event of pending) {
+      // Publish to Kafka or RabbitMQ based on configured broker
+      {{#if hasBroker}}
+      // this.broker.publish(event.eventType, event.payload);
+      {{else}}
+      console.log(`[Outbox] Publishing event: ${event.eventType} for ${event.aggregateType}#${event.aggregateId}`);
+      {{/if}}
+    }
+  }
+}

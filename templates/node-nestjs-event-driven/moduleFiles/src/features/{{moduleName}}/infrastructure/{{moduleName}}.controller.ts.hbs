@@ -1,0 +1,95 @@
+import { Body, Controller, Delete, Get, Param, Patch, Post, NotFoundException } from '@nestjs/common';
+{{#if useSwagger}}
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+{{/if}}
+import { Create{{pascalCase moduleName}}Dto } from '../dto/create-{{moduleName}}.dto';
+import { Create{{pascalCase moduleName}}Command } from '../commands/create-{{moduleName}}.command';
+import { Create{{pascalCase moduleName}}Handler } from '../commands/create-{{moduleName}}.command-handler';
+import { {{pascalCase moduleName}}Projection } from '../projections/{{moduleName}}.projection';
+import { {{pascalCase moduleName}}Aggregate } from '../aggregates/{{moduleName}}.aggregate';
+import { EventStore } from '../event-store/event-store';
+
+{{#if useSwagger}}
+@ApiTags('{{moduleName}}')
+{{/if}}
+@Controller('{{moduleName}}')
+export class {{pascalCase moduleName}}Controller {
+  constructor(
+    private readonly createHandler: Create{{pascalCase moduleName}}Handler,
+    private readonly projection: {{pascalCase moduleName}}Projection,
+    private readonly eventStore: EventStore,
+  ) {}
+
+  @Post()
+{{#if useSwagger}}
+  @ApiOperation({ summary: 'Create a {{moduleName}}' })
+  @ApiResponse({ status: 201, description: 'Created.' })
+{{/if}}
+  async create(@Body() dto: Create{{pascalCase moduleName}}Dto): Promise<{ id: string }> {
+    const command = new Create{{pascalCase moduleName}}Command(dto.name);
+    const id = await this.createHandler.execute(command);
+    return { id };
+  }
+
+  @Get()
+{{#if useSwagger}}
+  @ApiOperation({ summary: 'List all {{moduleName}} records' })
+{{/if}}
+  findAll() {
+    return this.projection.findAll();
+  }
+
+  @Get(':id')
+{{#if useSwagger}}
+  @ApiOperation({ summary: 'Get a {{moduleName}} by id' })
+{{/if}}
+  findOne(@Param('id') id: string) {
+    const found = this.projection.findById(id);
+    if (!found) {
+      throw new NotFoundException(`{{pascalCase moduleName}} with id ${id} not found`);
+    }
+    return found;
+  }
+
+  @Patch(':id')
+{{#if useSwagger}}
+  @ApiOperation({ summary: 'Update a {{moduleName}}' })
+{{/if}}
+  async update(@Param('id') id: string, @Body() dto: Create{{pascalCase moduleName}}Dto) {
+    const events = await this.eventStore.getEvents(id);
+    if (events.length === 0) {
+      throw new NotFoundException(`{{pascalCase moduleName}} with id ${id} not found`);
+    }
+
+    const aggregate = {{pascalCase moduleName}}Aggregate.fromHistory(
+      events.map((e) => e.payload) as any,
+    );
+    aggregate.updateName(dto.name);
+
+    const newEvents = aggregate.getUncommittedEvents();
+    await this.eventStore.append(id, '{{pascalCase moduleName}}', newEvents, aggregate.version);
+
+    return this.projection.findById(id);
+  }
+
+  @Delete(':id')
+{{#if useSwagger}}
+  @ApiOperation({ summary: 'Delete a {{moduleName}}' })
+{{/if}}
+  async remove(@Param('id') id: string): Promise<{ id: string }> {
+    const events = await this.eventStore.getEvents(id);
+    if (events.length === 0) {
+      throw new NotFoundException(`{{pascalCase moduleName}} with id ${id} not found`);
+    }
+
+    const aggregate = {{pascalCase moduleName}}Aggregate.fromHistory(
+      events.map((e) => e.payload) as any,
+    );
+    aggregate.delete();
+
+    const newEvents = aggregate.getUncommittedEvents();
+    await this.eventStore.append(id, '{{pascalCase moduleName}}', newEvents, aggregate.version);
+
+    return { id };
+  }
+}

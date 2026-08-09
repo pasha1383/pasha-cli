@@ -1,10 +1,3 @@
-{{#if useExpressValidator}}
-import { body } from 'express-validator';
-
-export const create{{pascalCase moduleName}}Validation = [
-  body('name').isString().trim().notEmpty().isLength({ max: 255 }),
-];
-{{/if}}
 {{#if useZod}}
 import { z } from 'zod';
 

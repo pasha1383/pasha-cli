@@ -1,0 +1,73 @@
+# {{projectName}}
+
+{{description}}
+
+Built with pasha CLI — **Modular Monolith** architecture on Express.
+
+## Stack
+
+- **Data layer:** {{#if ormNone}}in-memory repositories{{else}}{{orm}}{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+- **Validation:** {{#if hasValidation}}{{validation}}{{else}}none{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis
+{{/if}}
+{{#if hasBroker}}
+- **Messaging:** {{broker}}
+{{/if}}
+
+## Run
+
+```bash
+cp .env.example .env
+{{#if useDocker}}
+npm run infra:up          # start docker services
+{{/if}}
+npm install
+{{#if ormPrisma}}
+npm run prisma:migrate    # create the database schema
+{{/if}}
+npm run start:dev
+```
+
+## Modules
+
+{{#each modules}}
+- `{{this}}` → `http://localhost:3000/{{this}}`
+{{/each}}
+
+## Structure
+
+```
+src/
+├── main.ts                  ← starts the server (and ORM connection, if any)
+├── app.ts                   ← builds the Express app; separate from main.ts so tests can import it directly
+├── config/env.ts             ← the only file that reads process.env
+├── errors/app-error.ts       ← AppError, NotFoundError, ValidationError
+├── middlewares/              ← error handling, validation glue
+├── shared/                   ← shared kernel: database clients, cache, auth, health checks
+└── modules/<module>/
+    ├── index.ts              ← **public API barrel** — exports ONLY the service class
+    ├── <module>.entity.ts    ← the model{{#if ormTypeorm}} (also the TypeORM persistence entity){{/if}}
+    ├── <module>.repository.ts ← data access (branched by ORM)
+    ├── <module>.service.ts   ← business logic
+    ├── <module>.controller.ts ← Express req/res handlers
+    ├── <module>.routes.ts    ← wires repository → service → controller → router (manual, no DI container)
+    ├── dto/
+    │   └── create-<module>.dto.ts ← request body validation
+    └── <module>.service.spec.ts   ← unit tests for the service
+```
+
+### Module rules
+
+- **`index.ts` is the public API.** It exports only the service class. Nothing else.
+- **Modules only import from other modules' `index.ts`**. No internal cross-imports.
+- **`shared/` is the shared kernel.** Common infra used by more than one module.
+- **`routes.ts` is the composition root.** Manual wiring, no DI.
+
+Call direction inside a module: `routes` wires everything → `controller` → `service` → `repository`. Cross-module: `service A` → `index.ts of module B` → `service B`.
+
+---
+Made with ❤️ by {{author}}

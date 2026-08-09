@@ -1,0 +1,67 @@
+import express, { Express } from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import { errorHandler, notFoundHandler } from './middlewares/error-handler.middleware';
+{{#if useRateLimit}}
+import rateLimit from 'express-rate-limit';
+import { env } from './config/env';
+{{/if}}
+{{#if useSwagger}}
+import { setupSwagger } from './config/swagger';
+{{/if}}
+{{#if useAuth}}
+import { authRouter } from './shared/auth/auth.middleware';
+{{/if}}
+{{#if useHealthCheck}}
+import { healthRouter } from './shared/health/health.routes';
+{{/if}}
+{{#each modules}}
+import { {{camelCase this}}Router } from './modules/{{this}}/{{this}}.routes';
+{{/each}}
+
+/**
+ * Builds the Express app without starting the server — kept separate from
+ * main.ts so tests can import it and drive requests with supertest without
+ * binding a real port.
+ */
+export function buildApp(): Express {
+  const app = express();
+
+  app.use(helmet());
+  app.use(cors());
+  app.use(express.json());
+  app.use(morgan('dev'));
+
+{{#if useRateLimit}}
+  app.use(
+    rateLimit({
+      windowMs: env.rateLimitWindowMs,
+      max: env.rateLimitMax,
+      standardHeaders: true,
+      legacyHeaders: false,
+    }),
+  );
+{{/if}}
+
+{{#if useHealthCheck}}
+  app.use(healthRouter);
+{{/if}}
+
+{{#if useAuth}}
+  app.use(authRouter);
+{{/if}}
+
+{{#each modules}}
+  app.use('/{{this}}', {{camelCase this}}Router);
+{{/each}}
+
+{{#if useSwagger}}
+  setupSwagger(app);
+{{/if}}
+
+  app.use(notFoundHandler);
+  app.use(errorHandler);
+
+  return app;
+}

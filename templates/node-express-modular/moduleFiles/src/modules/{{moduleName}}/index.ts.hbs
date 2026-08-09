@@ -1,0 +1,12 @@
+export { {{pascalCase moduleName}}Service } from './{{moduleName}}.service';
+
+/**
+ * Public API of the {{moduleName}} module.
+ *
+ * Other modules must import {{pascalCase moduleName}}Service ONLY from this barrel file:
+ *
+ *   import { {{pascalCase moduleName}}Service } from '../{{moduleName}}/index';
+ *
+ * Never import from './{{moduleName}}.service.ts', './{{moduleName}}.controller.ts',
+ * or any other internal path — those are implementation details.
+ */

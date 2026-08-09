@@ -1,0 +1,40 @@
+import 'reflect-metadata';
+import { DataSource } from 'typeorm';
+import { env } from '../../config/env';
+{{#each modules}}
+import { {{pascalCase this}} } from '../../modules/{{this}}/{{this}}.entity';
+{{/each}}
+
+export const AppDataSource = new DataSource({
+{{#if dbPostgres}}
+  type: 'postgres',
+  host: process.env.DB_HOST ?? 'localhost',
+  port: Number(process.env.DB_PORT ?? {{dbPort}}),
+  username: process.env.DB_USER ?? 'postgres',
+  password: process.env.DB_PASSWORD ?? 'postgres',
+  database: process.env.DB_NAME ?? '{{snakeCase projectName}}',
+{{/if}}
+{{#if dbMysql}}
+  type: 'mysql',
+  host: process.env.DB_HOST ?? 'localhost',
+  port: Number(process.env.DB_PORT ?? {{dbPort}}),
+  username: process.env.DB_USER ?? 'root',
+  password: process.env.DB_PASSWORD ?? 'root',
+  database: process.env.DB_NAME ?? '{{snakeCase projectName}}',
+{{/if}}
+{{#if dbSqlite}}
+  type: 'sqlite',
+  database: env.dbFile,
+{{/if}}
+{{#if dbMongo}}
+  type: 'mongodb',
+  url: env.databaseUrl,
+{{/if}}
+  entities: [
+{{#each modules}}
+    {{pascalCase this}},
+{{/each}}
+  ],
+  // Never enable this in production — use migrations instead.
+  synchronize: env.nodeEnv !== 'production',
+});

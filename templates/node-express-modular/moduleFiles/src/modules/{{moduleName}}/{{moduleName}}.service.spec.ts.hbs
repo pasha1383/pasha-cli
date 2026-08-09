@@ -1,0 +1,47 @@
+import { {{pascalCase moduleName}}Repository } from './{{moduleName}}.repository';
+import { {{pascalCase moduleName}}Service } from './{{moduleName}}.service';
+import { {{pascalCase moduleName}} } from './{{moduleName}}.entity';
+
+describe('{{pascalCase moduleName}}Service', () => {
+  let repository: {{pascalCase moduleName}}Repository;
+  let service: {{pascalCase moduleName}}Service;
+
+  beforeEach(() => {
+    repository = new {{pascalCase moduleName}}Repository();
+    service = new {{pascalCase moduleName}}Service(repository);
+  });
+
+  describe('create', () => {
+    it('creates a {{moduleName}} with a generated id', async () => {
+      const result = await service.create({ name: 'test-{{moduleName}}' });
+
+      expect(result).toBeInstanceOf({{pascalCase moduleName}});
+      expect(result.id).toBeDefined();
+      expect(result.name).toBe('test-{{moduleName}}');
+    });
+  });
+
+  describe('findAll', () => {
+    it('returns all {{moduleName}}s', async () => {
+      await service.create({ name: 'a' });
+      await service.create({ name: 'b' });
+
+      const results = await service.findAll();
+      expect(results.length).toBe(2);
+    });
+  });
+
+  describe('findOne', () => {
+    it('returns the {{moduleName}} when it exists', async () => {
+      const created = await service.create({ name: 'found' });
+      const found = await service.findOne(created.id);
+
+      expect(found.id).toBe(created.id);
+      expect(found.name).toBe('found');
+    });
+
+    it('throws NotFoundError when the {{moduleName}} does not exist', async () => {
+      await expect(service.findOne('nonexistent')).rejects.toThrow('not found');
+    });
+  });
+});

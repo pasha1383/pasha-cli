@@ -49,6 +49,10 @@
             "hexagonal": {
               "label": "Hexagonal / DDD",
               "template": "node-nestjs-hexagonal"
+            },
+            "modular": {
+              "label": "Modular Monolith",
+              "template": "node-nestjs-modular"
             }
           }
         },
@@ -66,6 +70,10 @@
             "hexagonal": {
               "label": "Hexagonal / DDD",
               "template": "node-express-hexagonal"
+            },
+            "modular": {
+              "label": "Modular Monolith",
+              "template": "node-express-modular"
             }
           }
         },
@@ -75,6 +83,10 @@
             "layered": {
               "label": "Layered (Plugin-per-Module)",
               "template": "node-fastify-layered"
+            },
+            "modular": {
+              "label": "Modular Monolith",
+              "template": "node-fastify-modular"
             },
             "clean": {
               "label": "Clean Architecture",
@@ -106,6 +118,10 @@
             "layered": {
               "label": "Layered (Router-Service-Repository)",
               "template": "python-fastapi-layered"
+            },
+            "modular": {
+              "label": "Modular Monolith",
+              "template": "python-fastapi-modular"
             },
             "hexagonal": {
               "label": "Hexagonal / DDD",

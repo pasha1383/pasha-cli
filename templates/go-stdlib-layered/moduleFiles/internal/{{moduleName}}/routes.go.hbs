@@ -1,0 +1,23 @@
+package {{snakeCase moduleName}}
+
+import (
+	"net/http"
+{{#if ormGorm}}
+	"gorm.io/gorm"
+{{/if}}
+)
+
+func RegisterRoutes(mux *http.ServeMux{{#if ormGorm}}, db *gorm.DB{{/if}}) {
+{{#if ormGorm}}
+	repo := NewRepository(db)
+{{else}}
+	repo := NewRepository()
+{{/if}}
+	svc := NewService(repo)
+	h := NewHandler(svc)
+
+	mux.HandleFunc("GET /api/{{moduleName}}", h.List)
+	mux.HandleFunc("POST /api/{{moduleName}}", h.Create)
+	mux.HandleFunc("GET /api/{{moduleName}}/{id}", h.GetByID)
+	mux.HandleFunc("DELETE /api/{{moduleName}}/{id}", h.Delete)
+}

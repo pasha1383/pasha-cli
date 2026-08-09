@@ -1,0 +1,96 @@
+package main
+
+import (
+	"log"
+	"net/http"
+
+	"{{github}}/{{projectName}}/internal/config"
+	"{{github}}/{{projectName}}/internal/middleware"
+{{#if hasSharedInfra}}
+	"{{github}}/{{projectName}}/internal/shared"
+{{/if}}
+{{#if ormGorm}}
+	"{{github}}/{{projectName}}/internal/shared/database"
+{{/if}}
+{{#if useRedis}}
+	"{{github}}/{{projectName}}/internal/shared/cache"
+{{/if}}
+{{#if useAuth}}
+	"{{github}}/{{projectName}}/internal/middleware"
+{{/if}}
+{{#if useRateLimit}}
+	"{{github}}/{{projectName}}/internal/middleware"
+{{/if}}
+{{#if useHealthCheck}}
+	"{{github}}/{{projectName}}/internal/shared/health"
+{{/if}}
+{{#if useSwagger}}
+	_ "{{github}}/{{projectName}}/internal/docs"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
+{{/if}}
+{{#each modules}}
+	"{{../github}}/{{../projectName}}/internal/{{this}}"
+{{/each}}
+)
+
+func main() {
+	cfg := config.Load()
+
+	mux := http.NewServeMux()
+
+{{#if ormGorm}}
+	db, err := database.Connect(cfg)
+	if err != nil {
+		log.Fatalf("failed to connect to database: %v", err)
+	}
+{{/if}}
+
+{{#if useRedis}}
+	redisClient, err := cache.NewRedisClient(cfg)
+	if err != nil {
+		log.Fatalf("failed to connect to redis: %v", err)
+	}
+	_ = redisClient
+{{/if}}
+
+{{#each modules}}
+	{{snakeCase this}}.RegisterRoutes(mux{{#if ../ormGorm}}, db{{/if}})
+{{/each}}
+
+{{#if useHealthCheck}}
+{{#if ormGorm}}
+	healthHandler := health.NewHandler(db)
+{{else}}
+	healthHandler := health.NewHandler(nil)
+{{/if}}
+	mux.HandleFunc("GET /health", healthHandler.Check)
+{{/if}}
+
+{{#if useSwagger}}
+	mux.Handle("GET /swagger/", httpSwagger.Handler(
+		httpSwagger.URL("/swagger/doc.json"),
+	))
+{{/if}}
+
+	var handler http.Handler = mux
+
+{{#if useAuth}}
+	authMw := middleware.NewAuthMiddleware(cfg.JWTSecret)
+	handler = middleware.AuthOnlyAPI(authMw)(handler)
+{{/if}}
+
+{{#if useRateLimit}}
+	rateLimitMw := middleware.NewRateLimiter(cfg.RateLimitRPS, cfg.RateLimitBurst)
+	handler = rateLimitMw(handler)
+{{/if}}
+
+	handler = middleware.CORSMiddleware(handler)
+	handler = middleware.LoggingMiddleware(handler)
+	handler = middleware.RecoveryMiddleware(handler)
+
+	addr := ":" + cfg.Port
+	log.Printf("server starting on %s", addr)
+	if err := http.ListenAndServe(addr, handler); err != nil {
+		log.Fatalf("server failed: %v", err)
+	}
+}

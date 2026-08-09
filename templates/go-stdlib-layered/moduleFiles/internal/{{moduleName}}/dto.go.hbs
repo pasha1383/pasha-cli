@@ -1,0 +1,43 @@
+package {{snakeCase moduleName}}
+
+{{#if useValidator}}
+type Create{{pascalCase moduleName}}Request struct {
+	Name string `json:"name" validate:"required,min=1,max=255"`
+}
+{{else}}
+type Create{{pascalCase moduleName}}Request struct {
+	Name string `json:"name"`
+}
+{{/if}}
+
+type {{pascalCase moduleName}}Response struct {
+{{#if ormGorm}}
+	ID        uint   `json:"id"`
+{{else}}
+	ID        string `json:"id"`
+{{/if}}
+	Name      string `json:"name"`
+{{#if ormGorm}}
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
+{{/if}}
+}
+
+func toResponse(m *{{pascalCase moduleName}}) {{pascalCase moduleName}}Response {
+	return {{pascalCase moduleName}}Response{
+		ID:   m.ID,
+		Name: m.Name,
+{{#if ormGorm}}
+		CreatedAt: m.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		UpdatedAt: m.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
+{{/if}}
+	}
+}
+
+func toResponseList(models []{{pascalCase moduleName}}) []{{pascalCase moduleName}}Response {
+	result := make([]{{pascalCase moduleName}}Response, len(models))
+	for i, m := range models {
+		result[i] = toResponse(&m)
+	}
+	return result
+}

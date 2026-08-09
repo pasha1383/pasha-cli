@@ -1,0 +1,25 @@
+import { Module } from '@nestjs/common';
+{{#if ormTypeorm}}
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { {{pascalCase moduleName}} } from './{{moduleName}}.entity';
+{{/if}}
+{{#if ormMongoose}}
+import { MongooseModule } from '@nestjs/mongoose';
+import { {{pascalCase moduleName}}, {{pascalCase moduleName}}Schema } from './{{moduleName}}.entity';
+{{/if}}
+import { {{pascalCase moduleName}}Controller } from './{{moduleName}}.controller';
+import { {{pascalCase moduleName}}Handler } from './{{moduleName}}.handler';
+import { {{pascalCase moduleName}}Repository } from './{{moduleName}}.repository';
+
+@Module({
+{{#if ormTypeorm}}
+  imports: [TypeOrmModule.forFeature([{{pascalCase moduleName}}])],
+{{/if}}
+{{#if ormMongoose}}
+  imports: [MongooseModule.forFeature([{ name: {{pascalCase moduleName}}.name, schema: {{pascalCase moduleName}}Schema }])],
+{{/if}}
+  controllers: [{{pascalCase moduleName}}Controller],
+  providers: [{{pascalCase moduleName}}Handler, {{pascalCase moduleName}}Repository],
+  exports: [{{pascalCase moduleName}}Handler],
+})
+export class {{pascalCase moduleName}}Module {}

@@ -1,0 +1,44 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { {{pascalCase moduleName}}Handler } from './{{moduleName}}.handler';
+import { {{pascalCase moduleName}}Repository } from './{{moduleName}}.repository';
+import { {{pascalCase moduleName}}Controller } from './{{moduleName}}.controller';
+
+describe('{{pascalCase moduleName}}Controller', () => {
+  let controller: {{pascalCase moduleName}}Controller;
+  let handler: { create: jest.Mock; findAll: jest.Mock; findOne: jest.Mock };
+
+  beforeEach(async () => {
+    handler = {
+      create: jest.fn().mockResolvedValue({ id: '1', name: 'test' }),
+      findAll: jest.fn().mockResolvedValue([{ id: '1', name: 'test' }]),
+      findOne: jest.fn().mockResolvedValue({ id: '1', name: 'test' }),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [{{pascalCase moduleName}}Controller],
+      providers: [
+        { provide: {{pascalCase moduleName}}Handler, useValue: handler },
+      ],
+    }).compile();
+
+    controller = module.get({{pascalCase moduleName}}Controller);
+  });
+
+  it('creates an entity and returns a response', async () => {
+    const result = await controller.create({ name: 'test' } as any);
+    expect(handler.create).toHaveBeenCalled();
+    expect(result).toEqual({ id: '1', name: 'test' });
+  });
+
+  it('returns all entities', async () => {
+    const result = await controller.findAll();
+    expect(handler.findAll).toHaveBeenCalled();
+    expect(result).toEqual([{ id: '1', name: 'test' }]);
+  });
+
+  it('returns a single entity', async () => {
+    const result = await controller.findOne('1');
+    expect(handler.findOne).toHaveBeenCalledWith('1');
+    expect(result).toEqual({ id: '1', name: 'test' });
+  });
+});

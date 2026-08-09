@@ -1,0 +1,65 @@
+# {{projectName}}
+
+{{description}}
+
+Built with pasha CLI — **Vertical Slice Architecture** on NestJS.
+
+## Stack
+
+- **Data layer:** {{#if ormNone}}in-memory repositories{{else}}{{orm}}{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+- **Validation:** {{#if hasValidation}}{{validation}}{{else}}none{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis
+{{/if}}
+{{#if hasBroker}}
+- **Messaging:** {{broker}}
+{{/if}}
+
+## Run
+
+```bash
+cp .env.example .env
+{{#if useDocker}}
+npm run infra:up          # start docker services
+{{/if}}
+npm install
+{{#if ormPrisma}}
+npm run prisma:migrate    # create the database schema
+{{/if}}
+npm run start:dev
+```
+
+## Features
+
+{{#each modules}}
+- `{{this}}` → `http://localhost:3000/{{this}}`
+{{/each}}
+
+## Structure (vertical slices)
+
+Each feature is a self-contained vertical slice — one folder that cuts through all layers:
+
+```
+src/features/<feature>/
+├── <feature>.module.ts       ← NestJS module wiring
+├── <feature>.controller.ts   ← HTTP layer (thin, no business logic)
+├── <feature>.handler.ts      ← business logic / use-case
+├── <feature>.repository.ts   ← data access
+├── <feature>.entity.ts       ← domain model
+├── create-<feature>.dto.ts   ← input validation / request shape
+├── <feature>.response.ts     ← output DTO
+└── <feature>.controller.spec.ts
+```
+
+Call direction: `controller` → `handler` → `repository`. Cross-cutting concerns
+(lib, db, cache, auth) live in `src/shared/` and are imported by features through
+the NestJS module system.
+
+The repository is currently in-memory. To move to a real database, change the
+repository implementation only — the handler and controller stay untouched.
+
+---
+Made with ❤️ by {{author}}

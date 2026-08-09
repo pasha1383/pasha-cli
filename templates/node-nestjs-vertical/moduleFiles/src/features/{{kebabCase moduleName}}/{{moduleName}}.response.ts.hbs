@@ -1,0 +1,27 @@
+{{#if useSwagger}}
+import { ApiProperty } from '@nestjs/swagger';
+{{/if}}
+{{#unless hasOrmClassEntity}}
+import { {{pascalCase moduleName}} } from './{{moduleName}}.entity';
+{{/unless}}
+
+export class {{pascalCase moduleName}}Response {
+{{#if useSwagger}}
+  @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440000' })
+{{/if}}
+  id: string;
+
+{{#if useSwagger}}
+  @ApiProperty({ example: 'sample-{{moduleName}}' })
+{{/if}}
+  name: string;
+
+  constructor(id: string, name: string) {
+    this.id = id;
+    this.name = name;
+  }
+
+  static fromEntity(entity: {{pascalCase moduleName}}): {{pascalCase moduleName}}Response {
+    return new {{pascalCase moduleName}}Response(entity.id, entity.name);
+  }
+}

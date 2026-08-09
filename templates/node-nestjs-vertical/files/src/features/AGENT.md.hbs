@@ -1,0 +1,41 @@
+# AGENT.md — src/features/
+
+One directory per feature (use-case). Each is a self-contained vertical slice that
+cuts through all layers.
+
+## Call direction
+
+```
+controller  →  handler  →  repository
+```
+
+A layer only ever calls the one directly below it. Never let a controller
+reach past the handler into the repository, and never let a repository call
+back up into a handler.
+
+## Responsibilities
+
+- `<feature>.module.ts` — NestJS wiring for this slice. Exports the handler
+  so other slices can consume it.
+- `<feature>.controller.ts` — HTTP only: routing, params, status codes.
+  Delegates all logic to the handler. No business logic here.
+- `<feature>.handler.ts` — all business logic. This is where rules,
+  validation of invariants, and orchestration live. One class per feature,
+  one method per use-case. No HTTP concepts (no Request/Response types).
+- `<feature>.repository.ts` — data access only. No business decisions.
+- `<feature>.entity.ts` — the domain model{{#if hasOrmClassEntity}} (also the persistence
+  model, decorated for {{orm}}){{/if}}.
+- `create-<feature>.dto.ts` — request shapes{{#if hasValidation}} with {{validation}} rules{{/if}}.
+- `<feature>.response.ts` — output shapes returned by the handler.
+
+## Rules
+
+- A feature may import from `src/shared/`. A feature must **not** import from
+  another feature's internals — go through the other feature's exported
+  handler, and register the dependency in `<feature>.module.ts`.
+- New feature means: create the directory with all eight files, then register
+  it in `src/app.module.ts`. A feature that isn't registered silently does nothing.
+- Keep the controller thin — one line per endpoint that delegates to the handler.
+  If you find yourself writing business logic in the controller, move it to the handler.
+- Cross-cutting concerns (config, database, auth, cache, messaging) live in
+  `src/shared/` — never duplicate infrastructure in feature folders.

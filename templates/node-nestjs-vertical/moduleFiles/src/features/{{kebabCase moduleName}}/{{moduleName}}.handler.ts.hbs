@@ -1,0 +1,34 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { randomUUID } from 'crypto';
+import { {{pascalCase moduleName}} } from './{{moduleName}}.entity';
+import { Create{{pascalCase moduleName}}Dto } from './create-{{moduleName}}.dto';
+import { {{pascalCase moduleName}}Repository } from './{{moduleName}}.repository';
+
+@Injectable()
+export class {{pascalCase moduleName}}Handler {
+  constructor(private readonly repository: {{pascalCase moduleName}}Repository) {}
+
+  async create(dto: Create{{pascalCase moduleName}}Dto): Promise<{{pascalCase moduleName}}> {
+{{#if hasOrmClassEntity}}
+    const entity = new {{pascalCase moduleName}}();
+    entity.id = randomUUID();
+    entity.name = dto.name;
+{{else}}
+    const entity = new {{pascalCase moduleName}}(randomUUID(), dto.name);
+{{/if}}
+    await this.repository.save(entity);
+    return entity;
+  }
+
+  findAll(): Promise<{{pascalCase moduleName}}[]> {
+    return this.repository.findAll();
+  }
+
+  async findOne(id: string): Promise<{{pascalCase moduleName}}> {
+    const entity = await this.repository.findById(id);
+    if (!entity) {
+      throw new NotFoundException(`{{pascalCase moduleName}} with id "${id}" not found`);
+    }
+    return entity;
+  }
+}

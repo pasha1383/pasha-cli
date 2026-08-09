@@ -1,0 +1,47 @@
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+{{#if useSwagger}}
+import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+{{/if}}
+import { {{pascalCase moduleName}}Handler } from './{{moduleName}}.handler';
+import { Create{{pascalCase moduleName}}Dto } from './create-{{moduleName}}.dto';
+import { {{pascalCase moduleName}}Response } from './{{moduleName}}.response';
+
+{{#if useSwagger}}
+@ApiTags('{{moduleName}}')
+{{/if}}
+@Controller('{{moduleName}}')
+export class {{pascalCase moduleName}}Controller {
+  constructor(private readonly handler: {{pascalCase moduleName}}Handler) {}
+
+  @Post()
+{{#if useSwagger}}
+  @ApiOperation({ summary: 'Create a {{moduleName}}' })
+  @ApiResponse({ status: 201, type: {{pascalCase moduleName}}Response })
+{{/if}}
+  async create(@Body() dto: Create{{pascalCase moduleName}}Dto): Promise<{{pascalCase moduleName}}Response> {
+    const entity = await this.handler.create(dto);
+    return {{pascalCase moduleName}}Response.fromEntity(entity);
+  }
+
+  @Get()
+{{#if useSwagger}}
+  @ApiOperation({ summary: 'List all {{moduleName}} records' })
+  @ApiResponse({ status: 200, type: [{{pascalCase moduleName}}Response] })
+{{/if}}
+  async findAll(): Promise<{{pascalCase moduleName}}Response[]> {
+    const entities = await this.handler.findAll();
+    return entities.map({{pascalCase moduleName}}Response.fromEntity);
+  }
+
+  @Get(':id')
+{{#if useSwagger}}
+  @ApiOperation({ summary: 'Get one {{moduleName}} by id' })
+  @ApiParam({ name: 'id' })
+  @ApiResponse({ status: 200, type: {{pascalCase moduleName}}Response })
+  @ApiResponse({ status: 404, description: 'Not found.' })
+{{/if}}
+  async findOne(@Param('id') id: string): Promise<{{pascalCase moduleName}}Response> {
+    const entity = await this.handler.findOne(id);
+    return {{pascalCase moduleName}}Response.fromEntity(entity);
+  }
+}

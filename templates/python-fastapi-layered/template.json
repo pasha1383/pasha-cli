@@ -19,8 +19,6 @@
     "src/shared/auth": "useAuth",
     "src/shared/health": "useHealthCheck",
     "AGENT.md.hbs": "useAgentDocs",
-    "src/AGENT.md.hbs": "useAgentDocs",
-    "src/routes/AGENT.md.hbs": "useAgentDocs",
     "src/routes/{{snakeCase moduleName}}/{{moduleName}}_test.py.hbs": "useTests",
     "src/routes/{{snakeCase moduleName}}/{{moduleName}}_schema.py.hbs": "hasValidation",
     "Dockerfile.hbs": "useAppDockerfile",

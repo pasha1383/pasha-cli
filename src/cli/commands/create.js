@@ -70,98 +70,130 @@ async function ensurePrerequisites(tools) {
   return true;
 }
 
-async function askCoreStack(fm, ctx, nav) {
+async function askCoreStack(fm, ctx, nav, startStep = 0) {
   section('Stack Configuration');
 
   const ormChoices = fm.ormChoices(ctx.framework);
 
-  // Persistent local state so internal re-loops preserve previous answers as defaults
+  // Persistent state so each sub-step remembers its answer across step-by-step back
   const answers = {
     orm: ctx.orm || undefined,
     database: ctx.database || undefined,
     validation: ctx.validation || undefined,
-    useRedis: ctx.useRedis,
+    useRedis: ctx.useRedis !== undefined ? ctx.useRedis : undefined,
     broker: ctx.broker || undefined,
-    useAgentDocs: ctx.useAgentDocs,
+    useAgentDocs: ctx.useAgentDocs !== undefined ? ctx.useAgentDocs : undefined,
   };
 
-  // Internal loop: if a middle sub-prompt goes back, restart from ORM
-  while (true) {
-    // ---- ORM ----
-    if (ormChoices.length === 1) {
-      answers.orm = ormChoices[0].value;
-      log.info(`   ORM: ${ormChoices[0].name} (the only option for ${ctx.framework})`);
-    } else {
-      const answer = await prompt([{
-        type: 'list', name: 'orm', message: 'Data layer / ORM?',
-        choices: withBack(ormChoices, nav),
-        default: answers.orm || undefined,
-      }]);
-      if (answer.orm === '__back__') return '__back__';
-      answers.orm = answer.orm;
-    }
+  // Sub-step index: 0=orm, 1=database, 2=validation, 3=redis, 4=broker, 5=agentdocs
+  // On back: decrement (go to previous sub-step). On forward: increment.
+  // Only back from step 0 returns '__back__' to the wizard navigator.
+  let step = startStep;
 
-    // ---- Database ----
-    if (answers.orm !== 'none') {
-      const dbChoices = fm.databaseChoices(answers.orm);
-      if (dbChoices.length === 1) {
-        answers.database = dbChoices[0].value;
-        log.info(`   Database: ${dbChoices[0].name} (the only option ${answers.orm} supports)`);
-      } else {
-        const answer = await prompt([{
-          type: 'list', name: 'database', message: 'Database?',
-          choices: withBack(dbChoices, nav),
-          default: answers.database && answers.database !== 'none' ? answers.database : undefined,
+  while (step >= 0 && step <= 5) {
+    switch (step) {
+      // ---- 0: ORM ----
+      case 0:
+        if (ormChoices.length === 1) {
+          answers.orm = ormChoices[0].value;
+          log.info(`   ORM: ${ormChoices[0].name} (the only option for ${ctx.framework})`);
+          step++;
+        } else {
+          const a = await prompt([{
+            type: 'list', name: 'orm', message: 'Data layer / ORM?',
+            choices: withBack(ormChoices, nav),
+            default: answers.orm || undefined,
+          }]);
+          if (a.orm === '__back__') return '__back__';
+          answers.orm = a.orm;
+          step++;
+        }
+        break;
+
+      // ---- 1: Database ----
+      case 1:
+        if (answers.orm !== 'none') {
+          const dbChoices = fm.databaseChoices(answers.orm);
+          if (dbChoices.length === 1) {
+            answers.database = dbChoices[0].value;
+            log.info(`   Database: ${dbChoices[0].name} (the only option ${answers.orm} supports)`);
+            step++;
+          } else {
+            const a = await prompt([{
+              type: 'list', name: 'database', message: 'Database?',
+              choices: withBack(dbChoices, nav),
+              default: (answers.database && answers.database !== 'none') ? answers.database : undefined,
+            }]);
+            if (a.database === '__back__') { step--; break; }
+            answers.database = a.database;
+            step++;
+          }
+        } else {
+          answers.database = 'none';
+          step++;
+        }
+        break;
+
+      // ---- 2: Validation ----
+      case 2: {
+        const a = await prompt([{
+          type: 'list', name: 'validation', message: 'Validation & transformation?',
+          choices: withBack(fm.validationChoices(), nav),
+          default: answers.validation || undefined,
         }]);
-        if (answer.database === '__back__') continue;
-        answers.database = answer.database;
+        if (a.validation === '__back__') { step--; break; }
+        answers.validation = a.validation;
+        step++;
+        break;
       }
-    } else {
-      answers.database = 'none';
+
+      // ---- 3: Redis ----
+      case 3: {
+        const a = await prompt([{
+          type: 'confirm', name: 'useRedis', message: 'Add Redis for caching?',
+          default: answers.useRedis !== undefined ? Boolean(answers.useRedis) : false,
+        }]);
+        // Confirm has no back — just move forward
+        answers.useRedis = a.useRedis;
+        step++;
+        break;
+      }
+
+      // ---- 4: Broker ----
+      case 4: {
+        const a = await prompt([{
+          type: 'list', name: 'broker', message: 'Message broker?',
+          choices: withBack(fm.brokerChoices(), nav),
+          default: answers.broker || undefined,
+        }]);
+        if (a.broker === '__back__') { step--; break; }
+        answers.broker = a.broker;
+        step++;
+        break;
+      }
+
+      // ---- 5: AGENT.md ----
+      case 5: {
+        const a = await prompt([{
+          type: 'confirm', name: 'useAgentDocs',
+          message: 'Generate AGENT.md files for AI-assisted development?',
+          default: answers.useAgentDocs !== undefined ? answers.useAgentDocs : true,
+        }]);
+        answers.useAgentDocs = a.useAgentDocs;
+        step++;
+        break;
+      }
     }
-
-    // ---- Validation ----
-    const { validation } = await prompt([{
-      type: 'list', name: 'validation', message: 'Validation & transformation?',
-      choices: withBack(fm.validationChoices(), nav),
-      default: answers.validation || undefined,
-    }]);
-    if (validation === '__back__') continue;
-    answers.validation = validation;
-
-    // ---- Redis ----
-    const { useRedis } = await prompt([{
-      type: 'confirm', name: 'useRedis', message: 'Add Redis for caching?',
-      default: answers.useRedis !== undefined ? Boolean(answers.useRedis) : false,
-    }]);
-    answers.useRedis = useRedis;
-
-    // ---- Broker ----
-    const { broker } = await prompt([{
-      type: 'list', name: 'broker', message: 'Message broker?',
-      choices: withBack(fm.brokerChoices(), nav),
-      default: answers.broker || undefined,
-    }]);
-    if (broker === '__back__') continue;
-    answers.broker = broker;
-
-    // ---- AGENT.md ----
-    const { useAgentDocs } = await prompt([{
-      type: 'confirm', name: 'useAgentDocs',
-      message: 'Generate AGENT.md files for AI-assisted development?',
-      default: answers.useAgentDocs !== undefined ? answers.useAgentDocs : true,
-    }]);
-    answers.useAgentDocs = useAgentDocs;
-
-    return {
-      orm: answers.orm,
-      database: answers.database || 'none',
-      validation: answers.validation,
-      useRedis: answers.useRedis,
-      broker: answers.broker || 'none',
-      useAgentDocs: answers.useAgentDocs,
-    };
   }
+
+  return {
+    orm: answers.orm,
+    database: answers.database || 'none',
+    validation: answers.validation,
+    useRedis: answers.useRedis,
+    broker: answers.broker || 'none',
+    useAgentDocs: answers.useAgentDocs,
+  };
 }
 
 async function askStack(ctx, nav) {
@@ -171,21 +203,37 @@ async function askStack(ctx, nav) {
 
   const fm = resolveFeatures(flavor);
 
-  // Loop: if extras goes back, re-run core stack (answers preserved as defaults in ctx)
+  // Internal loop: going back from extras re-enters the stack.
+  // Persist extras selection across re-loops.
+  let extras = ctx.extras;
+  let stepHint = 0;
+
   while (true) {
-    const core = await askCoreStack(fm, ctx, nav);
+    const core = await askCoreStack(fm, ctx, nav, stepHint);
     if (core === '__back__') return '__back__';
 
     if (fm.extraFeatureChoices) {
-      const { extras } = await prompt([{
+      // Pre-check previously selected extras
+      const choices = fm.extraFeatureChoices().map(c => ({
+        ...c,
+        checked: extras ? extras.includes(c.value) : c.checked,
+      }));
+
+      const answer = await prompt([{
         type: 'checkbox', name: 'extras',
         message: 'Additional features (space to toggle)?',
-        choices: withBack(fm.extraFeatureChoices(), nav),
+        choices: withBack(choices, nav),
       }]);
-      if (extras.includes('__back__')) continue;
-      return Object.assign({}, core, { extras });
+      if (answer.extras.includes('__back__')) {
+        // Go back to the last core sub-step (agentdocs, step 5)
+        stepHint = 5;
+        continue;
+      }
+      extras = answer.extras;
     }
-    return core;
+
+    stepHint = 0;
+    return Object.assign({}, core, { extras: extras || [] });
   }
 }
 

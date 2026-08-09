@@ -1,0 +1,29 @@
+{
+  "name": "Go + Chi + Layered (Handler-Service-Repository)",
+  "prerequisites": ["go", "git"],
+  "shared": null,
+  "stackFeatures": "chi",
+  "modules": {
+    "enabled": true,
+    "message": "Module/entity name (e.g. product, user, order)",
+    "default": "product"
+  },
+  "fileConditions": {
+    "docker-compose.yml.hbs": "useDocker",
+    "internal/shared": "hasSharedInfra",
+    "internal/shared/database": "hasOrm",
+    "internal/shared/database/gorm.go.hbs": "ormGorm",
+    "internal/shared/cache": "useRedis",
+    "internal/shared/health": "useHealthCheck",
+    "internal/docs": "useSwagger",
+    "internal/middleware/auth.go.hbs": "useAuth",
+    "internal/middleware/ratelimit.go.hbs": "useRateLimit",
+    "AGENT.md.hbs": "useAgentDocs",
+    ".golangci.yml.hbs": "useLint",
+    ".github": "useCI",
+    "Dockerfile.hbs": "useAppDockerfile",
+    ".dockerignore.hbs": "useAppDockerfile"
+  },
+  "postInstall": [],
+  "gitInit": true
+}

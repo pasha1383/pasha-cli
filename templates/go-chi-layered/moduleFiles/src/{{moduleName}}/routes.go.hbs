@@ -1,0 +1,23 @@
+package {{snakeCase moduleName}}
+
+import (
+	"github.com/go-chi/chi/v5"
+{{#if ormGorm}}
+	"gorm.io/gorm"
+{{/if}}
+)
+
+func RegisterRoutes(r chi.Router{{#if ormGorm}}, db *gorm.DB{{/if}}) {
+{{#if ormGorm}}
+	repo := NewRepository(db)
+{{else}}
+	repo := NewRepository()
+{{/if}}
+	svc := NewService(repo)
+	h := NewHandler(svc)
+
+	r.Get("/", h.List)
+	r.Get("/{id}", h.GetByID)
+	r.Post("/", h.Create)
+	r.Delete("/{id}", h.Delete)
+}

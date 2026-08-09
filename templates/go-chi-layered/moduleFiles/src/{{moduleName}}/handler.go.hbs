@@ -1,0 +1,137 @@
+package {{snakeCase moduleName}}
+
+import (
+	"encoding/json"
+	"net/http"
+{{#if ormGorm}}
+	"strconv"
+
+	"gorm.io/gorm"
+{{/if}}
+
+	"github.com/go-chi/chi/v5"
+	"{{github}}/{{projectName}}/internal/errors"
+)
+
+type Handler struct {
+	svc *Service
+}
+
+func NewHandler(svc *Service) *Handler {
+	return &Handler{svc: svc}
+}
+
+{{#if useSwagger}}
+// @Summary      List {{pascalCase moduleName}}
+// @Description  Get all {{moduleName}} records
+// @Tags         {{moduleName}}
+// @Produce      json
+// @Success      200  {array}  {{pascalCase moduleName}}Response
+// @Router       /{{moduleName}} [get]
+{{/if}}
+func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
+	models, err := h.svc.List()
+	if err != nil {
+		errors.ErrorResponse(w, err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(toResponseList(models))
+}
+
+{{#if useSwagger}}
+// @Summary      Get {{pascalCase moduleName}}
+// @Description  Get a {{moduleName}} by ID
+// @Tags         {{moduleName}}
+// @Produce      json
+// @Param        id  path  int  true  "{{pascalCase moduleName}} ID"
+// @Success      200  {object}  {{pascalCase moduleName}}Response
+// @Router       /{{moduleName}}/{id} [get]
+{{/if}}
+func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
+{{#if ormGorm}}
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil {
+		errors.BadRequest(w, "invalid id")
+		return
+	}
+	model, err := h.svc.GetByID(uint(id))
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			errors.NotFound(w, "{{moduleName}} not found")
+			return
+		}
+		errors.ErrorResponse(w, err)
+		return
+	}
+{{else}}
+	id := chi.URLParam(r, "id")
+	model, err := h.svc.GetByID(id)
+	if err != nil {
+		errors.ErrorResponse(w, err)
+		return
+	}
+	if model == nil {
+		errors.NotFound(w, "{{moduleName}} not found")
+		return
+	}
+{{/if}}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(toResponse(model))
+}
+
+{{#if useSwagger}}
+// @Summary      Create {{pascalCase moduleName}}
+// @Description  Create a new {{moduleName}}
+// @Tags         {{moduleName}}
+// @Accept       json
+// @Produce      json
+// @Param        body  body  Create{{pascalCase moduleName}}Request  true  "{{pascalCase moduleName}} data"
+// @Success      201   {object}  {{pascalCase moduleName}}Response
+// @Router       /{{moduleName}} [post]
+{{/if}}
+func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
+	var req Create{{pascalCase moduleName}}Request
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		errors.BadRequest(w, err.Error())
+		return
+	}
+
+	model, err := h.svc.Create(req)
+	if err != nil {
+		errors.ErrorResponse(w, err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(toResponse(model))
+}
+
+{{#if useSwagger}}
+// @Summary      Delete {{pascalCase moduleName}}
+// @Description  Delete a {{moduleName}} by ID
+// @Tags         {{moduleName}}
+// @Param        id  path  int  true  "{{pascalCase moduleName}} ID"
+// @Success      204
+// @Router       /{{moduleName}}/{id} [delete]
+{{/if}}
+func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
+{{#if ormGorm}}
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil {
+		errors.BadRequest(w, "invalid id")
+		return
+	}
+	err = h.svc.Delete(uint(id))
+{{else}}
+	id := chi.URLParam(r, "id")
+	err := h.svc.Delete(id)
+{{/if}}
+	if err != nil {
+		errors.ErrorResponse(w, err)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}

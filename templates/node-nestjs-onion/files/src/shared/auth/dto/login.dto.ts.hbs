@@ -1,0 +1,27 @@
+{{#if useClassValidator}}
+import { IsNotEmpty, IsString } from 'class-validator';
+{{#if useSwagger}}
+import { ApiProperty } from '@nestjs/swagger';
+{{/if}}
+
+export class LoginDto {
+{{#if useSwagger}}
+  @ApiProperty({ example: 'admin' })
+{{/if}}
+  @IsString()
+  @IsNotEmpty()
+  username!: string;
+
+{{#if useSwagger}}
+  @ApiProperty({ example: 'admin' })
+{{/if}}
+  @IsString()
+  @IsNotEmpty()
+  password!: string;
+}
+{{else}}
+export class LoginDto {
+  username!: string;
+  password!: string;
+}
+{{/if}}

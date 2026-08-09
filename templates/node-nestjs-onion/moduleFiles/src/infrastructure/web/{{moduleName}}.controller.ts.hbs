@@ -1,0 +1,49 @@
+import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+{{#if useSwagger}}
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+{{/if}}
+{{#if useAuth}}
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../../../shared/auth/guards/jwt-auth.guard';
+{{/if}}
+import { {{pascalCase moduleName}}Service } from '../../../application/services/{{moduleName}}.service';
+import { Create{{pascalCase moduleName}}Dto } from '../../../application/dto/create-{{moduleName}}.dto';
+import { {{pascalCase moduleName}} } from '../../../domain/entities/{{moduleName}}.entity';
+
+{{#if useSwagger}}
+@ApiTags('{{moduleName}}')
+{{/if}}
+@Controller('{{moduleName}}')
+export class {{pascalCase moduleName}}Controller {
+  constructor(
+    private readonly service: {{pascalCase moduleName}}Service,
+  ) {}
+
+  @Post()
+{{#if useSwagger}}
+  @ApiOperation({ summary: 'Create a {{moduleName}}' })
+  @ApiResponse({ status: 201, description: 'Created.' })
+{{/if}}
+{{#if useAuth}}
+  @UseGuards(JwtAuthGuard)
+{{/if}}
+  async create(@Body() dto: Create{{pascalCase moduleName}}Dto): Promise<{{pascalCase moduleName}}> {
+    return this.service.create(dto.name);
+  }
+
+  @Get()
+{{#if useSwagger}}
+  @ApiOperation({ summary: 'List all {{moduleName}} records' })
+{{/if}}
+  async findAll(): Promise<{{pascalCase moduleName}}[]> {
+    return this.service.findAll();
+  }
+
+  @Get(':id')
+{{#if useSwagger}}
+  @ApiOperation({ summary: 'Get a {{moduleName}} by id' })
+{{/if}}
+  async findById(@Param('id') id: string): Promise<{{pascalCase moduleName}} | null> {
+    return this.service.findById(id);
+  }
+}

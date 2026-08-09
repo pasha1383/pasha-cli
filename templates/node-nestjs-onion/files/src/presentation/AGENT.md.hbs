@@ -1,0 +1,9 @@
+# src/presentation/
+
+NestJS bootstrapping only — no business logic lives here.
+
+- `app.module.ts` — root module; imports all infrastructure modules and cross-cutting concerns
+- `main.ts` — `NestFactory.create()` bootstrap with global pipes, swagger, cors
+
+**Rule:** This is the outermost layer. It knows about everything and composes
+the application at startup. Nothing imports from `presentation/`.

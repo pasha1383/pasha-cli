@@ -1,0 +1,60 @@
+# {{projectName}}
+
+This project follows **Onion Architecture** on NestJS — concentric layers where
+dependencies point inwards and the domain core has zero framework knowledge.
+
+## Layered directory layout
+
+```
+src/
+├── domain/                       ← innermost: entities, value objects, domain services
+│   ├── entities/                 ← pure entity classes
+│   ├── services/                 ← domain services (business rules, zero imports)
+│   └── repositories/             ← repository interfaces (abstractions)
+├── application/                  ← orchestrates domain, depends on ports
+│   ├── services/                 ← application services (use-cases)
+│   ├── ports/                    ← DI tokens + domain interface re-exports
+│   └── dto/                      ← request validation shapes
+├── infrastructure/               ← outer layer: adapters that implement ports
+│   ├── persistence/              ← ORM-backed repositories
+│   ├── web/                      ← NestJS controllers + modules
+│   └── messaging/                ← Kafka/RabbitMQ publishers
+├── presentation/                 ← NestJS bootstrapping only
+│   ├── app.module.ts             ← root module
+│   └── main.ts                   ← bootstrap
+└── shared/                       ← cross-cutting: config, errors, auth, health
+    ├── config/
+    ├── errors/
+    ├── auth/
+    └── health/
+```
+
+## Core rules
+
+1. **Domain layer** — pure TypeScript. No `@nestjs/*`, no ORM, no HTTP.
+   Entities are plain classes. Domain services contain reusable business logic.
+   Repository interfaces define what persistence looks like.
+
+2. **Application layer** — uses `@Injectable()` from NestJS but has no HTTP
+   or database knowledge. Depends on ports (interfaces) defined here. The port
+   carries the DI token that wires everything together.
+
+3. **Infrastructure layer** — implements the ports. Controllers, ORM repos,
+   messaging publishers all live here. A module file composes everything for
+   NestJS DI.
+
+4. **Presentation layer** — `app.module.ts` and `main.ts`. The only files that
+   know about NestJS bootstrap. Imports all infra modules.
+
+## Adding a module
+
+1. Create the domain entity in `domain/entities/`
+2. Add a domain service if the module has cross-entity business rules
+3. Define the repository interface in `domain/repositories/`
+4. Create the port (with DI token) in `application/ports/`
+5. Write the application service in `application/services/`
+6. Create the DTO in `application/dto/`
+7. Implement the repository in `infrastructure/persistence/`
+8. Create the controller in `infrastructure/web/`
+9. Wire everything in a module at `infrastructure/web/`
+10. Import the module in `presentation/app.module.ts`

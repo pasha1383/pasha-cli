@@ -1,0 +1,33 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { {{pascalCase moduleName}}Service } from './{{moduleName}}.service';
+import { {{pascalCase moduleName}}DomainService } from '../../domain/services/{{moduleName}}.domain-service';
+import { {{constantCase moduleName}}_REPOSITORY } from '../ports/{{moduleName}}.repository.port';
+
+describe('{{pascalCase moduleName}}Service', () => {
+  let service: {{pascalCase moduleName}}Service;
+  let repository: { save: jest.Mock; findAll: jest.Mock; findById: jest.Mock };
+
+  beforeEach(async () => {
+    repository = {
+      save: jest.fn().mockResolvedValue(undefined),
+      findAll: jest.fn().mockResolvedValue([]),
+      findById: jest.fn().mockResolvedValue(null),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        {{pascalCase moduleName}}Service,
+        {{pascalCase moduleName}}DomainService,
+        { provide: {{constantCase moduleName}}_REPOSITORY, useValue: repository },
+      ],
+    }).compile();
+
+    service = module.get({{pascalCase moduleName}}Service);
+  });
+
+  it('creates an entity through the domain service and saves it via the repository port', async () => {
+    const result = await service.create('test');
+    expect(repository.save).toHaveBeenCalled();
+    expect(result.name).toBe('test');
+  });
+});

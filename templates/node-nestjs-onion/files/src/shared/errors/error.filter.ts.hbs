@@ -1,0 +1,57 @@
+import {
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  HttpException,
+  HttpStatus,
+  Logger,
+} from '@nestjs/common';
+import { Request, Response } from 'express';
+import { AppError } from './app-error';
+
+@Catch()
+export class GlobalErrorFilter implements ExceptionFilter {
+  private readonly logger = new Logger(GlobalErrorFilter.name);
+
+  catch(exception: unknown, host: ArgumentsHost) {
+    const ctx = host.switchToHttp();
+    const response = ctx.getResponse<Response>();
+    const request = ctx.getRequest<Request>();
+
+    if (exception instanceof AppError) {
+      this.logger.warn(
+        `${request.method} ${request.url} → ${exception.statusCode} (${exception.errorCode}): ${exception.message}`,
+      );
+      return response.status(exception.statusCode).json({
+        statusCode: exception.statusCode,
+        errorCode: exception.errorCode,
+        message: exception.message,
+        timestamp: new Date().toISOString(),
+        path: request.url,
+      });
+    }
+
+    if (exception instanceof HttpException) {
+      const status = exception.getStatus();
+      const reason = exception.getResponse();
+      this.logger.warn(`${request.method} ${request.url} → ${status}`);
+      return response.status(status).json({
+        statusCode: status,
+        message: typeof reason === 'string' ? reason : (reason as any).message,
+        timestamp: new Date().toISOString(),
+        path: request.url,
+      });
+    }
+
+    this.logger.error(
+      `${request.method} ${request.url}`,
+      exception instanceof Error ? exception.stack : exception,
+    );
+    return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      message: 'Internal server error',
+      timestamp: new Date().toISOString(),
+      path: request.url,
+    });
+  }
+}

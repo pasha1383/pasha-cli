@@ -1,0 +1,11 @@
+# src/infrastructure/
+
+The outer adapter layer. Implements ports defined in `domain/` and `application/`.
+
+- `persistence/` — ORM-backed repositories (Prisma, TypeORM, Mongoose)
+- `web/` — NestJS controllers and module wiring
+- `messaging/` — Kafka/RabbitMQ publishers
+
+**Rule:** Infrastructure depends on `application/ports/` and `domain/repositories/`,
+but never the reverse. Infrastructure is the only layer that knows about
+NestJS controllers, ORM entities, and message brokers.

@@ -1,0 +1,11 @@
+import { Injectable, Inject } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
+
+@Injectable()
+export class RabbitmqPublisher {
+  constructor(@Inject('RABBITMQ_CLIENT') private readonly client: ClientProxy) {}
+
+  async publish(pattern: string, payload: Record<string, unknown>): Promise<void> {
+    this.client.emit(pattern, payload);
+  }
+}

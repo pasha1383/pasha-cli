@@ -1,0 +1,16 @@
+import { {{pascalCase moduleName}} } from '../entities/{{moduleName}}.entity';
+
+export class {{pascalCase moduleName}}DomainService {
+  validate(entity: {{pascalCase moduleName}}): void {
+    if (!entity.name || entity.name.trim().length === 0) {
+      throw new Error('{{pascalCase moduleName}} name is required');
+    }
+  }
+
+  enrich(entity: {{pascalCase moduleName}}): {{pascalCase moduleName}} {
+    return new {{pascalCase moduleName}}(
+      entity.id,
+      entity.name.trim(),
+    );
+  }
+}

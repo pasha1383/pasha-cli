@@ -1,0 +1,11 @@
+# src/shared/
+
+Cross-cutting infrastructure shared across all modules.
+
+- `config/` — app configuration (env loading)
+- `errors/` — custom `AppError` base class and `GlobalErrorFilter`
+- `database/` — ORM modules (Prisma, TypeORM, Mongoose)
+- `cache/` — Redis module and service
+- `messaging/` — Kafka/RabbitMQ client modules
+- `auth/` — JWT auth module, guards, strategy, decorators
+- `health/` — health check controller and ORM/Redis indicators

@@ -1,0 +1,46 @@
+import { Inject, Injectable } from '@nestjs/common';
+import { randomUUID } from 'crypto';
+import { {{pascalCase moduleName}} } from '../../domain/entities/{{moduleName}}.entity';
+import { {{pascalCase moduleName}}DomainService } from '../../domain/services/{{moduleName}}.domain-service';
+import {
+  I{{pascalCase moduleName}}Repository,
+  {{constantCase moduleName}}_REPOSITORY,
+} from '../ports/{{moduleName}}.repository.port';
+{{#if hasBroker}}
+import { IMessagingPort, MESSAGING_PORT } from '../ports/messaging.port';
+{{/if}}
+
+@Injectable()
+export class {{pascalCase moduleName}}Service {
+  constructor(
+    @Inject({{constantCase moduleName}}_REPOSITORY)
+    private readonly repository: I{{pascalCase moduleName}}Repository,
+    private readonly domainService: {{pascalCase moduleName}}DomainService,
+{{#if hasBroker}}
+    @Inject(MESSAGING_PORT)
+    private readonly messaging: IMessagingPort,
+{{/if}}
+  ) {}
+
+  async create(name: string): Promise<{{pascalCase moduleName}}> {
+    let entity = new {{pascalCase moduleName}}(randomUUID(), name);
+    this.domainService.validate(entity);
+    entity = this.domainService.enrich(entity);
+    await this.repository.save(entity);
+{{#if hasBroker}}
+    await this.messaging.publish('{{moduleName}}.created', {
+      id: entity.id,
+      name: entity.name,
+    });
+{{/if}}
+    return entity;
+  }
+
+  async findAll(): Promise<{{pascalCase moduleName}}[]> {
+    return this.repository.findAll();
+  }
+
+  async findById(id: string): Promise<{{pascalCase moduleName}} | null> {
+    return this.repository.findById(id);
+  }
+}

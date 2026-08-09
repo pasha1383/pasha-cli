@@ -1,0 +1,28 @@
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+
+@Injectable()
+export class AuthService {
+  private readonly adminUser: string;
+  private readonly adminPass: string;
+
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+  ) {
+    this.adminUser = this.configService.get<string>('ADMIN_USER', 'admin');
+    this.adminPass = this.configService.get<string>('ADMIN_PASS', 'admin');
+  }
+
+  async login(username: string, password: string): Promise<{ accessToken: string }> {
+    if (username !== this.adminUser || password !== this.adminPass) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const payload = { username, role: 'admin' };
+    return {
+      accessToken: this.jwtService.sign(payload),
+    };
+  }
+}

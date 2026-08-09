@@ -1,0 +1,22 @@
+import { Controller, Post, Body } from '@nestjs/common';
+{{#if useSwagger}}
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
+{{/if}}
+import { AuthService } from './auth.service';
+import { LoginDto } from './dto/login.dto';
+
+{{#if useSwagger}}
+@ApiTags('auth')
+{{/if}}
+@Controller('auth')
+export class AuthController {
+  constructor(private readonly authService: AuthService) {}
+
+  @Post('login')
+{{#if useSwagger}}
+  @ApiOperation({ summary: 'Login with admin credentials' })
+{{/if}}
+  async login(@Body() dto: LoginDto) {
+    return this.authService.login(dto.username, dto.password);
+  }
+}

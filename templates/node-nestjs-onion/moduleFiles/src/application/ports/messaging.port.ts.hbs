@@ -1,0 +1,5 @@
+export interface IMessagingPort {
+  publish(event: string, payload: Record<string, unknown>): Promise<void>;
+}
+
+export const MESSAGING_PORT = Symbol('MESSAGING_PORT');

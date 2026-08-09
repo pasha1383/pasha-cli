@@ -1,0 +1,31 @@
+import { Module } from '@nestjs/common';
+{{#if ormTypeorm}}
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { {{pascalCase moduleName}}OrmEntity } from '../persistence/{{moduleName}}.orm-entity';
+{{/if}}
+{{#if ormMongoose}}
+import { MongooseModule } from '@nestjs/mongoose';
+import { {{pascalCase moduleName}}Model, {{pascalCase moduleName}}Schema } from '../persistence/{{moduleName}}.schema';
+{{/if}}
+import { {{pascalCase moduleName}}Controller } from './{{moduleName}}.controller';
+import { {{pascalCase moduleName}}Repository } from '../persistence/{{moduleName}}.repository';
+import { {{pascalCase moduleName}}Service } from '../../../application/services/{{moduleName}}.service';
+import { {{pascalCase moduleName}}DomainService } from '../../../domain/services/{{moduleName}}.domain-service';
+import { {{constantCase moduleName}}_REPOSITORY } from '../../../application/ports/{{moduleName}}.repository.port';
+
+@Module({
+{{#if ormTypeorm}}
+  imports: [TypeOrmModule.forFeature([{{pascalCase moduleName}}OrmEntity])],
+{{/if}}
+{{#if ormMongoose}}
+  imports: [MongooseModule.forFeature([{ name: {{pascalCase moduleName}}Model.name, schema: {{pascalCase moduleName}}Schema }])],
+{{/if}}
+  controllers: [{{pascalCase moduleName}}Controller],
+  providers: [
+    {{pascalCase moduleName}}Service,
+    {{pascalCase moduleName}}DomainService,
+    { provide: {{constantCase moduleName}}_REPOSITORY, useClass: {{pascalCase moduleName}}Repository },
+  ],
+  exports: [{{constantCase moduleName}}_REPOSITORY],
+})
+export class {{pascalCase moduleName}}Module {}

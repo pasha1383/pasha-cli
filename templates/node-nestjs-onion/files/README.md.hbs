@@ -1,0 +1,69 @@
+# {{projectName}}
+
+{{description}}
+
+Built with pasha CLI — **Onion Architecture** on NestJS.
+
+## Stack
+
+- **Data layer:** {{#if ormNone}}in-memory repositories{{else}}{{orm}}{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+- **Validation:** {{#if hasValidation}}{{validation}}{{else}}none{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis
+{{/if}}
+{{#if hasBroker}}
+- **Messaging:** {{broker}}
+{{/if}}
+
+## Run
+
+```bash
+cp .env.example .env
+{{#if useDocker}}
+npm run infra:up          # start docker services
+{{/if}}
+npm install
+{{#if ormPrisma}}
+npm run prisma:migrate    # create the database schema
+{{/if}}
+npm run start:dev
+```
+
+## Modules
+
+{{#each modules}}
+- `{{this}}` → `http://localhost:3000/{{this}}`
+{{/each}}
+
+## Structure (concentric layers)
+
+```
+src/
+├── domain/                       ← innermost: pure business rules, no framework
+│   ├── entities/                 ← enterprise entities
+│   ├── services/                 ← domain services (pure logic)
+│   └── repositories/             ← repository interfaces (abstractions)
+├── application/                  ← orchestrates domain, depends on ports
+│   ├── services/                 ← application services
+│   ├── ports/                    ← interfaces (DI tokens here)
+│   └── dto/                      ← request shapes
+├── infrastructure/               ← adapters that implement ports
+│   ├── persistence/              ← ORM-backed repositories
+│   ├── web/                      ← controllers + modules
+│   └── messaging/                ← event publishers
+└── presentation/                 ← NestJS bootstrapping
+    ├── app.module.ts             ← root module
+    └── main.ts                   ← bootstrap
+```
+
+**The onion rule:** dependencies point only inwards. `presentation` → `infrastructure` → `application` → `domain`. Nothing in an inner layer imports from an outer layer.
+
+Domain services contain pure business logic with zero framework imports. Application services orchestrate domain services through ports. Infrastructure implements those ports with concrete technology.
+
+Repositories are currently in-memory. To move to a real database, add a class implementing the domain repository interface and swap it in the module's provider list.
+
+---
+Made with ❤️ by {{author}}

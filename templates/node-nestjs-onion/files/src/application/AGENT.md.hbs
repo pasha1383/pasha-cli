@@ -1,0 +1,11 @@
+# src/application/
+
+Orchestrates domain logic. Depends on ports (interfaces), not concrete
+implementations. No HTTP or database knowledge.
+
+- `services/` — application services (use-cases); may use `@Injectable()`
+- `ports/` — DI tokens + domain interface re-exports; messaging port
+- `dto/` — request validation shapes (class-validator or Zod)
+
+**Rule:** Application layer may depend on `domain/` and `ports/`, but never
+on `infrastructure/` or `presentation/`.

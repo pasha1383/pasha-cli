@@ -1,0 +1,11 @@
+# src/domain/
+
+The innermost layer of the Onion Architecture. Contains pure business logic
+with zero framework or infrastructure knowledge.
+
+- `entities/` — domain entities (plain TypeScript classes)
+- `services/` — domain services (pure business rules operating on entities)
+- `repositories/` — repository interfaces (pure abstractions, no DI tokens)
+
+**Rule:** Nothing in `domain/` imports from `application/`, `infrastructure/`,
+or any NestJS/HTTP/database library.

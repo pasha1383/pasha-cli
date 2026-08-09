@@ -1,0 +1,55 @@
+"""JWT authentication dependency for FastAPI."""
+
+from datetime import datetime, timedelta
+
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from jose import JWTError, jwt
+from passlib.context import CryptContext
+
+from src.config.settings import settings
+
+auth_router = APIRouter()
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+
+# In-memory user store — replace with real user model in production
+_users = {
+    "admin": {
+        "username": "admin",
+        "password_hash": pwd_context.hash("admin"),
+    }
+}
+
+
+def create_access_token(data: dict, expires_delta: timedelta | None = None):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + (expires_delta or timedelta(hours=1))
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, settings.jwt_secret, algorithm="HS256")
+
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    try:
+        payload = jwt.decode(token, settings.jwt_secret, algorithms=["HS256"])
+        username: str = payload.get("sub")
+        if username is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        return {"username": username}
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+
+@auth_router.post("/login")
+async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = _users.get(form_data.username)
+    if not user or not pwd_context.verify(form_data.password, user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    token = create_access_token(data={"sub": form_data.username})
+    return {"access_token": token, "token_type": "bearer"}
+
+
+@auth_router.get("/me")
+async def me(user: dict = Depends(get_current_user)):
+    return user

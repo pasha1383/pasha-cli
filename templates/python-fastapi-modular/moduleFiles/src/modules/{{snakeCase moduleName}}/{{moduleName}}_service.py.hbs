@@ -1,0 +1,51 @@
+from src.errors.app_error import NotFoundError, ValidationError
+
+from .{{moduleName}}_entity import {{pascalCase moduleName}}
+from .{{moduleName}}_repository import {{pascalCase moduleName}}Repository
+
+
+class {{pascalCase moduleName}}Service:
+    def __init__(self, repository: {{pascalCase moduleName}}Repository):
+        self._repo = repository
+
+    async def create(self, data: dict) -> {{pascalCase moduleName}}:
+        {{#if ormSqlalchemy}}
+        entity = {{pascalCase moduleName}}(name=data["name"])
+        return await self._repo.save(entity)
+        {{/if}}
+        {{#if ormTortoise}}
+        entity = {{pascalCase moduleName}}(name=data["name"])
+        return await self._repo.save(entity)
+        {{/if}}
+        {{#if ormNone}}
+        entity = {{pascalCase moduleName}}(id=0, name=data["name"])
+        return await self._repo.save(entity)
+        {{/if}}
+
+    async def get_all(self) -> list[{{pascalCase moduleName}}]:
+        return await self._repo.find_all()
+
+    async def get_by_id(self, pk: int) -> {{pascalCase moduleName}}:
+        entity = await self._repo.find_by_id(pk)
+        if entity is None:
+            raise NotFoundError(f"{{pascalCase moduleName}} with id {pk} not found")
+        return entity
+
+    async def update(self, pk: int, data: dict) -> {{pascalCase moduleName}}:
+        entity = await self.get_by_id(pk)
+        for field, value in data.items():
+            setattr(entity, field, value)
+        return await self._repo.save(entity)
+
+    async def delete(self, pk: int) -> None:
+        entity = await self.get_by_id(pk)
+        {{#if ormSqlalchemy}}
+        await self._repo.session.delete(entity)
+        await self._repo.session.flush()
+        {{/if}}
+        {{#if ormTortoise}}
+        await entity.delete()
+        {{/if}}
+        {{#if ormNone}}
+        del self._repo._items[pk]
+        {{/if}}

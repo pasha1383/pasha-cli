@@ -50,7 +50,7 @@ export class Typeorm{{pascalCase moduleName}}Repository implements {{pascalCase 
 }
 {{/if}}
 {{#if ormMongoose}}
-import { {{pascalCase moduleName}}OrmEntity, {{pascalCase moduleName}}Model } from './{{moduleName}}.schema';
+import { {{pascalCase moduleName}}Model } from './{{moduleName}}.schema';
 import { {{pascalCase moduleName}} } from '../../core/use-cases/{{moduleName}}/{{moduleName}}.entity';
 import { {{pascalCase moduleName}}Repository } from '../../core/use-cases/{{moduleName}}/{{moduleName}}.repository.interface';
 

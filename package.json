@@ -1,6 +1,6 @@
 {
   "name": "@pasha1383/pasha",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Multi-language / multi-architecture CLI generator — pick a stack, we scaffold the base project for you",
   "main": "bin/pasha.js",
   "bin": {

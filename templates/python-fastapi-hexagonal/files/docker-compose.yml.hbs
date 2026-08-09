@@ -4,15 +4,15 @@
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${DB_USER:-{{dbName}}}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_USER: {{shellDefault "DB_USER" dbName}}
+      POSTGRES_PASSWORD: {{shellDefault "DB_PASSWORD" "postgres"}}
       POSTGRES_DB: {{shellDefault "DB_NAME" dbName}}
     ports:
       - '${DB_PORT:-5432}:5432'
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-{{dbName}}}']
+      test: ['CMD-SHELL', 'pg_isready -U {{shellDefault "DB_USER" dbName}}']
       interval: 10s
       timeout: 5s
       retries: 5

@@ -203,17 +203,25 @@ async function askStack(ctx, nav) {
 
   const fm = resolveFeatures(flavor);
 
-  // Internal loop: going back from extras re-enters the stack.
-  // Persist extras selection across re-loops.
   let extras = ctx.extras;
-  let stepHint = 0;
+
+  // Track how many times we backed out of extras.
+  // 0 = first pass (full stack from step 0).
+  // 1 = first extras back → re-enter at agentdocs (step 5).
+  // 2 = second extras back → re-enter at broker (step 4).
+  // 3 = third back → redis (step 3), etc.
+  // 7 = backed past ORM → return '__back__' to wizard.
+  let extrasBackCount = 0;
 
   while (true) {
-    const core = await askCoreStack(fm, ctx, nav, stepHint);
+    // Compute start step for askCoreStack based on how many times extras was backed out of.
+    // 0 back → step 0 (full pass). 1 back → step 5. 2 back → step 4. etc.
+    const startStep = extrasBackCount === 0 ? 0 : Math.max(0, 5 - (extrasBackCount - 1));
+
+    const core = await askCoreStack(fm, ctx, nav, startStep);
     if (core === '__back__') return '__back__';
 
     if (fm.extraFeatureChoices) {
-      // Pre-check previously selected extras
       const choices = fm.extraFeatureChoices().map(c => ({
         ...c,
         checked: extras ? extras.includes(c.value) : c.checked,
@@ -225,14 +233,13 @@ async function askStack(ctx, nav) {
         choices: withBack(choices, nav),
       }]);
       if (answer.extras.includes('__back__')) {
-        // Go back to the last core sub-step (agentdocs, step 5)
-        stepHint = 5;
+        extrasBackCount++;
+        if (startStep <= 0 && extrasBackCount > 6) return '__back__';
         continue;
       }
       extras = answer.extras;
     }
 
-    stepHint = 0;
     return Object.assign({}, core, { extras: extras || [] });
   }
 }

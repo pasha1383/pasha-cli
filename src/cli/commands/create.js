@@ -74,63 +74,94 @@ async function askCoreStack(fm, ctx, nav) {
   section('Stack Configuration');
 
   const ormChoices = fm.ormChoices(ctx.framework);
-  let orm;
-  if (ormChoices.length === 1) {
-    orm = ormChoices[0].value;
-    log.info(`   ORM: ${ormChoices[0].name} (the only option for ${ctx.framework})`);
-  } else {
-    const answer = await prompt([{
-      type: 'list', name: 'orm', message: 'Data layer / ORM?',
-      choices: withBack(ormChoices, nav),
-      default: ctx.orm || undefined,
-    }]);
-    if (answer.orm === '__back__') return '__back__';
-    orm = answer.orm;
-  }
 
-  let database = 'none';
-  if (orm !== 'none') {
-    const dbChoices = fm.databaseChoices(orm);
-    if (dbChoices.length === 1) {
-      database = dbChoices[0].value;
-      log.info(`   Database: ${dbChoices[0].name} (the only option ${orm} supports)`);
+  // Persistent local state so internal re-loops preserve previous answers as defaults
+  const answers = {
+    orm: ctx.orm || undefined,
+    database: ctx.database || undefined,
+    validation: ctx.validation || undefined,
+    useRedis: ctx.useRedis,
+    broker: ctx.broker || undefined,
+    useAgentDocs: ctx.useAgentDocs,
+  };
+
+  // Internal loop: if a middle sub-prompt goes back, restart from ORM
+  while (true) {
+    // ---- ORM ----
+    if (ormChoices.length === 1) {
+      answers.orm = ormChoices[0].value;
+      log.info(`   ORM: ${ormChoices[0].name} (the only option for ${ctx.framework})`);
     } else {
       const answer = await prompt([{
-        type: 'list', name: 'database', message: 'Database?',
-        choices: withBack(dbChoices, nav),
-        default: ctx.database || undefined,
+        type: 'list', name: 'orm', message: 'Data layer / ORM?',
+        choices: withBack(ormChoices, nav),
+        default: answers.orm || undefined,
       }]);
-      if (answer.database === '__back__') return '__back__';
-      database = answer.database;
+      if (answer.orm === '__back__') return '__back__';
+      answers.orm = answer.orm;
     }
+
+    // ---- Database ----
+    if (answers.orm !== 'none') {
+      const dbChoices = fm.databaseChoices(answers.orm);
+      if (dbChoices.length === 1) {
+        answers.database = dbChoices[0].value;
+        log.info(`   Database: ${dbChoices[0].name} (the only option ${answers.orm} supports)`);
+      } else {
+        const answer = await prompt([{
+          type: 'list', name: 'database', message: 'Database?',
+          choices: withBack(dbChoices, nav),
+          default: answers.database && answers.database !== 'none' ? answers.database : undefined,
+        }]);
+        if (answer.database === '__back__') continue;
+        answers.database = answer.database;
+      }
+    } else {
+      answers.database = 'none';
+    }
+
+    // ---- Validation ----
+    const { validation } = await prompt([{
+      type: 'list', name: 'validation', message: 'Validation & transformation?',
+      choices: withBack(fm.validationChoices(), nav),
+      default: answers.validation || undefined,
+    }]);
+    if (validation === '__back__') continue;
+    answers.validation = validation;
+
+    // ---- Redis ----
+    const { useRedis } = await prompt([{
+      type: 'confirm', name: 'useRedis', message: 'Add Redis for caching?',
+      default: answers.useRedis !== undefined ? Boolean(answers.useRedis) : false,
+    }]);
+    answers.useRedis = useRedis;
+
+    // ---- Broker ----
+    const { broker } = await prompt([{
+      type: 'list', name: 'broker', message: 'Message broker?',
+      choices: withBack(fm.brokerChoices(), nav),
+      default: answers.broker || undefined,
+    }]);
+    if (broker === '__back__') continue;
+    answers.broker = broker;
+
+    // ---- AGENT.md ----
+    const { useAgentDocs } = await prompt([{
+      type: 'confirm', name: 'useAgentDocs',
+      message: 'Generate AGENT.md files for AI-assisted development?',
+      default: answers.useAgentDocs !== undefined ? answers.useAgentDocs : true,
+    }]);
+    answers.useAgentDocs = useAgentDocs;
+
+    return {
+      orm: answers.orm,
+      database: answers.database || 'none',
+      validation: answers.validation,
+      useRedis: answers.useRedis,
+      broker: answers.broker || 'none',
+      useAgentDocs: answers.useAgentDocs,
+    };
   }
-
-  const { validation } = await prompt([{
-    type: 'list', name: 'validation', message: 'Validation & transformation?',
-    choices: withBack(fm.validationChoices(), nav),
-    default: ctx.validation || undefined,
-  }]);
-  if (validation === '__back__') return '__back__';
-
-  const { useRedis } = await prompt([{
-    type: 'confirm', name: 'useRedis', message: 'Add Redis for caching?',
-    default: ctx.useRedis !== undefined ? ctx.useRedis : false,
-  }]);
-
-  const { broker } = await prompt([{
-    type: 'list', name: 'broker', message: 'Message broker?',
-    choices: withBack(fm.brokerChoices(), nav),
-    default: ctx.broker || undefined,
-  }]);
-  if (broker === '__back__') return '__back__';
-
-  const { useAgentDocs } = await prompt([{
-    type: 'confirm', name: 'useAgentDocs',
-    message: 'Generate AGENT.md files for AI-assisted development?',
-    default: ctx.useAgentDocs !== undefined ? ctx.useAgentDocs : true,
-  }]);
-
-  return { orm, database, validation, useRedis, broker, useAgentDocs };
 }
 
 async function askStack(ctx, nav) {
@@ -139,19 +170,23 @@ async function askStack(ctx, nav) {
   if (!flavor) return {};
 
   const fm = resolveFeatures(flavor);
-  const core = await askCoreStack(fm, ctx, nav);
-  if (core === '__back__') return '__back__';
 
-  if (fm.extraFeatureChoices) {
-    const { extras } = await prompt([{
-      type: 'checkbox', name: 'extras',
-      message: 'Additional features (space to toggle)?',
-      choices: withBack(fm.extraFeatureChoices(), nav),
-    }]);
-    if (extras.includes('__back__')) return '__back__';
-    return Object.assign({}, core, { extras });
+  // Loop: if extras goes back, re-run core stack (answers preserved as defaults in ctx)
+  while (true) {
+    const core = await askCoreStack(fm, ctx, nav);
+    if (core === '__back__') return '__back__';
+
+    if (fm.extraFeatureChoices) {
+      const { extras } = await prompt([{
+        type: 'checkbox', name: 'extras',
+        message: 'Additional features (space to toggle)?',
+        choices: withBack(fm.extraFeatureChoices(), nav),
+      }]);
+      if (extras.includes('__back__')) continue;
+      return Object.assign({}, core, { extras });
+    }
+    return core;
   }
-  return core;
 }
 
 async function askModules(ctx, nav) {
@@ -161,44 +196,56 @@ async function askModules(ctx, nav) {
   section('Modules');
 
   const existingModules = ctx.modules || [];
-  const defaultCount = existingModules.length > 0 ? String(existingModules.length) : '1';
 
-  const { moduleCount } = await prompt([{
-    type: 'input', name: 'moduleCount',
-    message: 'How many modules/entities do you want to scaffold?',
-    default: defaultCount,
-    validate: (v) => {
-      if (!v || v.trim() === '') return 'Please enter a number between 1 and 20';
-      const n = Number(v);
-      if (!Number.isInteger(n)) return 'Enter a whole number (e.g. 3), not a decimal';
-      if (n < 1) return 'Enter at least 1 module';
-      if (n > 20) return 'Maximum 20 modules per project';
-      return true;
-    },
-  }]);
-  if (moduleCount === '__back__') return '__back__';
+  // Internal loop: going back from a module name restarts at the count prompt
+  while (true) {
+    const defaultCount = existingModules.length > 0 ? String(existingModules.length) : '1';
 
-  const count = Number(moduleCount);
-  const modules = [];
-  for (let i = 0; i < count; i++) {
-    const defaultName = existingModules[i] || undefined;
-
-    const { moduleName } = await prompt([{
-      type: 'input', name: 'moduleName',
-      message: `${tc.modules.message} [${i + 1}/${count}]`,
-      default: defaultName || (i === 0 ? tc.modules.default : undefined),
+    const { moduleCount } = await prompt([{
+      type: 'input', name: 'moduleCount',
+      message: 'How many modules/entities do you want to scaffold?',
+      default: defaultCount,
       validate: (v) => {
-        if (!v || v.trim() === '') return 'Module name cannot be empty';
-        if (!/^[a-z][a-z0-9-]*$/.test(v))
-          return 'Start with a lowercase letter; use lowercase letters, numbers, and hyphens only';
-        if (modules.includes(v)) return `"${v}" was already added — pick a different name`;
+        if (!v || v.trim() === '') return 'Please enter a number between 1 and 20';
+        const n = Number(v);
+        if (!Number.isInteger(n)) return 'Enter a whole number (e.g. 3), not a decimal';
+        if (n < 1) return 'Enter at least 1 module';
+        if (n > 20) return 'Maximum 20 modules per project';
         return true;
       },
     }]);
-    if (moduleName === '__back__') return '__back__';
-    modules.push(moduleName);
+    if (moduleCount === '__back__') return '__back__';
+
+    const count = Number(moduleCount);
+    const modules = [];
+    for (let i = 0; i < count; i++) {
+      const defaultName = existingModules[i] || undefined;
+
+      const { moduleName } = await prompt([{
+        type: 'input', name: 'moduleName',
+        message: `${tc.modules.message} [${i + 1}/${count}]`,
+        default: defaultName || (i === 0 ? tc.modules.default : undefined),
+        validate: (v) => {
+          if (!v || v.trim() === '') return 'Module name cannot be empty';
+          if (!/^[a-z][a-z0-9-]*$/.test(v))
+            return 'Start with a lowercase letter; use lowercase letters, numbers, and hyphens only';
+          if (modules.includes(v)) return `"${v}" was already added — pick a different name`;
+          return true;
+        },
+      }]);
+      if (moduleName === '__back__') {
+        // Go back to count prompt (outer loop will restart)
+        break;
+      }
+      modules.push(moduleName);
+    }
+
+    // If we collected all modules without going back, return them
+    if (modules.length === count) {
+      return { modules };
+    }
+    // Otherwise continue the outer loop (restart from count)
   }
-  return { modules };
 }
 
 function buildContext(flags, modules, baseAnswers, ctx) {

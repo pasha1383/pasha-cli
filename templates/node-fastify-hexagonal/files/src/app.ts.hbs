@@ -15,17 +15,6 @@ import { authPlugin } from './shared/auth/auth.plugin';
 import { healthRoutes } from './shared/health/health.routes';
 {{/if}}
 {{#each modules}}
-{{#if ../hasOrm}}
-{{#if ../ormTypeorm}}import { {{pascalCase this}}TypeormRepository } from './infrastructure/{{this}}/persistence/{{this}}.typeorm.repository';{{/if}}
-{{#if ../ormMongoose}}import { {{pascalCase this}}MongooseRepository } from './infrastructure/{{this}}/persistence/{{this}}.mongoose.repository';{{/if}}
-{{#if ../ormPrisma}}import { {{pascalCase this}}PrismaRepository } from './infrastructure/{{this}}/persistence/{{this}}.prisma.repository';{{/if}}
-{{#if ../ormNone}}import { {{pascalCase this}}InMemoryRepository } from './infrastructure/{{this}}/persistence/{{this}}.repository';{{/if}}
-{{/if}}
-{{#unless ../hasOrm}}
-import { {{pascalCase this}}InMemoryRepository } from './infrastructure/{{this}}/persistence/{{this}}.repository';
-{{/unless}}
-import { Create{{pascalCase this}}UseCase } from './application/{{this}}/use-cases/create-{{this}}.use-case';
-import { Get{{pascalCase this}}sUseCase } from './application/{{this}}/use-cases/get-{{this}}s.use-case';
 import {{camelCase this}}Routes from './infrastructure/{{this}}/routes/{{this}}.routes';
 {{/each}}
 

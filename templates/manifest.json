@@ -29,6 +29,24 @@
               "template": "go-fiber-layered"
             }
           }
+        },
+        "chi": {
+          "label": "Chi",
+          "architectures": {
+            "layered": {
+              "label": "Layered (Handler-Service-Repository)",
+              "template": "go-chi-layered"
+            }
+          }
+        },
+        "stdlib": {
+          "label": "net/http (stdlib)",
+          "architectures": {
+            "layered": {
+              "label": "Layered (Handler-Service-Repository)",
+              "template": "go-stdlib-layered"
+            }
+          }
         }
       }
     },

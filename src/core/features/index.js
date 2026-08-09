@@ -8,6 +8,8 @@ const serverless = require('./serverless');
 const python = require('./python');
 const flask = require('./flask');
 const go = require('./go');
+const goStdlib = require('./go-stdlib');
+const chi = require('./chi');
 
 const REGISTRY = {
   nestjs,
@@ -18,6 +20,8 @@ const REGISTRY = {
   python,
   flask,
   go,
+  'go-stdlib': goStdlib,
+  chi,
 };
 
 // Validates at load time that every module exports the required interface

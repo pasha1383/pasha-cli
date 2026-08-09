@@ -1,0 +1,36 @@
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import { z } from 'zod';
+import { {{pascalCase moduleName}}Repository } from './{{moduleName}}.entity';
+
+{{#if useAuth}}
+import { verifyToken, withErrorHandler, AuthError } from '../../lib/middleware';
+{{else}}
+import { withErrorHandler } from '../../lib/middleware';
+{{/if}}
+import { success, error } from '../../lib/response';
+import { validate } from '../../lib/middleware';
+import { Create{{pascalCase moduleName}}Input } from '../../types/{{moduleName}}';
+
+{{#if ormMongoose}}
+import { connectMongoose } from '../../lib/database/mongoose.connection';
+connectMongoose();
+{{/if}}
+
+const repository = new {{pascalCase moduleName}}Repository();
+
+const bodySchema = z.object({
+  name: z.string().min(1).max(255),
+});
+
+async function handle(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+  {{#if useAuth}}
+  verifyToken(event);
+  {{/if}}
+
+  const input = validate(bodySchema, JSON.parse(event.body ?? '{}')) as Create{{pascalCase moduleName}}Input;
+  const entity = await repository.create(input);
+
+  return success(entity, 201);
+}
+
+export const handler = withErrorHandler(handle);

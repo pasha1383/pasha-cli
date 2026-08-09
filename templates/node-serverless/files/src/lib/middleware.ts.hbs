@@ -1,0 +1,87 @@
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import { ZodSchema } from 'zod';
+import { error } from './response';
+
+class ValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ValidationError';
+  }
+}
+
+class NotFoundError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'NotFoundError';
+  }
+}
+
+class AuthError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'AuthError';
+  }
+}
+
+export function validate<T>(schema: ZodSchema<T>, data: unknown): T {
+  const result = schema.safeParse(data);
+  if (!result.success) {
+    throw new ValidationError(result.error.issues.map((i) => i.message).join(', '));
+  }
+  return result.data;
+}
+{{#if useAuth}}
+
+import jwt from 'jsonwebtoken';
+
+interface JwtPayload {
+  sub: string;
+  username: string;
+}
+
+const JWT_SECRET = process.env.JWT_SECRET ?? 'change-me';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN ?? '1h';
+
+export function signToken(payload: JwtPayload): string {
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+}
+
+export function verifyToken(event: APIGatewayProxyEvent): JwtPayload {
+  const authHeader = event.headers?.Authorization ?? event.headers?.authorization;
+  if (!authHeader) {
+    throw new AuthError('Missing authorization header');
+  }
+  const token = authHeader.replace('Bearer ', '');
+  try {
+    return jwt.verify(token, JWT_SECRET) as JwtPayload;
+  } catch {
+    throw new AuthError('Invalid or expired token');
+  }
+}
+{{/if}}
+
+export function withErrorHandler(
+  fn: (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult>,
+): (event: APIGatewayProxyEvent) => Promise<APIGatewayProxyResult> {
+  return async (event) => {
+    try {
+      return await fn(event);
+    } catch (err) {
+      if (err instanceof ValidationError) {
+        return error(err.message, 422);
+      }
+      if (err instanceof NotFoundError) {
+        return error(err.message, 404);
+      }
+      {{#if useAuth}}
+      if (err instanceof AuthError) {
+        return error(err.message, 401);
+      }
+      {{/if}}
+      console.error(err);
+      return error('Internal server error', 500);
+    }
+  };
+}
+
+export { ValidationError, NotFoundError{{#if useAuth}}, AuthError{{/if}} };

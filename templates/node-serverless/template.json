@@ -1,0 +1,24 @@
+{
+  "name": "Node.js + TypeScript + Serverless",
+  "prerequisites": ["node", "npm", "git"],
+  "shared": null,
+  "stackFeatures": "serverless",
+  "modules": {
+    "enabled": true,
+    "message": "Entity name (e.g. product, user, order)",
+    "default": "product"
+  },
+  "fileConditions": {
+    "docker-compose.yml.hbs": "useDocker",
+    "src/lib/database/prisma.client.ts.hbs": "ormPrisma",
+    "src/lib/database/mongoose.connection.ts.hbs": "ormMongoose",
+    "AGENT.md.hbs": "useAgentDocs",
+    ".eslintrc.js": "useLint",
+    ".prettierrc": "useLint",
+    ".github": "useCI",
+    "Dockerfile.hbs": "useAppDockerfile",
+    ".dockerignore.hbs": "useAppDockerfile"
+  },
+  "postInstall": ["npm install"],
+  "gitInit": true
+}

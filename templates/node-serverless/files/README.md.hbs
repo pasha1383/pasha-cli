@@ -1,0 +1,96 @@
+# {{projectName}}
+
+{{description}}
+
+Built with pasha CLI — **Serverless Handler-per-Function** architecture.
+
+## Stack
+
+- **Runtime:** {{#if useWorkers}}Cloudflare Workers{{else}}AWS Lambda (via Serverless Framework){{/if}}
+- **Language:** TypeScript
+- **Data layer:** {{#if ormNone}}in-memory repositories{{else}}{{orm}}{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+- **Validation:** {{#if hasValidation}}{{validation}}{{else}}none{{/if}}
+{{#if useAuth}}
+- **Auth:** JWT (Bearer token)
+{{/if}}
+
+## Run
+
+```bash
+cp .env.example .env
+{{#if useDocker}}
+npm run infra:up          # start docker services
+{{/if}}
+npm install
+{{#if ormPrisma}}
+npm run prisma:migrate    # create the database schema
+{{/if}}
+```
+
+### Local invocation
+
+```bash
+# Invoke a handler directly (requires serverless CLI or wrangler)
+{{#if useWorkers}}
+npx wrangler dev src/handlers/list-{{#each modules}}{{this}}{{/each}}s.ts
+{{else}}
+npx serverless invoke local -f create{{#each modules}}{{pascalCase this}}{{/each}}
+{{/if}}
+```
+
+### Deploy
+
+```bash
+{{#if useWorkers}}
+npx wrangler deploy
+{{else}}
+npm run deploy
+{{/if}}
+```
+
+## Modules
+
+{{#each modules}}
+- `{{this}}` — handlers: create-{{this}}, get-{{this}}, list-{{this}}s
+{{/each}}
+
+## Structure
+
+```
+src/
+├── handlers/<module>/           ← one file per endpoint (handler-per-function)
+│   ├── create-<module>.ts       ← POST
+│   ├── get-<module>.ts          ← GET /:id
+│   ├── list-<module>s.ts        ← GET /
+│   └── <module>.entity.ts      ← domain model / ORM entity
+├── lib/                         ← shared library code
+│   ├── response.ts             ← success / error response formatters
+│   ├── middleware.ts           ← auth, validation, error wrapping
+│   └── database/               ← ORM clients (singleton, lazy-init)
+├── types/<module>.ts           ← TypeScript interfaces
+└── infrastructure/             ← deployment configs
+    ├── serverless.yml          ← AWS Lambda + API Gateway
+    └── wrangler.toml           ← Cloudflare Workers
+```
+
+Each handler is a standalone, deployable function: `async (event, context) => response`.
+
+## Hard rules
+
+1. **Stateless functions.** No long-running state, no in-memory caches across invocations.
+2. **Cold-start aware.** Import only what the handler needs; use lazy-loading for heavy modules.
+3. **Handler-per-function.** Each endpoint lives in its own file — no routing middleware, no monolithic server.
+4. **Raw event format.** Handlers receive the raw AWS API Gateway event (or Workers `Request`); no Express/Fastify abstraction.
+{{#if hasValidation}}
+5. **Every request body needs Zod validation** before it reaches business logic.
+{{/if}}
+6. **No shared mutable state between invocations.** Use the database for everything.
+{{#if useAuth}}
+7. **Protected handlers** call `verifyToken(event)` from `lib/middleware` before processing.
+{{/if}}
+
+---
+Made with ❤️ by {{author}}

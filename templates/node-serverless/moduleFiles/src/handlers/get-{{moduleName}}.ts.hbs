@@ -1,0 +1,37 @@
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import { {{pascalCase moduleName}}Repository } from './{{moduleName}}.entity';
+
+{{#if useAuth}}
+import { verifyToken, withErrorHandler, AuthError } from '../../lib/middleware';
+{{else}}
+import { withErrorHandler } from '../../lib/middleware';
+{{/if}}
+import { success, error } from '../../lib/response';
+import { NotFoundError } from '../../lib/middleware';
+
+{{#if ormMongoose}}
+import { connectMongoose } from '../../lib/database/mongoose.connection';
+connectMongoose();
+{{/if}}
+
+const repository = new {{pascalCase moduleName}}Repository();
+
+async function handle(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+  {{#if useAuth}}
+  verifyToken(event);
+  {{/if}}
+
+  const id = event.pathParameters?.id;
+  if (!id) {
+    return error('Missing id path parameter', 400);
+  }
+
+  const entity = await repository.findById(id);
+  if (!entity) {
+    throw new NotFoundError(`{{pascalCase moduleName}} with id "${id}" not found`);
+  }
+
+  return success(entity);
+}
+
+export const handler = withErrorHandler(handle);

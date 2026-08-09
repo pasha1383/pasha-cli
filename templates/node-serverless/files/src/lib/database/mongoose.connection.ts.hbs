@@ -1,0 +1,18 @@
+import mongoose from 'mongoose';
+
+/**
+ * Lazy-connect helper. Call once per handler module, outside the handler
+ * function, so the connection is reused across warm invocations. Mongoose
+ * buffers commands internally so queries issued before the connection
+ * resolves still work.
+ *
+ * Usage at the top of a handler file:
+ *   connectMongoose();
+ */
+let isConnected = false;
+
+export async function connectMongoose(): Promise<void> {
+  if (isConnected) return;
+  await mongoose.connect(process.env.DATABASE_URL ?? 'mongodb://localhost:27017/{{snakeCase projectName}}');
+  isConnected = true;
+}

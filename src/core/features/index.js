@@ -3,14 +3,20 @@
 const nestjs = require('./nestjs');
 const express = require('./express');
 const fastify = require('./fastify');
+const koa = require('./koa');
+const serverless = require('./serverless');
 const python = require('./python');
+const flask = require('./flask');
 const go = require('./go');
 
 const REGISTRY = {
   nestjs,
   express,
   fastify,
+  koa,
+  serverless,
   python,
+  flask,
   go,
 };
 

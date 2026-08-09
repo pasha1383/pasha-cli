@@ -1,0 +1,9 @@
+import { PrismaClient } from '@prisma/client';
+
+/**
+ * Singleton Prisma client. Do not `new PrismaClient()` inside a handler —
+ * it creates a separate connection pool per invocation and amplifies
+ * cold starts. AWS Lambda reuses the same `prisma` across warm containers
+ * because this module-level constant is cached.
+ */
+export const prisma = new PrismaClient();

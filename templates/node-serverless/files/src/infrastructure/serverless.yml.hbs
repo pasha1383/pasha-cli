@@ -1,0 +1,67 @@
+# Serverless Framework configuration — AWS Lambda + API Gateway
+# Deploy: npm run deploy
+# Remove: npx serverless remove
+
+service: {{projectName}}
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: ${opt:region, 'us-east-1'}
+  environment:
+    NODE_ENV: production
+{{#if hasDatabase}}
+{{#if dbPostgres}}
+    DATABASE_URL: ${env:DATABASE_URL}
+{{/if}}
+{{#if dbMysql}}
+    DATABASE_URL: ${env:DATABASE_URL}
+{{/if}}
+{{#if dbMongo}}
+    DATABASE_URL: ${env:DATABASE_URL}
+{{/if}}
+{{/if}}
+{{#if useAuth}}
+    JWT_SECRET: ${env:JWT_SECRET}
+    JWT_EXPIRES_IN: ${env:JWT_EXPIRES_IN}
+{{/if}}
+
+package:
+  individually: true
+  patterns:
+    - '!node_modules/.prisma/client/libquery_engine-*'
+    - 'node_modules/.prisma/client/libquery_engine-rhel-*'
+    - '!.env'
+    - '!.git/**'
+
+functions:
+{{#each modules}}
+  create-{{this}}:
+    handler: dist/handlers/create-{{this}}.handler
+    events:
+      - http:
+          path: {{this}}s
+          method: post
+          cors: true
+
+  get-{{this}}:
+    handler: dist/handlers/get-{{this}}.handler
+    events:
+      - http:
+          path: {{this}}s/{id}
+          method: get
+          cors: true
+
+  list-{{this}}s:
+    handler: dist/handlers/list-{{this}}s.handler
+    events:
+      - http:
+          path: {{this}}s
+          method: get
+          cors: true
+
+{{/each}}
+plugins:
+  - serverless-offline

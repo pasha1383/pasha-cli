@@ -1,0 +1,31 @@
+import { APIGatewayProxyResult } from 'aws-lambda';
+
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+  'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+};
+
+export function success(body: unknown, statusCode: number = 200): APIGatewayProxyResult {
+  return {
+    statusCode,
+    headers: CORS_HEADERS,
+    body: JSON.stringify(body),
+  };
+}
+
+export function error(message: string, statusCode: number = 400): APIGatewayProxyResult {
+  return {
+    statusCode,
+    headers: CORS_HEADERS,
+    body: JSON.stringify({ error: message }),
+  };
+}
+
+export function noContent(): APIGatewayProxyResult {
+  return {
+    statusCode: 204,
+    headers: CORS_HEADERS,
+    body: '',
+  };
+}

@@ -1,0 +1,20 @@
+# Cloudflare Workers configuration
+# Dev: npx wrangler dev
+# Deploy: npx wrangler deploy
+
+name = "{{projectName}}"
+main = "src/handlers/list-{{#each modules}}{{this}}{{/each}}s.ts"
+compatibility_date = "{{year}}-01-01"
+
+[env.production]
+vars = { NODE_ENV = "production" }
+{{#if useAuth}}
+vars = { JWT_SECRET = "" }
+{{/if}}
+{{#if hasDatabase}}
+vars = { DATABASE_URL = "" }
+{{/if}}
+
+# Workers does not support raw TCP connections to external databases.
+# Use HTTP-based database proxies (e.g., Neon for PostgreSQL, PlanetScale for MySQL)
+# or the Workers D1 SQLite database natively.

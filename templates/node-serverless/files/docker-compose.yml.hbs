@@ -1,0 +1,51 @@
+services:
+{{#if dbPostgres}}
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: {{shellDefault "DB_NAME" dbName}}
+    ports:
+      - '${DB_PORT:-5432}:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-postgres}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+{{/if}}
+{{#if dbMysql}}
+  mysql:
+    image: mysql:8
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+      MYSQL_DATABASE: {{shellDefault "DB_NAME" dbName}}
+    ports:
+      - '${DB_PORT:-3306}:3306'
+    volumes:
+      - mysql-data:/var/lib/mysql
+{{/if}}
+{{#if dbMongo}}
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - '${DB_PORT:-27017}:27017'
+    volumes:
+      - mongo-data:/data/db
+{{/if}}
+
+volumes:
+{{#if dbPostgres}}
+  postgres-data:
+{{/if}}
+{{#if dbMysql}}
+  mysql-data:
+{{/if}}
+{{#if dbMongo}}
+  mongo-data:
+{{/if}}

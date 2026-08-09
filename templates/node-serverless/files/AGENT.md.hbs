@@ -1,0 +1,91 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository. Read this before
+generating or editing code.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Runtime:** Serverless — handler-per-function. Target platforms: AWS Lambda +
+  API Gateway, or Cloudflare Workers.
+- **Language:** TypeScript (strict mode)
+- **Architecture:** Handler-per-Function (each endpoint is a standalone deployable function)
+- **Data layer:** {{#if ormNone}}in-memory repositories (no ORM){{else}}{{orm}}{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+- **Validation:** {{#if hasValidation}}{{validation}}{{else}}none{{/if}}
+{{#if useAuth}}
+- **Auth:** JWT (Bearer token) — raw verification, no passport
+{{/if}}
+
+## Modules
+
+{{#each modules}}
+- `{{this}}` → handlers: create-{{this}}, get-{{this}}, list-{{this}}s
+{{/each}}
+
+## Commands
+
+```bash
+{{#if useDocker}}
+npm run infra:up        # start databases via docker compose
+npm run infra:down
+{{/if}}
+{{#if ormPrisma}}
+npm run prisma:migrate  # create and apply a migration
+npm run prisma:generate
+{{/if}}
+{{#if useLint}}
+npm run lint            # ESLint with auto-fix
+npm run format          # Prettier
+{{/if}}
+{{#if useTests}}
+npm run test            # unit tests (Jest)
+npm run test:watch
+npm run test:cov        # with coverage
+{{/if}}
+npm run build           # tsc
+```
+
+## Hard rules
+
+1. **Stateless, cold-start ready.** Every function starts cold and exits after
+   the response. No persistent connections, no in-memory caches, no global
+   mutable state. Database connections are lazy-initialized and reused within
+   the same warm container via module-level singletons.
+2. **Handler-per-function.** Each endpoint (`POST /{{moduleName}}`, `GET /{{moduleName}}/:id`,
+   `GET /{{moduleName}}s`) is its own file in `src/handlers/`. There is no
+   monolithic server, no Express app, no routing middleware. A single
+   `serverless.yml` or `wrangler.toml` maps HTTP paths to handler files.
+3. **Handlers receive raw events.** The function signature is always
+   `async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult>`.
+   Do not introduce Express-style `(req, res, next)` abstractions.
+4. **Use `lib/response.ts`** for every response. `success(body, statusCode)` and
+   `error(message, statusCode)` return properly shaped API Gateway responses.
+{{#if hasValidation}}
+5. **Every request body must be validated** via `validate` from `lib/middleware`
+   before any business logic runs. Wrap handler logic in `withErrorHandler`.
+{{/if}}
+6. **TypeScript is strict.** No `any`, no non-null assertions to silence the
+   compiler.
+{{#if hasOrm}}
+7. **Database clients live in `src/lib/database/`.** Import the singleton
+   `prisma` or call `connectMongoose()` — never create new client instances
+   inside a handler.{{/if}}
+{{#if useAuth}}
+8. **Protected handlers** call `verifyToken(event)` from `lib/middleware`. It
+   returns the decoded JWT payload or throws an auth error caught by
+   `withErrorHandler`.
+{{/if}}
+9. **Adding a new {{moduleName}} means adding 4 files**: `create-{{moduleName}}.ts`,
+   `get-{{moduleName}}.ts`, `list-{{moduleName}}s.ts`, `{{moduleName}}.entity.ts`,
+   and `src/types/{{moduleName}}.ts`. Register the handlers in
+   `serverless.yml` (or `wrangler.toml`).
+
+## When you are unsure
+
+Prefer asking over guessing. Generating a plausible-looking file that doesn't
+match the handler-per-function pattern costs more to unpick than a clarifying
+question costs to answer.

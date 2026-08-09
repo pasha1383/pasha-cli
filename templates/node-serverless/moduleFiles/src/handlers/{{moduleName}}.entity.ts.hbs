@@ -1,0 +1,75 @@
+{{#if ormPrisma}}
+import { prisma } from '../../lib/database/prisma.client';
+import { Create{{pascalCase moduleName}}Input, {{pascalCase moduleName}}Data } from '../../types/{{moduleName}}';
+
+export class {{pascalCase moduleName}}Repository {
+  async create(input: Create{{pascalCase moduleName}}Input): Promise<{{pascalCase moduleName}}Data> {
+    const row = await prisma.{{camelCase moduleName}}.create({
+      data: { name: input.name },
+    });
+    return { id: row.id, name: row.name };
+  }
+
+  async findAll(): Promise<{{pascalCase moduleName}}Data[]> {
+    const rows = await prisma.{{camelCase moduleName}}.findMany();
+    return rows.map((r) => ({ id: r.id, name: r.name }));
+  }
+
+  async findById(id: string): Promise<{{pascalCase moduleName}}Data | null> {
+    const row = await prisma.{{camelCase moduleName}}.findUnique({ where: { id } });
+    return row ? { id: row.id, name: row.name } : null;
+  }
+}
+{{/if}}
+{{#if ormMongoose}}
+import { Schema, model } from 'mongoose';
+import { Create{{pascalCase moduleName}}Input, {{pascalCase moduleName}}Data } from '../../types/{{moduleName}}';
+
+const {{camelCase moduleName}}Schema = new Schema(
+  {
+    name: { type: String, required: true },
+  },
+  { timestamps: true, collection: '{{snakeCase moduleName}}' },
+);
+
+const {{pascalCase moduleName}}Model = model('{{pascalCase moduleName}}', {{camelCase moduleName}}Schema);
+
+export class {{pascalCase moduleName}}Repository {
+  async create(input: Create{{pascalCase moduleName}}Input): Promise<{{pascalCase moduleName}}Data> {
+    const doc = await {{pascalCase moduleName}}Model.create({ name: input.name });
+    return { id: doc.id, name: doc.name };
+  }
+
+  async findAll(): Promise<{{pascalCase moduleName}}Data[]> {
+    const docs: { id: string; name: string }[] = await {{pascalCase moduleName}}Model.find().lean();
+    return docs.map((d) => ({ id: d.id, name: d.name }));
+  }
+
+  async findById(id: string): Promise<{{pascalCase moduleName}}Data | null> {
+    const doc: { id: string; name: string } | null = await {{pascalCase moduleName}}Model.findById(id).lean();
+    return doc ? { id: doc.id, name: doc.name } : null;
+  }
+}
+{{/if}}
+{{#if ormNone}}
+import { randomUUID } from 'crypto';
+import { Create{{pascalCase moduleName}}Input, {{pascalCase moduleName}}Data } from '../../types/{{moduleName}}';
+
+export class {{pascalCase moduleName}}Repository {
+  private readonly items = new Map<string, {{pascalCase moduleName}}Data>();
+
+  async create(input: Create{{pascalCase moduleName}}Input): Promise<{{pascalCase moduleName}}Data> {
+    const entity: {{pascalCase moduleName}}Data = { id: randomUUID(), name: input.name };
+    this.items.set(entity.id, entity);
+    return entity;
+  }
+
+  async findAll(): Promise<{{pascalCase moduleName}}Data[]> {
+    return Array.from(this.items.values());
+  }
+
+  async findById(id: string): Promise<{{pascalCase moduleName}}Data | null> {
+    return this.items.get(id) ?? null;
+  }
+}
+{{/if}}

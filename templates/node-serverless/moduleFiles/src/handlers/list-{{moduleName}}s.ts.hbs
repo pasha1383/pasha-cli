@@ -1,0 +1,27 @@
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import { {{pascalCase moduleName}}Repository } from './{{moduleName}}.entity';
+
+{{#if useAuth}}
+import { verifyToken, withErrorHandler, AuthError } from '../../lib/middleware';
+{{else}}
+import { withErrorHandler } from '../../lib/middleware';
+{{/if}}
+import { success } from '../../lib/response';
+
+{{#if ormMongoose}}
+import { connectMongoose } from '../../lib/database/mongoose.connection';
+connectMongoose();
+{{/if}}
+
+const repository = new {{pascalCase moduleName}}Repository();
+
+async function handle(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+  {{#if useAuth}}
+  verifyToken(event);
+  {{/if}}
+
+  const entities = await repository.findAll();
+  return success(entities);
+}
+
+export const handler = withErrorHandler(handle);

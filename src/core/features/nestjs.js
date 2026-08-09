@@ -287,6 +287,8 @@ function resolveScripts(flags) {
 
   if (flags.ormTypeorm) {
     scripts['typeorm'] = 'typeorm-ts-node-commonjs';
+    scripts['migration:generate'] = 'npm run typeorm -- migration:generate -d src/shared/database/typeorm.datasource.ts';
+    scripts['migration:run'] = 'npm run typeorm -- migration:run -d src/shared/database/typeorm.datasource.ts';
   }
 
   if (flags.useDocker) {

@@ -140,6 +140,7 @@ function resolveDependencies(flags) {
 
   if (flags.ormSqlalchemy) {
     requirements.push('sqlalchemy>=2.0.30');
+    devRequirements.push('alembic>=1.13.0');
     if (flags.dbPostgres) {
       requirements.push('asyncpg>=0.29.0');
       requirements.push('psycopg2-binary>=2.9.9');
@@ -242,6 +243,12 @@ function resolveScripts(flags) {
   if (flags.useTests) {
     scripts.test = 'pytest';
     scripts['test:cov'] = 'pytest --cov=. --cov-report=term-missing';
+  }
+
+  if (flags.ormSqlalchemy) {
+    scripts['db:init'] = 'alembic init -t async migrations';
+    scripts['db:migrate'] = 'alembic revision --autogenerate -m "auto"';
+    scripts['db:upgrade'] = 'alembic upgrade head';
   }
 
   if (flags.ormTortoise) {

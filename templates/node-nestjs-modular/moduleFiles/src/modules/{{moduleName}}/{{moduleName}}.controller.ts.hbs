@@ -1,0 +1,34 @@
+import { Body, Controller, Get, Post } from '@nestjs/common';
+{{#if useSwagger}}
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+{{/if}}
+import { {{pascalCase moduleName}}Service } from './{{moduleName}}.service';
+import { Create{{pascalCase moduleName}}Dto } from './dto/create-{{moduleName}}.dto';
+import { {{pascalCase moduleName}} } from './entities/{{moduleName}}.entity';
+
+{{#if useSwagger}}
+@ApiTags('{{moduleName}}')
+{{/if}}
+@Controller('{{moduleName}}')
+export class {{pascalCase moduleName}}Controller {
+  constructor(
+    private readonly {{camelCase moduleName}}Service: {{pascalCase moduleName}}Service,
+  ) {}
+
+  @Post()
+{{#if useSwagger}}
+  @ApiOperation({ summary: 'Create a {{moduleName}}' })
+  @ApiResponse({ status: 201, description: 'Created.' })
+{{/if}}
+  async create(@Body() dto: Create{{pascalCase moduleName}}Dto): Promise<{{pascalCase moduleName}}> {
+    return this.{{camelCase moduleName}}Service.create(dto);
+  }
+
+  @Get()
+{{#if useSwagger}}
+  @ApiOperation({ summary: 'List all {{moduleName}} records' })
+{{/if}}
+  async findAll(): Promise<{{pascalCase moduleName}}[]> {
+    return this.{{camelCase moduleName}}Service.findAll();
+  }
+}

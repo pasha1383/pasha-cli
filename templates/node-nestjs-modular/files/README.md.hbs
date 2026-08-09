@@ -1,0 +1,68 @@
+# {{projectName}}
+
+{{description}}
+
+Built with pasha CLI — **Modular Monolith** on NestJS.
+
+## Stack
+
+- **Data layer:** {{#if ormNone}}in-memory repositories{{else}}{{orm}}{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+- **Validation:** {{#if hasValidation}}{{validation}}{{else}}none{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis
+{{/if}}
+{{#if hasBroker}}
+- **Messaging:** {{broker}}
+{{/if}}
+
+## Run
+
+```bash
+cp .env.example .env
+{{#if useDocker}}
+npm run infra:up          # start docker services
+{{/if}}
+npm install
+{{#if ormPrisma}}
+npm run prisma:migrate    # create the database schema
+{{/if}}
+npm run start:dev
+```
+
+## Modules
+
+{{#each modules}}
+- `{{this}}` → `http://localhost:3000/{{this}}`
+{{/each}}
+
+## Structure (modular monolith)
+
+```
+src/
+├── modules/<module>/            ← each module is a full vertical slice
+│   ├── <module>.module.ts       ← NestJS module (exports public API)
+│   ├── <module>.controller.ts   ← HTTP layer
+│   ├── <module>.service.ts      ← business logic
+│   ├── <module>.repository.ts   ← data access (branched by ORM)
+│   ├── entities/<module>.entity.ts
+│   ├── dto/create-<module>.dto.ts
+│   └── <module>.controller.spec.ts
+└── shared/                      ← shared kernel (cross-cutting)
+    ├── database/                ← ORM clients
+    ├── cache/                   ← Redis
+    ├── auth/                    ← guards, interceptors
+    └── health/                  ← health check
+```
+
+**Module boundaries:** each module exposes a public API through its
+`*.module.ts` `exports` array. Other modules import only that public
+surface — never reach into another module's internal files directly.
+
+**Shared kernel:** `src/shared/` contains infrastructure code that every
+module can depend on. It must never depend on a feature module.
+
+---
+Made with ❤️ by {{author}}

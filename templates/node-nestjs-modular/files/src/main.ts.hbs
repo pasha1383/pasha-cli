@@ -1,0 +1,26 @@
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+{{#if useClassValidator}}
+import { globalValidationPipe } from './config/validation.pipe';
+{{/if}}
+{{#if useSwagger}}
+import { setupSwagger } from './config/swagger';
+{{/if}}
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+{{#if useClassValidator}}
+  app.useGlobalPipes(globalValidationPipe);
+{{/if}}
+{{#if useSwagger}}
+  setupSwagger(app);
+{{/if}}
+  const port = process.env.PORT ?? 3000;
+  await app.listen(port);
+  console.log(`🚀 {{projectName}} is running on http://localhost:${port}`);
+{{#if useSwagger}}
+  console.log(`📘 API docs at http://localhost:${port}/api/docs`);
+{{/if}}
+}
+
+bootstrap();

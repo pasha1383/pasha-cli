@@ -1,0 +1,122 @@
+{{#if ormPrisma}}
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../../shared/database/prisma.service';
+import { {{pascalCase moduleName}} } from './entities/{{moduleName}}.entity';
+import { Create{{pascalCase moduleName}}Dto } from './dto/create-{{moduleName}}.dto';
+
+@Injectable()
+export class {{pascalCase moduleName}}Repository {
+  constructor(private readonly prisma: PrismaService) {}
+
+  create(dto: Create{{pascalCase moduleName}}Dto): {{pascalCase moduleName}} {
+    return new {{pascalCase moduleName}}(dto.name);
+  }
+
+  async save(entity: {{pascalCase moduleName}}): Promise<{{pascalCase moduleName}}> {
+    const row = await this.prisma.{{camelCase moduleName}}.create({
+      data: { name: entity.name },
+    });
+    return new {{pascalCase moduleName}}(row.id, row.name);
+  }
+
+  async findAll(): Promise<{{pascalCase moduleName}}[]> {
+    const rows = await this.prisma.{{camelCase moduleName}}.findMany();
+    return rows.map((r: { id: string; name: string }) => new {{pascalCase moduleName}}(r.id, r.name));
+  }
+
+  async findById(id: string): Promise<{{pascalCase moduleName}} | null> {
+    const row = await this.prisma.{{camelCase moduleName}}.findUnique({ where: { id } });
+    return row ? new {{pascalCase moduleName}}(row.id, row.name) : null;
+  }
+}
+{{/if}}
+{{#if ormTypeorm}}
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { {{pascalCase moduleName}} } from './entities/{{moduleName}}.entity';
+import { Create{{pascalCase moduleName}}Dto } from './dto/create-{{moduleName}}.dto';
+
+@Injectable()
+export class {{pascalCase moduleName}}Repository {
+  constructor(
+    @InjectRepository({{pascalCase moduleName}})
+    private readonly repo: Repository<{{pascalCase moduleName}}>,
+  ) {}
+
+  create(dto: Create{{pascalCase moduleName}}Dto): {{pascalCase moduleName}} {
+    return this.repo.create(dto);
+  }
+
+  save(entity: {{pascalCase moduleName}}): Promise<{{pascalCase moduleName}}> {
+    return this.repo.save(entity);
+  }
+
+  findAll(): Promise<{{pascalCase moduleName}}[]> {
+    return this.repo.find();
+  }
+
+  findById(id: string): Promise<{{pascalCase moduleName}} | null> {
+    return this.repo.findOne({ where: { id } });
+  }
+}
+{{/if}}
+{{#if ormMongoose}}
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { {{pascalCase moduleName}}, {{pascalCase moduleName}}Document } from './entities/{{moduleName}}.entity';
+import { Create{{pascalCase moduleName}}Dto } from './dto/create-{{moduleName}}.dto';
+
+@Injectable()
+export class {{pascalCase moduleName}}Repository {
+  constructor(
+    @InjectModel({{pascalCase moduleName}}.name)
+    private readonly model: Model<{{pascalCase moduleName}}Document>,
+  ) {}
+
+  create(dto: Create{{pascalCase moduleName}}Dto): {{pascalCase moduleName}} {
+    return new this.model(dto);
+  }
+
+  async save(entity: {{pascalCase moduleName}}): Promise<{{pascalCase moduleName}}> {
+    return entity.save();
+  }
+
+  async findAll(): Promise<{{pascalCase moduleName}}[]> {
+    return this.model.find().exec();
+  }
+
+  async findById(id: string): Promise<{{pascalCase moduleName}} | null> {
+    return this.model.findOne({ id }).exec();
+  }
+}
+{{/if}}
+{{#if ormNone}}
+import { Injectable } from '@nestjs/common';
+import { {{pascalCase moduleName}} } from './entities/{{moduleName}}.entity';
+import { Create{{pascalCase moduleName}}Dto } from './dto/create-{{moduleName}}.dto';
+import { randomUUID } from 'crypto';
+
+@Injectable()
+export class {{pascalCase moduleName}}Repository {
+  private readonly items = new Map<string, {{pascalCase moduleName}}>();
+
+  create(dto: Create{{pascalCase moduleName}}Dto): {{pascalCase moduleName}} {
+    return new {{pascalCase moduleName}}(randomUUID(), dto.name);
+  }
+
+  async save(entity: {{pascalCase moduleName}}): Promise<{{pascalCase moduleName}}> {
+    this.items.set(entity.id, entity);
+    return entity;
+  }
+
+  async findAll(): Promise<{{pascalCase moduleName}}[]> {
+    return Array.from(this.items.values());
+  }
+
+  async findById(id: string): Promise<{{pascalCase moduleName}} | null> {
+    return this.items.get(id) ?? null;
+  }
+}
+{{/if}}

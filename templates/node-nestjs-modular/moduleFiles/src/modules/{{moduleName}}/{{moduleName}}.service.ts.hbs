@@ -1,0 +1,33 @@
+import { Injectable } from '@nestjs/common';
+import { {{pascalCase moduleName}}Repository } from './{{moduleName}}.repository';
+import { {{pascalCase moduleName}} } from './entities/{{moduleName}}.entity';
+import { Create{{pascalCase moduleName}}Dto } from './dto/create-{{moduleName}}.dto';
+{{#if ormNone}}
+import { randomUUID } from 'crypto';
+{{/if}}
+
+/**
+ * Public API of the {{moduleName}} module. Other modules import only this
+ * service — never the controller, repository, or entity directly.
+ */
+@Injectable()
+export class {{pascalCase moduleName}}Service {
+  constructor(
+    private readonly {{camelCase moduleName}}Repository: {{pascalCase moduleName}}Repository,
+  ) {}
+
+  async create(dto: Create{{pascalCase moduleName}}Dto): Promise<{{pascalCase moduleName}}> {
+{{#if ormNone}}
+    const entity = new {{pascalCase moduleName}}(randomUUID(), dto.name);
+    await this.{{camelCase moduleName}}Repository.save(entity);
+    return entity;
+{{else}}
+    const entity = this.{{camelCase moduleName}}Repository.create(dto);
+    return this.{{camelCase moduleName}}Repository.save(entity);
+{{/if}}
+  }
+
+  findAll(): Promise<{{pascalCase moduleName}}[]> {
+    return this.{{camelCase moduleName}}Repository.findAll();
+  }
+}

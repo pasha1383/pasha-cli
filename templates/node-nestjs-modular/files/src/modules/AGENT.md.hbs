@@ -1,0 +1,17 @@
+# AGENT.md — src/modules/
+
+Feature modules. Each directory is an independent vertical slice.
+
+## Rules
+
+- One folder per feature: `src/modules/<name>/`.
+- Each module's `*.module.ts` **exports only its service** (or a DI token)
+  — that is the module's public API. Everything else (controller, repository,
+  entity, DTOs) is an implementation detail and must stay private.
+- Other modules import only the public API. Never:
+  - Import another module's controller or repository directly.
+  - Import another module's entity or DTO to reuse it — that leaks internals.
+  If two modules need the same type, it belongs in `src/shared/`.
+- The service contains all business logic. The controller is thin: validate
+  input, delegate to the service, return the result.
+- Every module here must be imported in `src/app.module.ts`.

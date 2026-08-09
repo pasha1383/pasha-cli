@@ -1,0 +1,30 @@
+import { Module } from '@nestjs/common';
+{{#if ormTypeorm}}
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { {{pascalCase moduleName}} } from './entities/{{moduleName}}.entity';
+{{/if}}
+{{#if ormMongoose}}
+import { MongooseModule } from '@nestjs/mongoose';
+import { {{pascalCase moduleName}}, {{pascalCase moduleName}}Schema } from './entities/{{moduleName}}.entity';
+{{/if}}
+import { {{pascalCase moduleName}}Controller } from './{{moduleName}}.controller';
+import { {{pascalCase moduleName}}Service } from './{{moduleName}}.service';
+import { {{pascalCase moduleName}}Repository } from './{{moduleName}}.repository';
+
+/**
+ * {{pascalCase moduleName}} module. Exposes only {{pascalCase moduleName}}Service — that is the
+ * public API. Other modules consume it through DI, never by importing
+ * internal files directly.
+ */
+@Module({
+{{#if ormTypeorm}}
+  imports: [TypeOrmModule.forFeature([{{pascalCase moduleName}}])],
+{{/if}}
+{{#if ormMongoose}}
+  imports: [MongooseModule.forFeature([{ name: {{pascalCase moduleName}}.name, schema: {{pascalCase moduleName}}Schema }])],
+{{/if}}
+  controllers: [{{pascalCase moduleName}}Controller],
+  providers: [{{pascalCase moduleName}}Service, {{pascalCase moduleName}}Repository],
+  exports: [{{pascalCase moduleName}}Service],
+})
+export class {{pascalCase moduleName}}Module {}

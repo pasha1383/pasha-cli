@@ -1,0 +1,28 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { {{pascalCase moduleName}}Controller } from './{{moduleName}}.controller';
+import { {{pascalCase moduleName}}Service } from './{{moduleName}}.service';
+
+describe('{{pascalCase moduleName}}Controller', () => {
+  let controller: {{pascalCase moduleName}}Controller;
+  let service: Partial<{{pascalCase moduleName}}Service>;
+
+  beforeEach(async () => {
+    service = {
+      create: jest.fn().mockResolvedValue({ id: '1', name: 'test' }),
+      findAll: jest.fn().mockResolvedValue([]),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [{{pascalCase moduleName}}Controller],
+      providers: [{ provide: {{pascalCase moduleName}}Service, useValue: service }],
+    }).compile();
+
+    controller = module.get<{{pascalCase moduleName}}Controller>({{pascalCase moduleName}}Controller);
+  });
+
+  it('delegates create to the service', async () => {
+    const result = await controller.create({ name: 'test' });
+    expect(service.create).toHaveBeenCalledWith({ name: 'test' });
+    expect(result).toEqual({ id: '1', name: 'test' });
+  });
+});

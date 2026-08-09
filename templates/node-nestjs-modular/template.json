@@ -1,0 +1,26 @@
+{
+  "name": "Node.js + NestJS + Modular Monolith",
+  "prerequisites": ["node", "npm", "git"],
+  "shared": "_shared/nestjs",
+  "stackFeatures": "nestjs",
+  "modules": {
+    "enabled": true,
+    "message": "Module name (e.g. product, user, order)",
+    "default": "product"
+  },
+  "fileConditions": {
+    "docker-compose.yml.hbs": "useDocker",
+    "src/config/AGENT.md.hbs": "useAgentDocs",
+    "src/modules/AGENT.md.hbs": "useAgentDocs",
+    "AGENT.md.hbs": "useAgentDocs",
+    "src/modules/{{moduleName}}/{{moduleName}}.controller.spec.ts.hbs": "useTests",
+    ".eslintrc.js": "useLint",
+    ".prettierrc": "useLint",
+    "test": "useTests",
+    ".github": "useCI",
+    "Dockerfile.hbs": "useAppDockerfile",
+    ".dockerignore.hbs": "useAppDockerfile"
+  },
+  "postInstall": ["npm install"],
+  "gitInit": true
+}

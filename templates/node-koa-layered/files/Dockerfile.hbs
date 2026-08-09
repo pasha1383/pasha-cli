@@ -1,28 +1,24 @@
-# ---- build stage ----
+# ---- Build stage ----
 FROM node:20-alpine AS build
 WORKDIR /app
-
 COPY package*.json ./
 RUN npm ci
-
 COPY . .
-{{#if ormPrisma}}
-RUN npx prisma generate
-{{/if}}
 RUN npm run build
 
-# ---- runtime stage ----
-FROM node:20-alpine AS runtime
+# ---- Production stage ----
+FROM node:20-alpine
 WORKDIR /app
-ENV NODE_ENV=production
-
-COPY package*.json ./
-RUN npm ci --omit=dev
+RUN addgroup -g 1001 -S app && adduser -S app -u 1001 -G app
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/package*.json ./
 {{#if ormPrisma}}
 COPY --from=build /app/prisma ./prisma
-RUN npx prisma generate
 {{/if}}
-COPY --from=build /app/dist ./dist
-
+USER app
+ENV NODE_ENV=production
 EXPOSE 3000
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
 CMD ["node", "dist/main.js"]

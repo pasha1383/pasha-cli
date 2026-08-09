@@ -71,7 +71,7 @@ const INLINE_HELPERS = new Set([
   'log',
 ]);
 
-const MUSTACHE = /\{\{\{?[^{}]*\}?\}\}/g;
+const MUSTACHE = /(?<!\\)\{\{\{?[^{}]*\}?\}\}/g;
 
 function scanMustaches(src) {
   const tags = [];

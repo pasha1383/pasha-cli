@@ -53,6 +53,18 @@
             "modular": {
               "label": "Modular Monolith",
               "template": "node-nestjs-modular"
+            },
+            "cqrs": {
+              "label": "CQRS (Command-Query Separation)",
+              "template": "node-nestjs-cqrs"
+            },
+            "vertical": {
+              "label": "Vertical Slice",
+              "template": "node-nestjs-vertical"
+            },
+            "onion": {
+              "label": "Onion Architecture",
+              "template": "node-nestjs-onion"
             }
           }
         },
@@ -74,6 +86,10 @@
             "modular": {
               "label": "Modular Monolith",
               "template": "node-express-modular"
+            },
+            "onion": {
+              "label": "Onion Architecture",
+              "template": "node-nestjs-onion"
             }
           }
         },

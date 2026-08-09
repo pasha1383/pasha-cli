@@ -1,0 +1,33 @@
+# AGENT.md — src/
+
+Application root.
+
+## What lives here
+
+- `main.ts` — starts the server{{#if hasOrm}} and initializes the ORM connection{{/if}}. Nothing else.
+- `app.ts` — **composition root.** Wire every module's object graph here
+  and nowhere else. Import this directly in tests (via supertest + `app.callback()`)
+  instead of starting a real server.
+- `config/` — environment loading{{#if useSwagger}} and Swagger setup{{/if}}.
+- `middlewares/` — cross-cutting request handling (errors, validation glue)
+  used by more than one route.
+- `shared/` — cross-cutting infrastructure (database, cache{{#if useAuth}}, auth{{/if}}{{#if useHealthCheck}}, health{{/if}}) used by more
+  than one module.
+- `core/` — domain entities, repository ports (abstract interfaces), and
+  use-cases. This layer has zero knowledge of Koa or any adapter.
+- `adapters/` — concrete implementations of core ports. Controllers, routes,
+  presenters, DTOs, and repository implementations live here.
+
+## Rules
+
+- Do not put business logic in `main.ts` or `app.ts`.
+- When you add a new module, wire it in `app.ts` in the same change — an
+  unwired controller is unreachable and fails silently.
+- `core/` must never import from `adapters/`. The arrow points inward.
+- Koa error handling differs from Express: the error middleware at the top of
+  the stack catches all thrown errors automatically. No manual `next(err)`
+  needed.
+{{#if useAuth}}
+- Auth middleware (`authenticate`) is imported from `shared/auth/auth.middleware`.
+  Apply it as a per-route middleware in the router that needs protection.
+{{/if}}

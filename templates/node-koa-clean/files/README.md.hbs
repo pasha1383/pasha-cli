@@ -1,0 +1,62 @@
+# {{projectName}}
+
+{{description}}
+
+Built with pasha CLI — **Clean Architecture** on Koa.
+
+## Stack
+
+- **Data layer:** {{#if ormNone}}in-memory repositories{{else}}{{orm}}{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+- **Validation:** {{#if hasValidation}}{{validation}}{{else}}none{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis
+{{/if}}
+
+## Run
+
+```bash
+cp .env.example .env
+{{#if useDocker}}
+npm run infra:up          # start docker services
+{{/if}}
+npm install
+{{#if ormPrisma}}
+npm run prisma:migrate    # create the database schema
+{{/if}}
+npm run start:dev
+```
+
+## Modules
+
+{{#each modules}}
+- `{{this}}` → `http://localhost:3000/{{this}}`
+{{/each}}
+
+## Structure
+
+```
+src/
+├── main.ts                    ← starts the server (and ORM connection, if any)
+├── app.ts                     ← composition root: wires every module here
+├── config/env.ts              ← the only file that reads process.env
+├── middlewares/                ← cross-cutting error / validation glue
+├── shared/                     ← database/cache clients used by more than one module
+├── core/                       ← business rules, zero framework dependencies
+│   ├── entities/               ← domain entities
+│   ├── ports/                  ← abstract interfaces (repository contracts)
+│   └── use-cases/<module>/     ← one class per operation
+└── adapters/<module>/          ← concrete implementations of core ports
+    ├── controllers/            ← Koa ctx handlers
+    ├── routes/                 ← route factories (bind HTTP verbs to controller methods)
+    ├── presenters/             ← maps domain entities → API response shapes
+    ├── dto/                    ← request validation schemas
+    └── repositories/           ← ORM-specific repository implementations
+```
+
+Dependency rule: `adapters/` depends on `core/` — never the reverse.
+
+---
+Made with ❤️ by {{author}}

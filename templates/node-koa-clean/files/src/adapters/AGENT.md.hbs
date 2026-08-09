@@ -1,0 +1,28 @@
+# AGENT.md — src/adapters/
+
+The "outside" layer. Everything here depends on `core/` — never the reverse.
+
+## What lives here
+
+- `controllers/` — Koa ctx handlers. Controllers receive use-cases through
+  their constructor. Errors thrown in controller methods are caught by the
+  top-level error middleware — no try/catch needed.
+- `routes/` — factories that take a pre-wired controller and return a
+  Koa `Router`. The wiring (`new Controller(...)`) happens in `app.ts`.
+- `presenters/` — maps domain entities to views (API response shapes).
+  Changing the response format should touch this file and nothing in `core/`.
+- `dto/` — request body shapes and validation schemas.
+- `repositories/` — concrete implementations of core ports. Depending on the
+  chosen ORM, this contains:
+  - `{{moduleName}}.orm-entity.ts` — TypeORM entity (persistence-only)
+  - `{{moduleName}}.schema.ts` — Mongoose schema/model (persistence-only)
+  - `{{moduleName}}.repository.ts` — all ORM implementations + in-memory
+
+## Rules
+
+- Controllers are plain classes — no decorators. The routes factory binds
+  HTTP verbs to controller methods.
+- Repositories implement the port from `core/ports/`. They map between ORM
+  rows and domain entities.
+- ORM entities (`orm-entity.ts`, `.schema.ts`) are persistence details — they
+  are NOT the domain entity. Keep them in this layer.

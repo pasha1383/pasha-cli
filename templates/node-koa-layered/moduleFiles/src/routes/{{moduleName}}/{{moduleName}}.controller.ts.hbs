@@ -1,0 +1,22 @@
+import { Context } from 'koa';
+import { {{pascalCase moduleName}}Service } from './{{moduleName}}.service';
+
+export class {{pascalCase moduleName}}Controller {
+  constructor(private readonly service: {{pascalCase moduleName}}Service) {}
+
+  create = async (ctx: Context): Promise<void> => {
+    const entity = await this.service.create(ctx.request.body as { name: string });
+    ctx.status = 201;
+    ctx.body = entity;
+  };
+
+  findAll = async (ctx: Context): Promise<void> => {
+    const entities = await this.service.findAll();
+    ctx.body = entities;
+  };
+
+  findOne = async (ctx: Context): Promise<void> => {
+    const entity = await this.service.findOne(ctx.params.id);
+    ctx.body = entity;
+  };
+}

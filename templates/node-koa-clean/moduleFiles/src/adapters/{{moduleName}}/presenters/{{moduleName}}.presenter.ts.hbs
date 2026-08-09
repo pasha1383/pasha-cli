@@ -1,0 +1,16 @@
+import { {{pascalCase moduleName}} } from '../../../core/entities/{{moduleName}}.entity';
+
+export interface {{pascalCase moduleName}}View {
+  id: string;
+  name: string;
+}
+
+export class {{pascalCase moduleName}}Presenter {
+  toView(entity: {{pascalCase moduleName}}): {{pascalCase moduleName}}View {
+    return { id: entity.id, name: entity.name };
+  }
+
+  toViewList(entities: {{pascalCase moduleName}}[]): {{pascalCase moduleName}}View[] {
+    return entities.map((e) => this.toView(e));
+  }
+}

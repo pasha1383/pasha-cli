@@ -1,0 +1,14 @@
+import { FastifyInstance } from 'fastify';
+import { {{pascalCase moduleName}}Controller } from './{{moduleName}}.controller';
+
+/**
+ * Registers the {{moduleName}} CRUD routes on the provided Fastify instance.
+ * This function is internal to the module — only the plugin imports it.
+ */
+export function {{camelCase moduleName}}Routes(controller: {{pascalCase moduleName}}Controller) {
+  return async (fastify: FastifyInstance) => {
+    fastify.post('/', controller.create);
+    fastify.get('/', controller.getAll);
+    fastify.get('/:id', controller.getOne);
+  };
+}

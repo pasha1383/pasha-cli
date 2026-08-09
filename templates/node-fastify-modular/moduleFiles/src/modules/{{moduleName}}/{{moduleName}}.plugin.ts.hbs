@@ -1,0 +1,24 @@
+import fp from 'fastify-plugin';
+import { FastifyInstance } from 'fastify';
+import { {{pascalCase moduleName}}Repository } from './{{moduleName}}.repository';
+import { {{pascalCase moduleName}}Service } from './{{moduleName}}.service';
+import { {{pascalCase moduleName}}Controller } from './{{moduleName}}.controller';
+import { {{camelCase moduleName}}Routes } from './{{moduleName}}.routes';
+
+/**
+ * {{pascalCase moduleName}} module plugin.
+ *
+ * This is the **only public export** of the module. Everything else
+ * (entity, repository, service, controller, routes) is private.
+ * Cross-module communication goes through this plugin's interface,
+ * never by importing another module's internals directly.
+ */
+const {{camelCase moduleName}}Plugin = fp(async (fastify: FastifyInstance) => {
+  const repository = new {{pascalCase moduleName}}Repository();
+  const service = new {{pascalCase moduleName}}Service(repository);
+  const controller = new {{pascalCase moduleName}}Controller(service);
+
+  await fastify.register({{camelCase moduleName}}Routes(controller));
+});
+
+export default {{camelCase moduleName}}Plugin;

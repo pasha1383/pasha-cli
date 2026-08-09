@@ -1,0 +1,13 @@
+{{#if useZod}}
+import { z } from 'zod';
+
+export const create{{pascalCase moduleName}}Schema = z.object({
+  name: z.string().min(1).max(255),
+});
+
+export type Create{{pascalCase moduleName}}Dto = z.infer<typeof create{{pascalCase moduleName}}Schema>;
+{{else}}
+export interface Create{{pascalCase moduleName}}Dto {
+  name: string;
+}
+{{/if}}

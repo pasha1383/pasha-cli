@@ -1,0 +1,61 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Framework:** Flask (Python) — Layered architecture
+- **Architecture:** {{architectureLabel}}
+{{#if ormSqlalchemy}}
+- **ORM:** SQLAlchemy (Flask-SQLAlchemy){{/if}}
+{{#if ormNone}}
+- **Data layer:** in-memory repositories{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}{{/if}}
+
+## Modules
+
+{{#each modules}}
+- `{{snakeCase this}}`
+{{/each}}
+
+## Commands
+
+```bash
+source venv/bin/activate
+flask run --debug                                # dev server on :5000
+{{#if useDocker}}
+docker compose up -d                             # start databases
+docker compose down
+{{/if}}
+gunicorn app:create_app()                         # production server
+{{#if useLint}}
+ruff check .                                     # lint
+ruff format .                                    # format
+{{/if}}
+{{#if useTests}}
+pytest                                           # run tests
+pytest --cov=. --cov-report=term-missing
+{{/if}}
+```
+
+## Hard rules
+
+1. **Blueprint → Service → Repository.** A layer only calls the one directly
+   below it. Views never touch repositories directly.
+2. **Plain dicts as DTO boundary.** Request/response data is passed as dicts
+   between layers. No schema library (Flask uses request data directly).
+3. **`src/config/settings.py` is the only file that reads `os.environ`** directly.
+4. **`AppError` / `NotFoundError` / `ValidationError`** from
+   `src/errors/app_error.py` — raise them in services, let the Flask
+   error handler translate them.
+5. **Adding a module means adding every file.** `__init__.py`, `_model.py`,
+   `_repository.py`, `_service.py`, `_views.py`{{#if useTests}}, `_test.py`{{/if}}.
+6. **Register new Blueprints** in `app.py` or they won't be reachable.
+
+## When you are unsure
+
+Prefer asking over guessing. Generating a plausible-looking file in the wrong
+layer costs more to unpick than a clarifying question costs to answer.

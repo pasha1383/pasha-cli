@@ -65,6 +65,10 @@
             "onion": {
               "label": "Onion Architecture",
               "template": "node-nestjs-onion"
+            },
+            "event-driven": {
+              "label": "Event-Driven / Event Sourcing",
+              "template": "node-nestjs-event-driven"
             }
           }
         },
@@ -93,6 +97,19 @@
             }
           }
         },
+        "koa": {
+          "label": "Koa",
+          "architectures": {
+            "layered": {
+              "label": "Layered (Controller-Service-Repository)",
+              "template": "node-koa-layered"
+            },
+            "clean": {
+              "label": "Clean Architecture",
+              "template": "node-koa-clean"
+            }
+          }
+        },
         "fastify": {
           "label": "Fastify",
           "architectures": {
@@ -111,6 +128,15 @@
             "hexagonal": {
               "label": "Hexagonal / DDD",
               "template": "node-fastify-hexagonal"
+            }
+          }
+        },
+        "serverless": {
+          "label": "Serverless (AWS Lambda / Workers)",
+          "architectures": {
+            "function": {
+              "label": "Handler-per-Function",
+              "template": "node-serverless"
             }
           }
         }
@@ -142,6 +168,15 @@
             "hexagonal": {
               "label": "Hexagonal / DDD",
               "template": "python-fastapi-hexagonal"
+            }
+          }
+        },
+        "flask": {
+          "label": "Flask",
+          "architectures": {
+            "layered": {
+              "label": "Layered (Blueprint-Service-Repository)",
+              "template": "python-flask-layered"
             }
           }
         }

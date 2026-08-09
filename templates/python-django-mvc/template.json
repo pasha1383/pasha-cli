@@ -10,12 +10,9 @@
   },
   "fileConditions": {
     "docker-compose.yml.hbs": "useDocker",
-    "config/settings.py.hbs": true,
-    "config/urls.py.hbs": true,
     "{{snakeCase moduleName}}/tests.py.hbs": "useTests",
     "{{snakeCase moduleName}}/serializers.py.hbs": "hasValidation",
     "AGENT.md.hbs": "useAgentDocs",
-    "config/AGENT.md.hbs": "useAgentDocs",
     "Dockerfile.hbs": "useAppDockerfile",
     ".dockerignore.hbs": "useAppDockerfile",
     ".github": "useCI"

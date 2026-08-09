@@ -149,6 +149,15 @@
             }
           }
         },
+        "hapi": {
+          "label": "Hapi",
+          "architectures": {
+            "layered": {
+              "label": "Layered (Handler-Service-Repository)",
+              "template": "node-hapi-layered"
+            }
+          }
+        },
         "serverless": {
           "label": "Serverless (AWS Lambda / Workers)",
           "architectures": {

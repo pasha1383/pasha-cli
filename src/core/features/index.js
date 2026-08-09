@@ -10,6 +10,7 @@ const flask = require('./flask');
 const go = require('./go');
 const goStdlib = require('./go-stdlib');
 const chi = require('./chi');
+const hapi = require('./hapi');
 
 const REGISTRY = {
   nestjs,
@@ -22,6 +23,7 @@ const REGISTRY = {
   go,
   'go-stdlib': goStdlib,
   chi,
+  hapi,
 };
 
 // Validates at load time that every module exports the required interface

@@ -1,0 +1,85 @@
+import Hapi from '@hapi/hapi';
+{{#if useRateLimit}}
+import HapiRateLimit from 'hapi-rate-limit';
+{{/if}}
+import { env } from './config/env';
+{{#if useSwagger}}
+import { inertPlugin, visionPlugin, swaggerPlugin } from './plugins/swagger';
+{{/if}}
+{{#if useAuth}}
+import { authPlugin } from './plugins/auth';
+{{/if}}
+{{#if useHealthCheck}}
+import { healthRoutes } from './shared/health/health.routes';
+{{/if}}
+{{#each modules}}
+import { {{camelCase this}}Routes } from './routes/{{this}}/{{this}}.routes';
+{{/each}}
+
+/**
+ * Builds a configured Hapi server without starting it — kept separate from
+ * main.ts so tests can import it and drive requests with server.inject()
+ * instead of binding a real port.
+ */
+export async function initServer(): Promise<Hapi.Server> {
+  const server = Hapi.server({
+    port: env.port,
+    host: 'localhost',
+    routes: {
+      cors: true,
+      validate: {
+        failAction: async (request, h, err) => {
+          throw err;
+        },
+      },
+    },
+  });
+
+{{#if useRateLimit}}
+  await server.register({
+    plugin: HapiRateLimit,
+    options: {
+      enabled: true,
+      userLimit: env.rateLimitMax,
+    },
+  });
+{{/if}}
+
+{{#if useSwagger}}
+  await server.register([inertPlugin, visionPlugin, swaggerPlugin]);
+{{/if}}
+
+{{#if useAuth}}
+  await server.register([authPlugin]);
+{{/if}}
+
+{{#if useHealthCheck}}
+  server.route(healthRoutes);
+{{/if}}
+
+{{#each modules}}
+  server.route({{camelCase this}}Routes);
+{{/each}}
+
+  // Global error handling for unexpected errors that reach Hapi's internal
+  // error wrapping. Known errors (AppError) are already caught in handlers.
+  // This ext point sanitizes 500 responses so internal details never leak.
+  server.ext('onPreResponse', (request, h) => {
+    const response = request.response;
+
+    if (response.isBoom) {
+      const statusCode = response.output.statusCode;
+      if (statusCode >= 500) {
+        console.error(response);
+        // In production, return a generic message. In development, keep it.
+        const message = env.nodeEnv === 'production' ? 'Internal server error' : response.message;
+        return h.response({ error: message }).code(statusCode);
+      }
+    }
+
+    return h.continue;
+  });
+
+  await server.initialize();
+  return server;
+}

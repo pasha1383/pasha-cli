@@ -1,0 +1,30 @@
+# AGENT.md — src/
+
+Application root.
+
+## What lives here
+
+- `main.ts` — starts the server{{#if hasOrm}} and initializes the ORM connection{{/if}}. Nothing else.
+- `server.ts` — builds the Hapi server (initServer factory), registers plugins
+  and routes. Import this directly in tests to drive requests with
+  `server.inject()` instead of starting a real server.
+- `config/` — environment loading.
+- `plugins/` — Hapi plugin registrations (swagger{{#if useAuth}}, auth{{/if}}).
+- `errors/` — AppError base class and subclasses (NotFoundError, ValidationError).
+- `shared/` — cross-cutting infrastructure (database, cache{{#if useAuth}}, auth{{/if}}{{#if useHealthCheck}}, health{{/if}}) used by more
+  than one module.
+- `routes/` — one directory per feature module.
+
+## Rules
+
+- Do not put business logic in `main.ts` or `server.ts`.
+- When you add a new module, register its routes in `server.ts` with
+  `server.route(moduleRoutes)` in the same change — unregistered routes
+  are unreachable and fail silently.
+- Plugins (swagger, auth) are registered in `server.ts` via
+  `await server.register([...])`.
+- Cross-cutting concerns (error formatting) use `server.ext('onPreResponse', ...)`.
+{{#if useAuth}}
+- Auth is set up as a JWT strategy in `plugins/auth.ts`. Apply it to a
+  route by setting `options: { auth: 'jwt' }` in the route config.
+{{/if}}

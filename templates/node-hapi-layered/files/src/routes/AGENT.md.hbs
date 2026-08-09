@@ -1,0 +1,37 @@
+# AGENT.md — src/routes/
+
+One directory per feature. Each is self-contained and stacks four layers.
+
+## Call direction
+
+```
+routes.ts (wiring)  →  handler  →  service  →  repository
+```
+
+`routes.ts` is the only file that constructs anything with `new`. Everything
+else receives its dependencies through the constructor.
+
+## Responsibilities
+
+- `<module>.routes.ts` — composition root: builds the repository, service,
+  and handler for this module, and exports an array of `ServerRoute[]`.
+- `<module>.handler.ts` — Hapi request handlers only. Parses the request,
+  calls the service, returns `h.response(data).code(status)`.
+- `<module>.service.ts` — business logic. Throws `NotFoundError` /
+  `ValidationError` (from `errors/`) rather than touching response objects.
+- `<module>.repository.ts` — data access only.
+{{#if hasValidation}}
+- `<module>.validation.ts` — request validation ({{validation}}).
+{{/if}}
+
+## Rules
+
+- A module may import from `shared/`. A module must **not** import from
+  another module's internals — nothing here currently needs to; if it ever
+  does, go through that module's exported service.
+- New module means: create the directory with all its files, then register
+  its routes in `src/server.ts` with `server.route(moduleRoutes)`.
+{{#if useJoi}}
+- Joi validation is applied via Hapi's native `options.validate.payload` in
+  the route config — Hapi automatically sends a 400 on validation failure.
+{{/if}}

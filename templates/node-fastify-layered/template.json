@@ -17,8 +17,6 @@
     "src/shared/database/mongoose.connection.ts.hbs": "ormMongoose",
     "src/shared/cache": "useRedis",
     "AGENT.md.hbs": "useAgentDocs",
-    "src/AGENT.md.hbs": "useAgentDocs",
-    "src/routes/AGENT.md.hbs": "useAgentDocs",
     "src/routes/{{moduleName}}/{{moduleName}}.validation.ts.hbs": "hasValidation",
     "src/config/swagger.ts.hbs": "useSwagger",
     ".eslintrc.js": "useLint",

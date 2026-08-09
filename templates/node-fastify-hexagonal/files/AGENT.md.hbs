@@ -1,0 +1,84 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository. Read this before
+generating or editing code. Each layer has its own `AGENT.md` with rules
+specific to that layer.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Framework:** Fastify (TypeScript, strict mode) — no DI container. Manual
+  wiring in the composition root (`src/app.ts`).
+- **Architecture:** {{architectureLabel}}
+- **Data layer:** {{#if ormNone}}in-memory repositories (no ORM){{else}}{{orm}}{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+- **Validation:** {{#if useZod}}Zod{{else}}Fastify built-in JSON Schema{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis
+{{/if}}
+{{#if hasBroker}}
+- **Message broker:** {{broker}}
+{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/api/docs`
+{{/if}}
+{{#if useAuth}}
+- **Auth:** JWT (@fastify/jwt)
+{{/if}}
+{{#if useHealthCheck}}
+- **Health:** `GET /health`
+{{/if}}
+
+## Modules
+
+{{#each modules}}
+- `{{this}}`
+{{/each}}
+
+## Commands
+
+```bash
+npm run start:dev      # watch mode (tsx)
+npm run build           # tsc
+{{#if useDocker}}
+npm run infra:up        # start docker services
+npm run infra:down
+{{/if}}
+{{#if ormPrisma}}
+npm run prisma:migrate
+npm run prisma:generate
+{{/if}}
+{{#if useLint}}
+npm run lint
+npm run format
+{{/if}}
+{{#if useTests}}
+npm run test
+npm run test:cov
+{{/if}}
+```
+
+## Hard rules
+
+1. **Dependency rule.** `domain/` → nothing. `application/` → `domain/` only.
+   `infrastructure/` → `application/` and `domain/`. Never reverse the arrow.
+2. **TypeScript is strict.** No `any`, no non-null assertions.{{#if ormTypeorm}}
+   TypeORM entity fields use `!:` — sanctioned exception.{{/if}}
+3. **Wiring happens in the composition root** (`src/app.ts`). Each module's
+   route plugin is registered here.
+4. **Controllers never touch the repository directly.** Always delegate to
+   a use-case.
+5. **Repository interfaces live in `domain/`**, implementations in
+   `infrastructure/`. Domain only knows about the interface.
+{{#if useZod}}
+6. **Every request body needs a Zod schema** before it reaches a controller.
+{{/if}}
+7. **`src/config/env.ts` is the only file that reads `process.env`** directly.
+
+## When you are unsure
+
+Prefer asking over guessing. Getting the dependency direction wrong is harder
+to fix than a clarifying question is to ask.

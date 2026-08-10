@@ -6,6 +6,7 @@ const os = require('os');
 const { PtyDriver } = require('./pty-driver');
 const { enumerateSmoke, enumerateFull, pathToCliArgs } = require('./path-enumerator');
 const { validateAll, validateManifest } = require('./output-validator');
+const { runKeyboardFuzz, runInputFuzz, runSnapshotFuzz } = require('./fuzzer');
 
 const BIN_PATH = path.join(__dirname, '../../bin/pasha.js');
 const TEMPLATES_ROOT = path.join(__dirname, '../../templates');
@@ -174,15 +175,62 @@ async function runFull() {
   return walker.run();
 }
 
-module.exports = { Walker, runSmoke, runFull, BIN_PATH };
+async function runFuzz() {
+  const outputDir = path.join(os.tmpdir(), 'pasha-fuzz');
+  await fs.ensureDir(outputDir);
+
+  console.log('=== pasha CLI Fuzz Tester ===');
+  console.log('Output dir:', outputDir);
+
+  const keyboardDuration = parseInt(process.argv.find(a => a.startsWith('--fuzz-duration='))?.split('=')[1] || 3000, 10);
+
+  console.log('\n--- Input Fuzz ---');
+  const inputResult = await runInputFuzz(outputDir);
+  for (const r of inputResult.results) {
+    const icon = r.status === 'accepted' ? '+' : r.status === 'rejected' ? '-' : '!';
+    const name = r.input.length > 40 ? r.input.slice(0, 38) + '...' : r.input;
+    console.log(`  ${icon} [${r.index + 1}/${inputResult.results.length}] ${name} (${r.duration}ms) ${r.status}`);
+    if (r.error) console.log(`      ${r.error.substring(0, 120)}`);
+  }
+  console.log(`Input fuzz summary: accepted=${inputResult.summary.accepted} rejected=${inputResult.summary.rejected} crashed=${inputResult.summary.crashed} errors=${inputResult.summary.errors}`);
+
+  console.log('\n--- Keyboard Fuzz ---');
+  const kbResult = await runKeyboardFuzz(keyboardDuration, outputDir);
+  console.log(`  Duration: ${kbResult.duration}ms  Keystrokes: ${kbResult.keystrokes}  Errors: ${kbResult.errors}  Crashed: ${kbResult.crashed}`);
+
+  console.log('\n--- Snapshot Fuzz ---');
+  const snapResult = await runSnapshotFuzz(outputDir);
+  console.log(`  Exit code: ${snapResult.exitCode}`);
+  for (const [label, info] of Object.entries(snapResult.snapshots)) {
+    const m = info.match ? '=' : '~';
+    console.log(`  ${m} ${label.padEnd(16)} ${info.file} (${info.size} bytes)`);
+  }
+
+  const crashed = inputResult.summary.crashed > 0 || kbResult.crashed;
+  console.log('\n=== Fuzz Complete ===');
+  return { crashed, inputResult, kbResult, snapResult };
+}
+
+module.exports = { Walker, runSmoke, runFull, runFuzz, BIN_PATH };
 
 if (require.main === module) {
-  const smoke = process.argv.includes('--smoke') || !process.argv.includes('--full');
-  const fn = smoke ? runSmoke : runFull;
-  fn().then(report => {
-    process.exit(report.summary.failed + report.summary.errors > 0 ? 1 : 0);
-  }).catch(err => {
-    console.error(err);
-    process.exit(1);
-  });
+  const isFuzz = process.argv.includes('--fuzz');
+
+  if (isFuzz) {
+    runFuzz().then(report => {
+      process.exit(report.crashed ? 1 : 0);
+    }).catch(err => {
+      console.error(err);
+      process.exit(1);
+    });
+  } else {
+    const smoke = process.argv.includes('--smoke') || !process.argv.includes('--full');
+    const fn = smoke ? runSmoke : runFull;
+    fn().then(report => {
+      process.exit(report.summary.failed + report.summary.errors > 0 ? 1 : 0);
+    }).catch(err => {
+      console.error(err);
+      process.exit(1);
+    });
+  }
 }

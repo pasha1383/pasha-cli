@@ -9,7 +9,7 @@ from src.errors.app_error import AppError
 from src.shared.database.{{#if ormSqlalchemy}}sqlalchemy{{/if}}{{#if ormTortoise}}tortoise{{/if}}{{#if ormDjango}}none{{/if}} import init_db, close_db
 {{/if}}
 {{#each modules}}
-from src.adapters.handler import router as {{camelCase this}}_router
+from src.adapters.handler.{{snakeCase this}}_router import router as {{camelCase this}}_router
 {{/each}}
 
 

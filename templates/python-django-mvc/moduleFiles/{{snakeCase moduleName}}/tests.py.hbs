@@ -3,7 +3,7 @@ from django.test import RequestFactory
 
 from .models import {{pascalCase moduleName}}
 from .services import {{pascalCase moduleName}}Service
-from .views import create_{{moduleName}}, get_{{moduleName}}, list_{{moduleName}}
+from .views import list_create_{{moduleName}}
 
 
 @pytest.mark.django_db
@@ -29,11 +29,11 @@ class Test{{pascalCase moduleName}}Service:
 class Test{{pascalCase moduleName}}Views:
     def test_create_view(self, rf: RequestFactory):
         req = rf.post('/', {'name': 'via-view'}, content_type='application/json')
-        resp = create_{{moduleName}}(req)
+        resp = list_create_{{moduleName}}(req)
         assert resp.status_code == 201
 
     def test_list_view(self, rf: RequestFactory):
         {{pascalCase moduleName}}.objects.create(name='a')
         req = rf.get('/')
-        resp = list_{{moduleName}}(req)
+        resp = list_create_{{moduleName}}(req)
         assert resp.status_code == 200

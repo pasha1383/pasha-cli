@@ -9,7 +9,7 @@ from src.errors.app_error import AppError
 from src.shared.database.sqlalchemy import db, init_db
 {{/if}}
 {{#each modules}}
-from src.features.{{snakeCase this}}.routes import {{camelCase this}}_bp
+from src.features.{{snakeCase this}} import {{camelCase this}}_bp
 {{/each}}
 
 

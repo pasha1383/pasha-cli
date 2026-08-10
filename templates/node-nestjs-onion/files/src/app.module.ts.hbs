@@ -2,38 +2,38 @@ import { Module } from '@nestjs/common';
 {{#if needsCoreTokens}}
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 {{/if}}
-import { AppConfigModule } from '../shared/config/app.config';
+import { AppConfigModule } from './config/app.config';
 {{#if useRateLimit}}
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 {{/if}}
 {{#if ormPrisma}}
-import { PrismaModule } from '../shared/database/prisma.module';
+import { PrismaModule } from './shared/database/prisma.module';
 {{/if}}
 {{#if ormTypeorm}}
-import { DatabaseModule } from '../shared/database/typeorm.module';
+import { DatabaseModule } from './shared/database/typeorm.module';
 {{/if}}
 {{#if ormMongoose}}
-import { DatabaseModule } from '../shared/database/mongoose.module';
+import { DatabaseModule } from './shared/database/mongoose.module';
 {{/if}}
 {{#if useRedis}}
-import { RedisModule } from '../shared/cache/redis.module';
+import { RedisModule } from './shared/cache/redis.module';
 {{/if}}
 {{#if useKafka}}
-import { MessagingModule } from '../shared/messaging/kafka.module';
+import { MessagingModule } from './shared/messaging/kafka.module';
 {{/if}}
 {{#if useRabbitmq}}
-import { MessagingModule } from '../shared/messaging/rabbitmq.module';
+import { MessagingModule } from './shared/messaging/rabbitmq.module';
 {{/if}}
 {{#if useAuth}}
-import { AuthModule } from '../shared/auth/auth.module';
-import { LoggingInterceptor } from '../shared/auth/interceptors/logging.interceptor';
+import { AuthModule } from './shared/auth/auth.module';
+import { LoggingInterceptor } from './shared/auth/interceptors/logging.interceptor';
 {{/if}}
 {{#if useHealthCheck}}
-import { HealthModule } from '../shared/health/health.module';
+import { HealthModule } from './shared/health/health.module';
 {{/if}}
 {{#each modules}}
-import { {{pascalCase this}}Module } from '../infrastructure/web/{{this}}.module';
+import { {{pascalCase this}}Module } from './infrastructure/web/{{this}}.module';
 {{/each}}
 
 @Module({

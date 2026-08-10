@@ -1,10 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 {{#if useClassValidator}}
-import { globalValidationPipe } from '../shared/config/validation.pipe';
+import { globalValidationPipe } from './config/validation.pipe';
 {{/if}}
 {{#if useSwagger}}
-import { setupSwagger } from '../shared/config/swagger';
+import { setupSwagger } from './config/swagger';
 {{/if}}
 
 async function bootstrap() {

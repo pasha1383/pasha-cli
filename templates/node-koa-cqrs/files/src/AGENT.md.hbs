@@ -1,0 +1,32 @@
+# src/
+
+Koa CQRS application source.
+
+## Directory layout
+
+```
+src/
+├── main.ts               ← bootstrap: connect DB, start server
+├── app.ts                ← builds the Koa app (importable from tests)
+├── config/               ← env.ts + swagger.ts
+├── errors/               ← AppError, NotFoundError, ValidationError
+├── middlewares/           ← error-handler, validate-body (Zod/class-validator)
+├── shared/               ← database clients, cache, auth, health
+└── features/<module>/
+    ├── <module>.routes.ts          ← manual DI wiring (the only file that creates instances)
+    ├── commands/                   ← write-side
+    ├── queries/                    ← read-side
+    ├── domain/                     ← pure domain logic
+    ├── infrastructure/             ← bus, controller, repos
+    └── dto/                        ← request/response shapes
+```
+
+## Putting files in features/
+
+Each module in `features/` uses a CQRS pattern:
+- **`routes.ts`** creates every object and links them together (manual DI)
+- **Controller** receives Koa contexts, builds command/query objects, sends them through the bus
+- **Handlers** contain business logic, use the repository interface
+- **Repository** implementations live in `infrastructure/`, interface in `domain/`
+
+Keep new modules inside `src/features/<module>/`.

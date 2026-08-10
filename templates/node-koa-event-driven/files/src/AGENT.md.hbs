@@ -1,0 +1,35 @@
+# src/
+
+Koa Event-Driven application source.
+
+## Directory layout
+
+```
+src/
+├── main.ts               ← bootstrap: connect DB, start server
+├── app.ts                ← builds the Koa app (importable from tests)
+├── config/               ← env.ts + swagger.ts
+├── errors/               ← AppError, NotFoundError, ValidationError, ConflictError
+├── middlewares/           ← error-handler, validate-body (Zod/class-validator)
+├── shared/               ← database clients, cache, auth, health
+└── features/<module>/
+    ├── <module>.routes.ts          ← manual DI wiring (the only file that creates instances)
+    ├── commands/                   ← write-side command + handler
+    ├── events/                     ← domain event classes
+    ├── aggregates/                 ← aggregate root (state from events)
+    ├── projections/                ← materialized read models
+    ├── event-store/                ← append-only event log
+    ├── dto/                        ← request validation
+    └── infrastructure/             ← controller + outbox
+```
+
+## Putting files in features/
+
+Each module in `features/` uses event sourcing:
+- **`routes.ts`** creates every object and links them together (manual DI)
+- **Controller** receives Koa contexts, builds commands, delegates to handler
+- **Handler** orchestrates: creates aggregate, appends to event store, updates projection, enqueues outbox
+- **Aggregate** is pure domain — creates events, applies them, tracks uncommitted changes
+- **Projection** subscribes to events and maintains read-optimized views
+
+Keep new modules inside `src/features/<module>/`.

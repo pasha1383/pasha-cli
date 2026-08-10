@@ -1,0 +1,76 @@
+# {{projectName}}
+
+> Koa + Event-Driven / Event Sourcing architecture project template.
+
+## Quick reference
+
+- **Start:** `npm run start:dev`
+{{#if useSwagger}}
+- **Swagger:** http://localhost:3000/api/docs
+{{/if}}
+{{#if useHealthCheck}}
+- **Health:** http://localhost:3000/health
+{{/if}}
+
+## Architecture: Event-Driven / Event Sourcing
+
+```
+Write: HTTP → Controller → Command Handler → Aggregate → Event Store → Outbox → Projection
+Read:  HTTP → Controller → Projection (materialized view, never the event store)
+```
+
+- **Domain events are the source of truth** — no direct entity persistence
+- **Event Store** — append-only immutable log
+- **Aggregate** — rebuilds state from events, tracks uncommitted changes
+- **Projection** — maintains denormalized read models; queries hit this directly
+- **Outbox** — reliably stores events before publishing to a message broker
+
+## Adding a new module
+
+1. Create `src/features/<moduleName>/` with the following structure:
+```
+<moduleName>/
+├── <moduleName>.routes.ts            ← composition root (wire everything here)
+├── commands/
+│   ├── create-<moduleName>.command.ts
+│   └── create-<moduleName>.command-handler.ts
+├── events/
+│   ├── <moduleName>-created.event.ts
+│   ├── <moduleName>-updated.event.ts
+│   └── <moduleName>-deleted.event.ts
+├── aggregates/
+│   └── <moduleName>.aggregate.ts      ← pure domain logic, event replay
+├── projections/
+│   └── <moduleName>.projection.ts     ← materialized read model
+├── event-store/
+│   └── event-store.ts                ← append-only event log
+├── dto/
+│   └── create-<moduleName>.dto.ts
+└── infrastructure/
+    ├── <moduleName>.controller.ts
+    └── outbox/
+        └── outbox.ts                 ← reliable event publishing queue
+```
+
+2. Register the router in `src/app.ts`:
+```ts
+import { {{camelCase moduleName}}Router } from './features/<moduleName>/<moduleName>.routes';
+// ...
+app.use({{camelCase moduleName}}Router.routes());
+app.use({{camelCase moduleName}}Router.allowedMethods());
+```
+
+## Koa specifics
+
+- Use `ctx.body` to set response, `ctx.status` for HTTP status
+- Access request body via `ctx.request.body` (parsed by koa-bodyparser)
+- Route params via `ctx.params.id`
+- Throw `AppError` / `NotFoundError` from `src/errors/app-error` — the error handler middleware catches them
+- No `res.send()`, no `next()` callbacks — pure async/await
+
+## Key rules
+
+- All state changes MUST go through the event store
+- Never mutate the projection from the write path — the handler updates projection after store append
+- Aggregate version is used for optimistic concurrency control
+- The Outbox pattern ensures events are never lost between store append and publishing

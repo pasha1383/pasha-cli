@@ -1,0 +1,15 @@
+import { DataSource } from 'typeorm';
+import { env } from '../../config/env';
+
+export const AppDataSource = new DataSource({
+  type: '{{#if dbPostgres}}postgres{{else if dbMysql}}mysql{{else if dbSqlite}}sqlite{{else if dbMongo}}mongodb{{else}}postgres{{/if}}',
+{{#if dbSqlite}}
+  database: env.dbFile,
+{{else}}
+  url: env.databaseUrl,
+{{/if}}
+  entities: [__dirname + '/../../features/**/*.orm-entity.ts'],
+  migrations: [__dirname + '/migrations/*.ts'],
+  synchronize: env.nodeEnv === 'development',
+  logging: env.nodeEnv === 'development',
+});

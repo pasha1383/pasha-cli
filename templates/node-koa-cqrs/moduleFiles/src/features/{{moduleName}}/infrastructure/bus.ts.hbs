@@ -1,0 +1,39 @@
+export interface ICommandHandler<C, R = void> {
+  execute(command: C): Promise<R>;
+}
+
+export interface IQueryHandler<Q, R> {
+  execute(query: Q): Promise<R>;
+}
+
+export class CommandBus {
+  private readonly handlers = new Map<Function, ICommandHandler<unknown, unknown>>();
+
+  register(commandType: Function, handler: ICommandHandler<unknown, unknown>): void {
+    this.handlers.set(commandType, handler);
+  }
+
+  async execute<R = void>(command: object): Promise<R> {
+    const handler = this.handlers.get(command.constructor);
+    if (!handler) {
+      throw new Error(`No command handler registered for ${command.constructor.name}`);
+    }
+    return handler.execute(command) as Promise<R>;
+  }
+}
+
+export class QueryBus {
+  private readonly handlers = new Map<Function, IQueryHandler<unknown, unknown>>();
+
+  register(queryType: Function, handler: IQueryHandler<unknown, unknown>): void {
+    this.handlers.set(queryType, handler);
+  }
+
+  async execute<R>(query: object): Promise<R> {
+    const handler = this.handlers.get(query.constructor);
+    if (!handler) {
+      throw new Error(`No query handler registered for ${query.constructor.name}`);
+    }
+    return handler.execute(query) as Promise<R>;
+  }
+}

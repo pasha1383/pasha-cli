@@ -1,0 +1,53 @@
+import { Context } from 'koa';
+import { CommandBus } from './bus';
+import { QueryBus } from './bus';
+import { Create{{pascalCase moduleName}}Command } from '../commands/create-{{moduleName}}.command';
+import { Update{{pascalCase moduleName}}Command } from '../commands/update-{{moduleName}}.command';
+import { Delete{{pascalCase moduleName}}Command } from '../commands/delete-{{moduleName}}.handler';
+import { Get{{pascalCase moduleName}}Query } from '../queries/get-{{moduleName}}.query';
+import { List{{pascalCase moduleName}}sQuery } from '../queries/list-{{moduleName}}s.query';
+import { {{pascalCase moduleName}}ResponseDto } from '../dto/{{moduleName}}.response';
+
+export class {{pascalCase moduleName}}Controller {
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
+
+  create = async (ctx: Context): Promise<void> => {
+    const { name } = ctx.request.body as { name: string };
+    const command = new Create{{pascalCase moduleName}}Command(name);
+    const event = await this.commandBus.execute<{ {{camelCase moduleName}}: { id: string } }>(command);
+    ctx.status = 201;
+    ctx.body = { id: event.{{camelCase moduleName}}.id };
+  };
+
+  findAll = async (ctx: Context): Promise<void> => {
+    const limit = ctx.query.limit ? parseInt(ctx.query.limit as string, 10) : undefined;
+    const offset = ctx.query.offset ? parseInt(ctx.query.offset as string, 10) : undefined;
+    const query = new List{{pascalCase moduleName}}sQuery(limit, offset);
+    const results = await this.queryBus.execute<{{pascalCase moduleName}}ResponseDto[]>(query);
+    ctx.body = results;
+  };
+
+  findOne = async (ctx: Context): Promise<void> => {
+    const query = new Get{{pascalCase moduleName}}Query(ctx.params.id);
+    const result = await this.queryBus.execute<{{pascalCase moduleName}}ResponseDto>(query);
+    ctx.body = result;
+  };
+
+  update = async (ctx: Context): Promise<void> => {
+    const { name } = ctx.request.body as { name: string };
+    const command = new Update{{pascalCase moduleName}}Command(ctx.params.id, name);
+    await this.commandBus.execute(command);
+    const query = new Get{{pascalCase moduleName}}Query(ctx.params.id);
+    const result = await this.queryBus.execute<{{pascalCase moduleName}}ResponseDto>(query);
+    ctx.body = result;
+  };
+
+  remove = async (ctx: Context): Promise<void> => {
+    const command = new Delete{{pascalCase moduleName}}Command(ctx.params.id);
+    const event = await this.commandBus.execute<{ id: string }>(command);
+    ctx.body = { id: event.id };
+  };
+}

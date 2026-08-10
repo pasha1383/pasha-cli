@@ -1,0 +1,55 @@
+export interface StoredEvent {
+  id: string;
+  aggregateId: string;
+  aggregateType: string;
+  eventType: string;
+  payload: object;
+  version: number;
+  createdAt: Date;
+}
+
+export class EventStore {
+  private readonly events: StoredEvent[] = [];
+
+  async append(
+    aggregateId: string,
+    aggregateType: string,
+    events: object[],
+    expectedVersion: number,
+  ): Promise<StoredEvent[]> {
+    const currentVersion = this.getCurrentVersion(aggregateId);
+    if (expectedVersion !== -1 && currentVersion !== expectedVersion) {
+      throw new Error(
+        `Concurrency conflict on ${aggregateType}#${aggregateId}: expected version ${expectedVersion}, got ${currentVersion}`,
+      );
+    }
+
+    const stored: StoredEvent[] = [];
+    let nextVersion = currentVersion + 1;
+    for (const event of events) {
+      const storedEvent: StoredEvent = {
+        id: `${aggregateId}-${nextVersion}`,
+        aggregateId,
+        aggregateType,
+        eventType: event.constructor.name,
+        payload: event,
+        version: nextVersion,
+        createdAt: new Date(),
+      };
+      this.events.push(storedEvent);
+      stored.push(storedEvent);
+      nextVersion++;
+    }
+
+    return stored;
+  }
+
+  async getEvents(aggregateId: string): Promise<StoredEvent[]> {
+    return this.events.filter((e) => e.aggregateId === aggregateId);
+  }
+
+  private getCurrentVersion(aggregateId: string): number {
+    const stream = this.events.filter((e) => e.aggregateId === aggregateId);
+    return stream.length === 0 ? -1 : stream[stream.length - 1].version;
+  }
+}

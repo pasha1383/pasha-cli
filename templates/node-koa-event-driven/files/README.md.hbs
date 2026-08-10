@@ -1,0 +1,79 @@
+# {{projectName}}
+
+{{description}}
+
+Built with pasha CLI — **Event-Driven / Event Sourcing** architecture on Koa.
+
+## Stack
+
+- **Architecture:** Event-Driven (Event Sourcing)
+- **Data layer:** Event Store (append-only log) + Projections (materialized views)
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+- **Validation:** {{#if hasValidation}}{{validation}}{{else}}none{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis
+{{/if}}
+
+## Run
+
+```bash
+cp .env.example .env
+{{#if useDocker}}
+npm run infra:up          # start docker services
+{{/if}}
+npm install
+npm run start:dev
+```
+
+## Modules
+
+{{#each modules}}
+- `{{this}}` → `http://localhost:3000/{{this}}`
+{{/each}}
+
+## Structure
+
+```
+src/
+├── main.ts                  ← starts the server
+├── app.ts                   ← builds the Koa app; separate from main.ts so tests can import it directly
+├── config/env.ts            ← the only file that reads process.env
+├── errors/app-error.ts      ← domain-agnostic error classes
+├── middlewares/              ← error handling, validation glue
+├── shared/                   ← database/cache clients used by more than one module
+└── features/<module>/
+    ├── <module>.routes.ts              ← wires everything (manual DI)
+    ├── commands/                       ← write-path command + handler
+    ├── events/                         ← domain event classes
+    ├── aggregates/                     ← aggregate root (replays events, tracks uncommitted)
+    ├── projections/                    ← materialized read model
+    ├── event-store/                    ← append-only event log
+    ├── dto/                            ← request validation
+    └── infrastructure/                 ← controller + outbox
+```
+
+## Event-Driven flow
+
+```
+POST /product  →  Controller  →  CreateProductHandler
+                                   →  ProductAggregate.create(name)
+                                   →  getUncommittedEvents()
+                                   →  EventStore.append(id, type, events, expectedVersion)
+                                   →  Outbox.enqueue(storedEvents)
+                                   →  Projection.handleCreatedEvent(event)
+
+GET  /product/:id  →  Controller  →  Projection.findById(id)  (never hits event store)
+
+PATCH /product/:id  →  Controller  →  EventStore.getEvents(id)
+                                    →  ProductAggregate.fromHistory(events)
+                                    →  aggregate.updateName(newName)
+                                    →  getUncommittedEvents()
+                                    →  EventStore.append(...)
+```
+
+Writes go through the event store and rebuild state from events. Reads go directly to projections — fast, denormalized views.
+
+---
+Made with ❤️ by {{author}}

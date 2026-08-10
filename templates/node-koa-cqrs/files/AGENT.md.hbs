@@ -1,0 +1,69 @@
+# {{projectName}}
+
+> Koa + CQRS architecture project template.
+
+## Quick reference
+
+- **Start:** `npm run start:dev`
+{{#if hasOrm}}
+- **DB client:** {{#if ormPrisma}}`npx prisma studio`{{else if ormTypeorm}}TypeORM DataSource (check `src/shared/database/`){{else if ormMongoose}}Mongoose{{/if}}
+{{/if}}
+- **Swagger:** {{#if useSwagger}}http://localhost:3000/api/docs{{else}}N/A{{/if}}
+- **Health:** {{#if useHealthCheck}}http://localhost:3000/health{{else}}N/A{{/if}}
+
+## Architecture: CQRS
+
+```
+HTTP Request → Router → Controller → CommandBus/QueryBus → Handler → Repository
+```
+
+- **Commands** mutate state (Create, Update, Delete)
+- **Queries** read state (GetById, List)
+- Never call the repository directly from the controller — always go through the bus.
+
+## Adding a new module
+
+1. Create `src/features/<moduleName>/` with the following structure:
+```
+<moduleName>/
+├── <moduleName>.routes.ts            ← composition root (wire everything here)
+├── commands/
+│   ├── create-<moduleName>.command.ts
+│   ├── create-<moduleName>.handler.ts
+│   ├── update-<moduleName>.command.ts
+│   ├── update-<moduleName>.handler.ts
+│   └── delete-<moduleName>.handler.ts
+├── queries/
+│   ├── get-<moduleName>.query.ts
+│   ├── get-<moduleName>.handler.ts
+│   ├── list-<moduleName>s.query.ts
+│   └── list-<moduleName>s.handler.ts
+├── domain/
+│   ├── <moduleName>.entity.ts
+│   ├── <moduleName>.repository.interface.ts
+│   └── <moduleName>.events.ts
+├── infrastructure/
+│   ├── bus.ts                         ← already shared, reuse the bus interfaces
+│   ├── <moduleName>.controller.ts
+│   └── <moduleName>.repository.ts
+└── dto/
+    ├── create-<moduleName>.dto.ts
+    └── <moduleName>.response.ts
+```
+
+2. Register the router in `src/app.ts`:
+```ts
+import { {{camelCase moduleName}}Router } from './features/<moduleName>/<moduleName>.routes';
+// ...
+app.use({{camelCase moduleName}}Router.routes());
+app.use({{camelCase moduleName}}Router.allowedMethods());
+```
+
+## Koa specifics
+
+- Use `ctx.body` to set response, `ctx.status` for HTTP status
+- Access request body via `ctx.request.body` (parsed by koa-bodyparser)
+- Route params via `ctx.params.id`
+- Query strings via `ctx.query.limit`
+- Throw `AppError` / `NotFoundError` from `src/errors/app-error` — the error handler middleware catches them
+- No `res.send()`, no `next()` callbacks — pure async/await

@@ -1,0 +1,40 @@
+import { Create{{pascalCase moduleName}}Command } from './create-{{moduleName}}.command';
+import { {{pascalCase moduleName}}Aggregate } from '../aggregates/{{moduleName}}.aggregate';
+import { EventStore } from '../event-store/event-store';
+import { Outbox } from '../infrastructure/outbox/outbox';
+import { {{pascalCase moduleName}}CreatedEvent } from '../events/{{moduleName}}-created.event';
+import { {{pascalCase moduleName}}Projection } from '../projections/{{moduleName}}.projection';
+
+export class Create{{pascalCase moduleName}}Handler {
+  constructor(
+    private readonly eventStore: EventStore,
+    private readonly outbox: Outbox,
+    private readonly projection: {{pascalCase moduleName}}Projection,
+  ) {}
+
+  async execute(command: Create{{pascalCase moduleName}}Command): Promise<string> {
+    const aggregate = {{pascalCase moduleName}}Aggregate.create(command.name);
+    const events = aggregate.getUncommittedEvents();
+
+    const stored = await this.eventStore.append(
+      aggregate.id,
+      '{{pascalCase moduleName}}',
+      events,
+      -1,
+    );
+
+    aggregate.markEventsAsCommitted();
+
+    for (const se of stored) {
+      await this.outbox.enqueue(se);
+    }
+
+    for (const event of events) {
+      if (event instanceof {{pascalCase moduleName}}CreatedEvent) {
+        this.projection.handleCreatedEvent(event);
+      }
+    }
+
+    return aggregate.id;
+  }
+}

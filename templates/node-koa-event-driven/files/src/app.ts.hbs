@@ -1,0 +1,63 @@
+import Koa from 'koa';
+import cors from '@koa/cors';
+import helmet from 'koa-helmet';
+import bodyParser from 'koa-bodyparser';
+import { errorHandler, notFoundHandler } from './middlewares/error-handler.middleware';
+{{#if useRateLimit}}
+import { RateLimit } from 'koa2-ratelimit';
+import { env } from './config/env';
+{{/if}}
+{{#if useSwagger}}
+import { setupSwagger } from './config/swagger';
+{{/if}}
+{{#if useAuth}}
+import { authRouter } from './shared/auth/auth.middleware';
+{{/if}}
+{{#if useHealthCheck}}
+import { healthRouter } from './shared/health/health.routes';
+{{/if}}
+{{#each modules}}
+import { {{camelCase this}}Router } from './features/{{this}}/{{this}}.routes';
+{{/each}}
+
+export function createApp(): Koa {
+  const app = new Koa();
+
+  app.use(errorHandler);
+  app.use(helmet());
+  app.use(cors());
+  app.use(bodyParser());
+
+{{#if useRateLimit}}
+  app.use(
+    RateLimit.middleware({
+      interval: { min: 1 },
+      max: env.rateLimitMax,
+      prefixKey: 'global',
+    }),
+  );
+{{/if}}
+
+{{#if useHealthCheck}}
+  app.use(healthRouter.routes());
+  app.use(healthRouter.allowedMethods());
+{{/if}}
+
+{{#if useAuth}}
+  app.use(authRouter.routes());
+  app.use(authRouter.allowedMethods());
+{{/if}}
+
+{{#each modules}}
+  app.use({{camelCase this}}Router.routes());
+  app.use({{camelCase this}}Router.allowedMethods());
+{{/each}}
+
+{{#if useSwagger}}
+  setupSwagger(app);
+{{/if}}
+
+  app.use(notFoundHandler);
+
+  return app;
+}

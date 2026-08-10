@@ -1,0 +1,27 @@
+import { Schema, model } from 'mongoose';
+
+export interface {{pascalCase moduleName}}Document {
+  id: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const {{camelCase moduleName}}Schema = new Schema<{{pascalCase moduleName}}Document>(
+  {
+    _id: { type: String, alias: 'id' },
+    name: { type: String, required: true },
+  },
+  { timestamps: true, collection: '{{snakeCase moduleName}}s' },
+);
+
+{{camelCase moduleName}}Schema.set('toJSON', {
+  virtuals: true,
+  versionKey: false,
+  transform: (_doc, ret) => {
+    ret.id = ret._id;
+    delete ret._id;
+  },
+});
+
+export const {{pascalCase moduleName}}Model = model<{{pascalCase moduleName}}Document>('{{pascalCase moduleName}}', {{camelCase moduleName}}Schema);

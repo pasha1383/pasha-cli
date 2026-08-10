@@ -1,0 +1,6 @@
+using MediatR;
+using {{pascalCase projectName}}.Application.{{pascalCase moduleName}}.DTOs;
+
+namespace {{pascalCase projectName}}.Application.{{pascalCase moduleName}}.Commands;
+
+public record Create{{pascalCase moduleName}}Command(string Name) : IRequest<{{pascalCase moduleName}}Response>;

@@ -1,0 +1,6 @@
+using MediatR;
+using {{pascalCase projectName}}.Application.{{pascalCase moduleName}}.DTOs;
+
+namespace {{pascalCase projectName}}.Application.{{pascalCase moduleName}}.Commands;
+
+public record Update{{pascalCase moduleName}}Command({{#if ormEfcore}}int{{else}}string{{/if}} Id, string Name) : IRequest<{{pascalCase moduleName}}Response>;

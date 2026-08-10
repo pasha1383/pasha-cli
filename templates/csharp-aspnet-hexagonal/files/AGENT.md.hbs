@@ -1,0 +1,95 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Language:** C# 12 (.NET 8)
+- **Framework:** ASP.NET Core 8 — API controllers with dependency injection
+- **Architecture:** Hexagonal (Ports & Adapters / DDD)
+- **Projects:**
+  - `src/{{pascalCase projectName}}.Api` — REST adapters (controllers), DI
+  - `src/{{pascalCase projectName}}.Application` — ports (interfaces), services, DTOs
+  - `src/{{pascalCase projectName}}.Domain` — entities, aggregates, value objects
+  - `src/{{pascalCase projectName}}.Infrastructure` — persistence adapters, external services
+{{#if ormNone}}
+- **Data layer:** in-memory repositories (no ORM)
+{{else}}
+- **ORM:**
+{{#if ormEfcore}}Entity Framework Core 8
+{{/if}}
+{{#if ormDapper}}Dapper
+{{/if}}
+{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+{{#if hasValidation}}
+- **Validation:**
+{{#if useFluentValidation}}FluentValidation
+{{/if}}
+{{#if useDataAnnotations}}Data Annotations
+{{/if}}
+{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis (StackExchange.Redis)
+{{/if}}
+{{#if hasBroker}}
+- **Message broker:** {{broker}}
+{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/swagger`
+{{/if}}
+{{#if useAuth}}
+- **Auth:** JWT Bearer (Microsoft.AspNetCore.Authentication.JwtBearer)
+{{/if}}
+{{#if useHealthCheck}}
+- **Health:** `GET /health` reports liveness
+{{/if}}
+
+## Modules
+
+{{#each modules}}
+- `{{this}}`
+{{/each}}
+
+## Commands
+
+```bash
+dotnet restore
+dotnet build
+dotnet run --project src/{{pascalCase projectName}}.Api
+{{#if useTests}}
+dotnet test
+{{/if}}
+{{#if useStylecop}}
+dotnet format style --verify-no-changes
+dotnet format style
+{{/if}}
+{{#if useDocker}}
+docker compose up -d
+docker compose down
+{{/if}}
+```
+
+## Hard rules
+
+1. **Ports in Application, Adapters in Infrastructure.** Application defines `IPort` interfaces; Infrastructure implements them.
+2. **Domain is innermost.** Entities know nothing about persistence, HTTP, or DI.
+3. **Primary constructors** for all classes (C# 12).
+4. **Records** for DTOs and value objects.
+5. **`[ApiController]` and `[Route]`** on every controller in the Api project.
+6. **DI registration** in `Program.cs` — wire ports to adapters.
+7. **No framework dependencies in Domain.**
+{{#if ormEfcore}}
+8. **EF Core DbContext** in Infrastructure only. Aggregates persisted via adapter repository implementations.
+{{/if}}
+{{#if useAuth}}
+9. **`[Authorize]`** on protected endpoints.
+{{/if}}
+
+## When you are unsure
+
+Prefer asking over guessing.

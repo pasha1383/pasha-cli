@@ -1,0 +1,12 @@
+using {{pascalCase projectName}}.Domain.Entities;
+
+namespace {{pascalCase projectName}}.Domain.Interfaces;
+
+public interface I{{pascalCase moduleName}}Repository
+{
+    Task<List<{{pascalCase moduleName}}>> GetAllAsync();
+    Task<{{pascalCase moduleName}}?> GetByIdAsync({{#if ormEfcore}}int{{else}}string{{/if}} id);
+    Task<{{pascalCase moduleName}}> CreateAsync({{pascalCase moduleName}} entity);
+    Task<{{pascalCase moduleName}}> UpdateAsync({{pascalCase moduleName}} entity);
+    Task DeleteAsync({{#if ormEfcore}}int{{else}}string{{/if}} id);
+}

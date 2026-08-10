@@ -1,0 +1,92 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Language:** C# 12 (.NET 8)
+- **Framework:** ASP.NET Core 8 — API controllers with dependency injection
+- **Architecture:** Onion Architecture (Domain-centric)
+- **Projects:**
+  - `src/{{pascalCase projectName}}.Api` — controllers, middleware, DI
+  - `src/{{pascalCase projectName}}.Application` — services, interfaces, DTOs
+  - `src/{{pascalCase projectName}}.Domain` — entities, repository interfaces (core)
+  - `src/{{pascalCase projectName}}.Infrastructure` — repository implementations, DbContext
+{{#if ormNone}}
+- **Data layer:** in-memory repositories (no ORM)
+{{else}}
+- **ORM:**
+{{#if ormEfcore}}Entity Framework Core 8
+{{/if}}
+{{#if ormDapper}}Dapper
+{{/if}}
+{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+{{#if hasValidation}}
+- **Validation:**
+{{#if useFluentValidation}}FluentValidation
+{{/if}}
+{{#if useDataAnnotations}}Data Annotations
+{{/if}}
+{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis (StackExchange.Redis)
+{{/if}}
+{{#if hasBroker}}
+- **Message broker:** {{broker}}
+{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/swagger`
+{{/if}}
+{{#if useAuth}}
+- **Auth:** JWT Bearer (Microsoft.AspNetCore.Authentication.JwtBearer)
+{{/if}}
+{{#if useHealthCheck}}
+- **Health:** `GET /health` reports liveness
+{{/if}}
+
+## Modules
+
+{{#each modules}}
+- `{{this}}`
+{{/each}}
+
+## Commands
+
+```bash
+dotnet restore
+dotnet build
+dotnet run --project src/{{pascalCase projectName}}.Api
+{{#if useTests}}
+dotnet test
+{{/if}}
+{{#if useStylecop}}
+dotnet format style --verify-no-changes
+dotnet format style
+{{/if}}
+{{#if useDocker}}
+docker compose up -d
+docker compose down
+{{/if}}
+```
+
+## Hard rules
+
+1. **All dependencies point inward.** Api → Application → Domain ← Infrastructure. Domain depends on nothing.
+2. **Repository interfaces in Domain** (the core layer). Implementations in Infrastructure.
+3. **Primary constructors** for all classes (C# 12).
+4. **Records** for DTOs and value objects.
+5. **`[ApiController]` and `[Route]`** on every controller in the Api project.
+6. **DI registration** in `Program.cs` wires Domain interfaces to Infrastructure implementations.
+7. **No EF Core in Domain.** DbContext and migrations in Infrastructure only.
+{{#if useAuth}}
+8. **`[Authorize]`** on protected endpoints.
+{{/if}}
+
+## When you are unsure
+
+Prefer asking over guessing.

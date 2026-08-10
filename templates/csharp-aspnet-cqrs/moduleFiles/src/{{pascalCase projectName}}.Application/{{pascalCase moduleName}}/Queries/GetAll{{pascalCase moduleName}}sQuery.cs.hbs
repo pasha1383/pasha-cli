@@ -1,0 +1,6 @@
+using MediatR;
+using {{pascalCase projectName}}.Application.{{pascalCase moduleName}}.DTOs;
+
+namespace {{pascalCase projectName}}.Application.{{pascalCase moduleName}}.Queries;
+
+public record GetAll{{pascalCase moduleName}}sQuery : IRequest<List<{{pascalCase moduleName}}Response>>;

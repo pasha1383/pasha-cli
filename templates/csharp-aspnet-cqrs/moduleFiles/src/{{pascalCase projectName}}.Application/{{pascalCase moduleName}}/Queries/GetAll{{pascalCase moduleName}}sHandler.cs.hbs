@@ -1,0 +1,21 @@
+using MediatR;
+using {{pascalCase projectName}}.Application.{{pascalCase moduleName}}.DTOs;
+using {{pascalCase projectName}}.Domain.Interfaces;
+
+namespace {{pascalCase projectName}}.Application.{{pascalCase moduleName}}.Queries;
+
+public class GetAll{{pascalCase moduleName}}sHandler(I{{pascalCase moduleName}}Repository repository)
+    : IRequestHandler<GetAll{{pascalCase moduleName}}sQuery, List<{{pascalCase moduleName}}Response>>
+{
+    public async Task<List<{{pascalCase moduleName}}Response>> Handle(
+        GetAll{{pascalCase moduleName}}sQuery request,
+        CancellationToken cancellationToken)
+    {
+        var entities = await repository.GetAllAsync();
+        return entities.Select(e => new {{pascalCase moduleName}}Response(
+            e.Id,
+            e.Name,
+            e.CreatedAt,
+            e.UpdatedAt)).ToList();
+    }
+}

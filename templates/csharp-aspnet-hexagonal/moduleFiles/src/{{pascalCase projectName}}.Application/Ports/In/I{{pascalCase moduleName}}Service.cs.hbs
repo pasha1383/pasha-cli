@@ -1,0 +1,12 @@
+using {{pascalCase projectName}}.Application.DTOs;
+
+namespace {{pascalCase projectName}}.Application.Ports.In;
+
+public interface I{{pascalCase moduleName}}Service
+{
+    Task<List<{{pascalCase moduleName}}Response>> GetAllAsync();
+    Task<{{pascalCase moduleName}}Response?> GetByIdAsync({{#if ormEfcore}}int{{else}}string{{/if}} id);
+    Task<{{pascalCase moduleName}}Response> CreateAsync(Create{{pascalCase moduleName}}Request request);
+    Task<{{pascalCase moduleName}}Response> UpdateAsync({{#if ormEfcore}}int{{else}}string{{/if}} id, Create{{pascalCase moduleName}}Request request);
+    Task DeleteAsync({{#if ormEfcore}}int{{else}}string{{/if}} id);
+}

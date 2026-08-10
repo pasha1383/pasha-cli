@@ -1,0 +1,5 @@
+using MediatR;
+
+namespace {{pascalCase projectName}}.Application.{{pascalCase moduleName}}.Commands;
+
+public record Delete{{pascalCase moduleName}}Command({{#if ormEfcore}}int{{else}}string{{/if}} Id) : IRequest;

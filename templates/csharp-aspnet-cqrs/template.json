@@ -1,0 +1,30 @@
+{
+  "name": "C# ASP.NET Core CQRS (MediatR)",
+  "prerequisites": ["dotnet"],
+  "shared": null,
+  "stackFeatures": "aspnet",
+  "modules": {
+    "enabled": true,
+    "message": "Module/entity name (e.g. product, user, order)",
+    "default": "product"
+  },
+  "fileConditions": {
+    "docker-compose.yml.hbs": "useDocker",
+    "Dockerfile.hbs": "useAppDockerfile",
+    ".dockerignore.hbs": "useAppDockerfile",
+    ".github": "useCI",
+    "AGENT.md.hbs": "useAgentDocs",
+    "Data/AppDbContext.cs.hbs": "ormEfcore",
+    "src/{{pascalCase projectName}}.Application/DependencyInjection.cs.hbs": "true",
+    "src/{{pascalCase projectName}}.Infrastructure/DependencyInjection.cs.hbs": "true"
+  },
+  "postInstall": [
+    "dotnet new sln",
+    "dotnet sln add src/{{pascalCase projectName}}.Api/{{pascalCase projectName}}.Api.csproj",
+    "dotnet sln add src/{{pascalCase projectName}}.Application/{{pascalCase projectName}}.Application.csproj",
+    "dotnet sln add src/{{pascalCase projectName}}.Domain/{{pascalCase projectName}}.Domain.csproj",
+    "dotnet sln add src/{{pascalCase projectName}}.Infrastructure/{{pascalCase projectName}}.Infrastructure.csproj",
+    "dotnet restore"
+  ],
+  "gitInit": true
+}

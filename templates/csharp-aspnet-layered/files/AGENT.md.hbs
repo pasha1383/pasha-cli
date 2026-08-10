@@ -1,0 +1,97 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Language:** C# 12 (.NET 8)
+- **Framework:** ASP.NET Core 8 — API controllers with dependency injection
+- **Architecture:** Layered (Controller → Service → Repository)
+- **Project:** Single project `src/{{projectName}}/{{pascalCase projectName}}`
+{{#if ormNone}}
+- **Data layer:** in-memory repositories (no ORM)
+{{else}}
+- **ORM:**
+{{#if ormEfcore}}Entity Framework Core 8
+{{/if}}
+{{#if ormDapper}}Dapper
+{{/if}}
+{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+{{#if hasValidation}}
+- **Validation:**
+{{#if useFluentValidation}}FluentValidation
+{{/if}}
+{{#if useDataAnnotations}}Data Annotations
+{{/if}}
+{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis (StackExchange.Redis)
+{{/if}}
+{{#if hasBroker}}
+- **Message broker:** {{broker}}
+{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/swagger`
+{{/if}}
+{{#if useAuth}}
+- **Auth:** JWT Bearer (Microsoft.AspNetCore.Authentication.JwtBearer)
+{{/if}}
+{{#if useHealthCheck}}
+- **Health:** `GET /health` reports liveness
+{{/if}}
+
+## Modules
+
+{{#each modules}}
+- `{{this}}`
+{{/each}}
+
+## Commands
+
+```bash
+dotnet restore
+dotnet build
+dotnet run --project src/{{projectName}}/{{pascalCase projectName}}
+{{#if useTests}}
+dotnet test
+{{/if}}
+{{#if useStylecop}}
+dotnet format style --verify-no-changes
+dotnet format style
+{{/if}}
+{{#if useDocker}}
+docker compose up -d
+docker compose down
+{{/if}}
+```
+
+## Hard rules
+
+1. **Layer direction:** Controllers call Services, Services call Repositories. Never the other way around.
+2. **Primary constructors** for all classes where applicable (C# 12).
+3. **Records** for DTOs and request/response types.
+4. **`[ApiController]` and `[Route]`** on every controller.
+5. **DI registration** happens in `Program.cs`. Services and repositories registered via `builder.Services`.
+6. **No business logic in controllers.** Only request validation, service invocation, and response mapping.
+7. **No raw SQL in services.** Always go through the repository layer.
+{{#if ormEfcore}}
+8. **EF Core DbContext** is the single source of truth for data access. Use `async` methods everywhere.
+{{/if}}
+{{#if ormDapper}}
+9. **Dapper** queries are in repositories only. Use `using var connection = new NpgsqlConnection/...`.
+{{/if}}
+{{#if useAuth}}
+10. **`[Authorize]`** on protected endpoints. JWT claims available via `User` property on `ControllerBase`.
+{{/if}}
+{{#if useSwagger}}
+11. **Swagger annotations** go on controller actions. No separate doc generation step needed — Swashbuckle generates at startup.
+{{/if}}
+
+## When you are unsure
+
+Prefer asking over guessing. Generating a plausible-looking file in the wrong layer costs more to unpick than a clarifying question costs to answer.

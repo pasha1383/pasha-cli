@@ -1,0 +1,13 @@
+namespace {{pascalCase projectName}}.Domain.Entities;
+
+public class {{pascalCase moduleName}}
+{
+    {{#if ormEfcore}}
+    public int Id { get; set; }
+    {{else}}
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+    {{/if}}
+    public string Name { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+}

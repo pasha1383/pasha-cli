@@ -1,0 +1,26 @@
+using MediatR;
+using {{pascalCase projectName}}.Application.{{pascalCase moduleName}}.DTOs;
+using {{pascalCase projectName}}.Domain.Interfaces;
+
+namespace {{pascalCase projectName}}.Application.{{pascalCase moduleName}}.Commands;
+
+public class Update{{pascalCase moduleName}}Handler(I{{pascalCase moduleName}}Repository repository)
+    : IRequestHandler<Update{{pascalCase moduleName}}Command, {{pascalCase moduleName}}Response>
+{
+    public async Task<{{pascalCase moduleName}}Response> Handle(
+        Update{{pascalCase moduleName}}Command request,
+        CancellationToken cancellationToken)
+    {
+        var existing = await repository.GetByIdAsync(request.Id)
+            ?? throw new KeyNotFoundException($"{{pascalCase moduleName}} with id {request.Id} not found");
+
+        existing.Name = request.Name;
+        var updated = await repository.UpdateAsync(existing);
+
+        return new {{pascalCase moduleName}}Response(
+            updated.Id,
+            updated.Name,
+            updated.CreatedAt,
+            updated.UpdatedAt);
+    }
+}

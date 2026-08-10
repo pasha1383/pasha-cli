@@ -1,0 +1,15 @@
+using MediatR;
+using {{pascalCase projectName}}.Domain.Interfaces;
+
+namespace {{pascalCase projectName}}.Application.{{pascalCase moduleName}}.Commands;
+
+public class Delete{{pascalCase moduleName}}Handler(I{{pascalCase moduleName}}Repository repository)
+    : IRequestHandler<Delete{{pascalCase moduleName}}Command>
+{
+    public async Task Handle(
+        Delete{{pascalCase moduleName}}Command request,
+        CancellationToken cancellationToken)
+    {
+        await repository.DeleteAsync(request.Id);
+    }
+}

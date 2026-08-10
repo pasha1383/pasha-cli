@@ -1,0 +1,75 @@
+using {{pascalCase projectName}}.Application;
+using {{pascalCase projectName}}.Infrastructure;
+{{#if useSwagger}}
+using Microsoft.OpenApi.Models;
+{{/if}}
+{{#if useAuth}}
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+{{/if}}
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
+
+{{#if useSwagger}}
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "{{projectName}} API",
+        Version = "v1",
+        Description = "{{description}}"
+    });
+});
+{{/if}}
+
+{{#if useAuth}}
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]!))
+        };
+    });
+builder.Services.AddAuthorization();
+{{/if}}
+
+{{#if useHealthCheck}}
+builder.Services.AddHealthChecks();
+{{/if}}
+
+var app = builder.Build();
+
+{{#if useSwagger}}
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+{{/if}}
+
+{{#if useAuth}}
+app.UseAuthentication();
+app.UseAuthorization();
+{{/if}}
+
+{{#if useHealthCheck}}
+app.MapHealthChecks("/health");
+{{/if}}
+
+app.MapControllers();
+app.Run();

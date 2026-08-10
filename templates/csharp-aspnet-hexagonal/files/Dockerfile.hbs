@@ -1,0 +1,20 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY src/{{pascalCase projectName}}.Api/{{pascalCase projectName}}.Api.csproj src/{{pascalCase projectName}}.Api/
+COPY src/{{pascalCase projectName}}.Application/{{pascalCase projectName}}.Application.csproj src/{{pascalCase projectName}}.Application/
+COPY src/{{pascalCase projectName}}.Domain/{{pascalCase projectName}}.Domain.csproj src/{{pascalCase projectName}}.Domain/
+COPY src/{{pascalCase projectName}}.Infrastructure/{{pascalCase projectName}}.Infrastructure.csproj src/{{pascalCase projectName}}.Infrastructure/
+RUN dotnet restore src/{{pascalCase projectName}}.Api/{{pascalCase projectName}}.Api.csproj
+COPY . .
+RUN dotnet publish src/{{pascalCase projectName}}.Api/{{pascalCase projectName}}.Api.csproj -c Release -o /app
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+RUN addgroup -g 1001 app && adduser -S -u 1001 -G app app
+WORKDIR /app
+COPY --from=build /app .
+USER app
+EXPOSE 8080
+ENV ASPNETCORE_URLS=http://+:8080
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8080/health || exit 1
+ENTRYPOINT ["dotnet", "{{pascalCase projectName}}.Api.dll"]

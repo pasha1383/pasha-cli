@@ -1,0 +1,52 @@
+using {{pascalCase projectName}}.Application.DTOs;
+using {{pascalCase projectName}}.Application.Interfaces;
+using {{pascalCase projectName}}.Domain.Entities;
+
+namespace {{pascalCase projectName}}.Application.Services;
+
+public class {{pascalCase moduleName}}Service(I{{pascalCase moduleName}}Repository repository) : I{{pascalCase moduleName}}Service
+{
+    public async Task<List<{{pascalCase moduleName}}Response>> GetAllAsync()
+    {
+        var entities = await repository.GetAllAsync();
+        return entities.Select(MapToResponse).ToList();
+    }
+
+    public async Task<{{pascalCase moduleName}}Response?> GetByIdAsync({{#if ormEfcore}}int{{else}}string{{/if}} id)
+    {
+        var entity = await repository.GetByIdAsync(id);
+        return entity is null ? null : MapToResponse(entity);
+    }
+
+    public async Task<{{pascalCase moduleName}}Response> CreateAsync(Create{{pascalCase moduleName}}Request request)
+    {
+        var entity = new {{pascalCase moduleName}} { Name = request.Name };
+        var created = await repository.CreateAsync(entity);
+        return MapToResponse(created);
+    }
+
+    public async Task<{{pascalCase moduleName}}Response> UpdateAsync({{#if ormEfcore}}int{{else}}string{{/if}} id, Create{{pascalCase moduleName}}Request request)
+    {
+        var existing = await repository.GetByIdAsync(id)
+            ?? throw new KeyNotFoundException($"{{pascalCase moduleName}} with id {id} not found");
+
+        existing.Name = request.Name;
+        var updated = await repository.UpdateAsync(existing);
+        return MapToResponse(updated);
+    }
+
+    public async Task DeleteAsync({{#if ormEfcore}}int{{else}}string{{/if}} id)
+    {
+        await repository.DeleteAsync(id);
+    }
+
+    private static {{pascalCase moduleName}}Response MapToResponse({{pascalCase moduleName}} entity)
+    {
+        return new {{pascalCase moduleName}}Response(
+            entity.Id,
+            entity.Name,
+            entity.CreatedAt,
+            entity.UpdatedAt
+        );
+    }
+}

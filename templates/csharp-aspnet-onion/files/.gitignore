@@ -1,0 +1,11 @@
+bin/
+obj/
+*.user
+*.suo
+*.vs/
+.vscode/
+.idea/
+*.DotSettings.user
+node_modules/
+data/
+/out/

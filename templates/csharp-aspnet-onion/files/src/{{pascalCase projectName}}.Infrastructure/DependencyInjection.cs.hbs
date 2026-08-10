@@ -1,0 +1,45 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+{{#each modules}}
+using {{../pascalCase projectName}}.Domain.Interfaces;
+using {{../pascalCase projectName}}.Infrastructure.Repositories;
+{{/each}}
+
+namespace {{pascalCase projectName}}.Infrastructure;
+
+public static class DependencyInjection
+{
+    public static IServiceCollection AddInfrastructure(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+{{#if ormEfcore}}
+        services.AddDbContext<AppDbContext>(options =>
+        {
+{{#if dbPostgres}}
+            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
+{{/if}}
+{{#if dbSqlserver}}
+            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+{{/if}}
+{{#if dbSqlite}}
+            options.UseSqlite(configuration.GetConnectionString("DefaultConnection"));
+{{/if}}
+        });
+{{/if}}
+
+{{#if useRedis}}
+        services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = configuration["Redis:ConnectionString"];
+        });
+{{/if}}
+
+{{#each modules}}
+        services.AddScoped<I{{pascalCase this}}Repository, {{pascalCase this}}Repository>();
+{{/each}}
+
+        return services;
+    }
+}

@@ -1,0 +1,54 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*"
+{{#if hasDatabase}}
+  ,
+  "ConnectionStrings": {
+  {{#if dbSqlite}}
+    "DefaultConnection": "Data Source=./data/{{snakeCase projectName}}.sqlite"
+  {{/if}}
+  {{#if dbPostgres}}
+    "DefaultConnection": "Host=localhost;Port=5432;Database={{snakeCase projectName}};Username=postgres;Password=postgres"
+  {{/if}}
+  {{#if dbSqlserver}}
+    "DefaultConnection": "Server=localhost,1433;Database={{snakeCase projectName}};User Id=sa;Password=YourStr0ngP@ssword!;TrustServerCertificate=True"
+  {{/if}}
+  }
+{{/if}}
+{{#if useRedis}}
+  ,
+  "Redis": {
+    "ConnectionString": "localhost:6379"
+  }
+{{/if}}
+{{#if useKafka}}
+  ,
+  "Kafka": {
+    "BootstrapServers": "localhost:9092",
+    "GroupId": "{{projectName}}-consumer"
+  }
+{{/if}}
+{{#if useRabbitmq}}
+  ,
+  "RabbitMQ": {
+    "Host": "localhost",
+    "Username": "guest",
+    "Password": "guest",
+    "Queue": "{{projectName}}-queue"
+  }
+{{/if}}
+{{#if useAuth}}
+  ,
+  "Jwt": {
+    "Secret": "change-me-to-a-long-random-string-at-least-32-chars",
+    "Issuer": "{{projectName}}",
+    "Audience": "{{projectName}}",
+    "ExpirationMinutes": 60
+  }
+{{/if}}
+}

@@ -1,0 +1,24 @@
+{{#if ormEfcore}}
+using Microsoft.EntityFrameworkCore;
+{{#each modules}}
+using {{../pascalCase projectName}}.Domain.Entities;
+{{/each}}
+
+namespace {{pascalCase projectName}}.Infrastructure.Data;
+
+public class AppDbContext : DbContext
+{
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+    {
+    }
+
+{{#each modules}}
+    public DbSet<{{pascalCase this}}> {{pascalCase this}}s => Set<{{pascalCase this}}>();
+
+{{/each}}
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+    }
+}
+{{/if}}

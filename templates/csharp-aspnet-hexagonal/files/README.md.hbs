@@ -1,0 +1,71 @@
+# {{projectName}}
+
+{{description}}
+
+Built with pasha CLI — **Hexagonal Architecture (Ports & Adapters)** on C# ASP.NET Core 8.
+
+## Stack
+
+- **Framework:** ASP.NET Core 8
+- **Architecture:** Hexagonal (Ports & Adapters / DDD)
+{{#if hasOrm}}
+- **ORM:**
+{{#if ormEfcore}}Entity Framework Core{{/if}}
+{{#if ormDapper}}Dapper{{/if}}
+{{/if}}
+{{#if ormNone}}
+- **Data layer:** in-memory repositories
+{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+{{#if hasValidation}}
+- **Validation:**
+{{#if useFluentValidation}}FluentValidation{{/if}}
+{{#if useDataAnnotations}}Data Annotations{{/if}}
+{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis
+{{/if}}
+{{#if hasBroker}}
+- **Messaging:** {{broker}}
+{{/if}}
+{{#if useAuth}}
+- **Auth:** JWT Bearer
+{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/swagger`
+{{/if}}
+
+## Run
+
+```bash
+cp .env.example .env
+{{#if useDocker}}
+docker compose up -d    # start databases/brokers
+{{/if}}
+dotnet restore
+dotnet run --project src/{{pascalCase projectName}}.Api
+```
+
+## Modules
+
+{{#each modules}}
+- `{{this}}` → `http://localhost:5000/api/{{this}}`
+{{/each}}
+
+## Structure
+
+```
+src/
+├── {{pascalCase projectName}}.Api/            ← REST adapters (controllers)
+├── {{pascalCase projectName}}.Application/    ← ports (interfaces) + services
+├── {{pascalCase projectName}}.Domain/         ← entities, aggregates, value objects
+└── {{pascalCase projectName}}.Infrastructure/ ← persistence, messaging adapters
+```
+
+Domain is the innermost layer. Application defines ports that Infrastructure implements.
+
+---
+
+Made with pasha CLI

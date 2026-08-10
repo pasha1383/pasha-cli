@@ -1,0 +1,84 @@
+{{#if ormEfcore}}
+using Microsoft.EntityFrameworkCore;
+{{/if}}
+using {{pascalCase projectName}}.Application.Interfaces;
+using {{pascalCase projectName}}.Domain.Entities;
+using {{pascalCase projectName}}.Infrastructure.Data;
+
+namespace {{pascalCase projectName}}.Infrastructure.Repositories;
+
+public class {{pascalCase moduleName}}Repository{{#if ormEfcore}}(AppDbContext context){{/if}} : I{{pascalCase moduleName}}Repository
+{
+{{#if ormEfcore}}
+    private readonly AppDbContext _context = context;
+
+    public async Task<List<{{pascalCase moduleName}}>> GetAllAsync()
+    {
+        return await _context.{{pascalCase moduleName}}s
+            .OrderByDescending(e => e.CreatedAt)
+            .ToListAsync();
+    }
+
+    public async Task<{{pascalCase moduleName}}?> GetByIdAsync(int id)
+    {
+        return await _context.{{pascalCase moduleName}}s.FindAsync(id);
+    }
+
+    public async Task<{{pascalCase moduleName}}> CreateAsync({{pascalCase moduleName}} entity)
+    {
+        _context.{{pascalCase moduleName}}s.Add(entity);
+        await _context.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<{{pascalCase moduleName}}> UpdateAsync({{pascalCase moduleName}} entity)
+    {
+        entity.UpdatedAt = DateTime.UtcNow;
+        _context.{{pascalCase moduleName}}s.Update(entity);
+        await _context.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task DeleteAsync(int id)
+    {
+        var entity = await _context.{{pascalCase moduleName}}s.FindAsync(id);
+        if (entity is not null)
+        {
+            _context.{{pascalCase moduleName}}s.Remove(entity);
+            await _context.SaveChangesAsync();
+        }
+    }
+{{else}}
+    private readonly Dictionary<string, {{pascalCase moduleName}}> _store = new();
+
+    public Task<List<{{pascalCase moduleName}}>> GetAllAsync()
+    {
+        return Task.FromResult(_store.Values.ToList());
+    }
+
+    public Task<{{pascalCase moduleName}}?> GetByIdAsync(string id)
+    {
+        _store.TryGetValue(id, out var entity);
+        return Task.FromResult(entity);
+    }
+
+    public Task<{{pascalCase moduleName}}> CreateAsync({{pascalCase moduleName}} entity)
+    {
+        entity.Id = Guid.NewGuid().ToString();
+        _store[entity.Id] = entity;
+        return Task.FromResult(entity);
+    }
+
+    public Task<{{pascalCase moduleName}}> UpdateAsync({{pascalCase moduleName}} entity)
+    {
+        _store[entity.Id] = entity;
+        return Task.FromResult(entity);
+    }
+
+    public Task DeleteAsync(string id)
+    {
+        _store.Remove(id);
+        return Task.CompletedTask;
+    }
+{{/if}}
+}

@@ -1,0 +1,23 @@
+using Microsoft.Extensions.DependencyInjection;
+{{#each modules}}
+using {{../pascalCase projectName}}.Application.{{pascalCase this}}.Commands;
+using {{../pascalCase projectName}}.Application.{{pascalCase this}}.Queries;
+{{/each}}
+
+namespace {{pascalCase projectName}}.Application;
+
+public static class DependencyInjection
+{
+    public static IServiceCollection AddApplication(this IServiceCollection services)
+    {
+{{#each modules}}
+        services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Create{{pascalCase this}}Command>());
+{{/each}}
+
+{{#if useFluentValidation}}
+        services.AddValidatorsFromAssemblyContaining<Create{{pascalCase moduleName}}Command>();
+{{/if}}
+
+        return services;
+    }
+}

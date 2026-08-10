@@ -1,0 +1,19 @@
+using Microsoft.Extensions.DependencyInjection;
+{{#each modules}}
+using {{../pascalCase projectName}}.Application.Interfaces;
+using {{../pascalCase projectName}}.Application.Services;
+{{/each}}
+
+namespace {{pascalCase projectName}}.Application;
+
+public static class DependencyInjection
+{
+    public static IServiceCollection AddApplication(this IServiceCollection services)
+    {
+{{#each modules}}
+        services.AddScoped<I{{pascalCase this}}Service, {{pascalCase this}}Service>();
+{{/each}}
+
+        return services;
+    }
+}

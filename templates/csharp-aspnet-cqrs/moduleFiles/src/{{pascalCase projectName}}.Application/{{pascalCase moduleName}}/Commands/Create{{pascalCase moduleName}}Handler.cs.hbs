@@ -1,0 +1,24 @@
+using MediatR;
+using {{pascalCase projectName}}.Application.{{pascalCase moduleName}}.DTOs;
+using {{pascalCase projectName}}.Domain.Entities;
+using {{pascalCase projectName}}.Domain.Interfaces;
+
+namespace {{pascalCase projectName}}.Application.{{pascalCase moduleName}}.Commands;
+
+public class Create{{pascalCase moduleName}}Handler(I{{pascalCase moduleName}}Repository repository)
+    : IRequestHandler<Create{{pascalCase moduleName}}Command, {{pascalCase moduleName}}Response>
+{
+    public async Task<{{pascalCase moduleName}}Response> Handle(
+        Create{{pascalCase moduleName}}Command request,
+        CancellationToken cancellationToken)
+    {
+        var entity = new {{pascalCase moduleName}} { Name = request.Name };
+        var created = await repository.CreateAsync(entity);
+
+        return new {{pascalCase moduleName}}Response(
+            created.Id,
+            created.Name,
+            created.CreatedAt,
+            created.UpdatedAt);
+    }
+}

@@ -1,0 +1,110 @@
+using {{pascalCase projectName}}.Data;
+{{#if hasOrm}}
+using {{pascalCase projectName}}.Repositories;
+{{/if}}
+using {{pascalCase projectName}}.Services;
+{{#if useSwagger}}
+using Microsoft.OpenApi.Models;
+{{/if}}
+{{#if useAuth}}
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+{{/if}}
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+
+{{#if useSwagger}}
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "{{projectName}} API",
+        Version = "v1",
+        Description = "{{description}}"
+    });
+});
+{{/if}}
+
+{{#if hasOrm}}
+builder.Services.AddDbContext<AppDbContext>(options =>
+{
+{{#if ormEfcore}}
+{{#if dbPostgres}}
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+{{/if}}
+{{#if dbSqlserver}}
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+{{/if}}
+{{#if dbSqlite}}
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
+{{/if}}
+{{/if}}
+});
+{{/if}}
+
+{{#if useRedis}}
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration["Redis:ConnectionString"];
+});
+{{/if}}
+
+{{#if useAuth}}
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]!))
+        };
+    });
+builder.Services.AddAuthorization();
+{{/if}}
+
+{{#if hasValidation}}
+{{#if useFluentValidation}}
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+{{/if}}
+{{/if}}
+
+{{#if useHealthCheck}}
+builder.Services.AddHealthChecks();
+{{/if}}
+
+{{#each modules}}
+builder.Services.AddScoped<I{{pascalCase this}}Repository, {{pascalCase this}}Repository>();
+builder.Services.AddScoped<I{{pascalCase this}}Service, {{pascalCase this}}Service>();
+{{/each}}
+
+var app = builder.Build();
+
+{{#if useSwagger}}
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+{{/if}}
+
+{{#if useAuth}}
+app.UseAuthentication();
+app.UseAuthorization();
+{{/if}}
+
+{{#if useHealthCheck}}
+app.MapHealthChecks("/health");
+{{/if}}
+
+app.MapControllers();
+app.Run();

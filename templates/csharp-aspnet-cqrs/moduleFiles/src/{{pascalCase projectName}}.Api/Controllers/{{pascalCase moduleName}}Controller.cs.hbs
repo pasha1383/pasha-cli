@@ -1,0 +1,75 @@
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using {{pascalCase projectName}}.Application.{{pascalCase moduleName}}.Commands;
+using {{pascalCase projectName}}.Application.{{pascalCase moduleName}}.DTOs;
+using {{pascalCase projectName}}.Application.{{pascalCase moduleName}}.Queries;
+
+namespace {{pascalCase projectName}}.Api.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class {{pascalCase moduleName}}Controller(IMediator mediator) : ControllerBase
+{
+{{#if useSwagger}}
+    /// <summary>
+    /// Get all {{moduleName}} records
+    /// </summary>
+{{/if}}
+    [HttpGet]
+    public async Task<ActionResult<List<{{pascalCase moduleName}}Response>>> GetAll()
+    {
+        var result = await mediator.Send(new GetAll{{pascalCase moduleName}}sQuery());
+        return Ok(result);
+    }
+
+{{#if useSwagger}}
+    /// <summary>
+    /// Get a {{moduleName}} by ID
+    /// </summary>
+{{/if}}
+    [HttpGet("{id}")]
+    public async Task<ActionResult<{{pascalCase moduleName}}Response>> GetById({{#if ormEfcore}}int{{else}}string{{/if}} id)
+    {
+        var result = await mediator.Send(new Get{{pascalCase moduleName}}ByIdQuery(id));
+        if (result is null)
+            return NotFound();
+
+        return Ok(result);
+    }
+
+{{#if useSwagger}}
+    /// <summary>
+    /// Create a new {{moduleName}}
+    /// </summary>
+{{/if}}
+    [HttpPost]
+    public async Task<ActionResult<{{pascalCase moduleName}}Response>> Create([FromBody] Create{{pascalCase moduleName}}Request request)
+    {
+        var result = await mediator.Send(new Create{{pascalCase moduleName}}Command(request.Name));
+        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+    }
+
+{{#if useSwagger}}
+    /// <summary>
+    /// Update a {{moduleName}}
+    /// </summary>
+{{/if}}
+    [HttpPut("{id}")]
+    public async Task<ActionResult<{{pascalCase moduleName}}Response>> Update({{#if ormEfcore}}int{{else}}string{{/if}} id, [FromBody] Create{{pascalCase moduleName}}Request request)
+    {
+        var result = await mediator.Send(new Update{{pascalCase moduleName}}Command(id, request.Name));
+        return Ok(result);
+    }
+
+{{#if useSwagger}}
+    /// <summary>
+    /// Delete a {{moduleName}}
+    /// </summary>
+{{/if}}
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> Delete({{#if ormEfcore}}int{{else}}string{{/if}} id)
+    {
+        await mediator.Send(new Delete{{pascalCase moduleName}}Command(id));
+        return NoContent();
+    }
+}

@@ -1,0 +1,74 @@
+# {{projectName}}
+
+{{description}}
+
+Built with pasha CLI — **Layered (Controller-Service-Repository)** architecture on C# ASP.NET Core 8.
+
+## Stack
+
+- **Framework:** ASP.NET Core 8
+- **Architecture:** Controller → Service → Repository
+{{#if hasOrm}}
+- **ORM:**
+{{#if ormEfcore}}Entity Framework Core{{/if}}
+{{#if ormDapper}}Dapper{{/if}}
+{{/if}}
+{{#if ormNone}}
+- **Data layer:** in-memory repositories
+{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+{{#if hasValidation}}
+- **Validation:**
+{{#if useFluentValidation}}FluentValidation{{/if}}
+{{#if useDataAnnotations}}Data Annotations{{/if}}
+{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis
+{{/if}}
+{{#if hasBroker}}
+- **Messaging:** {{broker}}
+{{/if}}
+{{#if useAuth}}
+- **Auth:** JWT Bearer
+{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/swagger`
+{{/if}}
+
+## Run
+
+```bash
+cp .env.example .env
+{{#if useDocker}}
+docker compose up -d    # start databases/brokers
+{{/if}}
+dotnet restore
+dotnet run --project src/{{projectName}}/{{pascalCase projectName}}
+```
+
+## Modules
+
+{{#each modules}}
+- `{{this}}` → `http://localhost:5000/api/{{this}}`
+{{/each}}
+
+## Structure
+
+```
+src/
+└── {{projectName}}/{{pascalCase projectName}}/
+    ├── Program.cs               ← entry point, DI wiring
+    ├── appsettings.json         ← configuration
+    ├── Controllers/             ← HTTP endpoints
+    ├── Services/                ← business logic
+    ├── Repositories/            ← data access
+    ├── Models/                  ← domain entities
+    ├── DTOs/                    ← request/response DTOs
+    └── Data/                    ← DbContext
+```
+
+---
+
+Made with pasha CLI

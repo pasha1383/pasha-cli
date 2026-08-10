@@ -1,0 +1,38 @@
+namespace {{pascalCase projectName}}.DTOs;
+
+{{#if hasValidation}}
+{{#if useFluentValidation}}
+using FluentValidation;
+{{/if}}
+{{/if}}
+
+public record Create{{pascalCase moduleName}}Request(
+{{#if hasValidation}}
+{{#if useFluentValidation}}
+    string Name
+{{else}}
+    string Name
+{{/if}}
+{{else}}
+    string Name
+{{/if}}
+);
+
+public record {{pascalCase moduleName}}Response(
+    {{#if ormEfcore}}int{{else}}string{{/if}} Id,
+    string Name,
+    DateTime CreatedAt,
+    DateTime UpdatedAt
+);
+
+{{#if useFluentValidation}}
+public class Create{{pascalCase moduleName}}RequestValidator : AbstractValidator<Create{{pascalCase moduleName}}Request>
+{
+    public Create{{pascalCase moduleName}}RequestValidator()
+    {
+        RuleFor(x => x.Name)
+            .NotEmpty()
+            .MaximumLength(255);
+    }
+}
+{{/if}}

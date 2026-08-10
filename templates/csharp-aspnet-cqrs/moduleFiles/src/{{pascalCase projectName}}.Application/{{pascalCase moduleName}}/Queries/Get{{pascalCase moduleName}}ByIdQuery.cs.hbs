@@ -1,0 +1,6 @@
+using MediatR;
+using {{pascalCase projectName}}.Application.{{pascalCase moduleName}}.DTOs;
+
+namespace {{pascalCase projectName}}.Application.{{pascalCase moduleName}}.Queries;
+
+public record Get{{pascalCase moduleName}}ByIdQuery({{#if ormEfcore}}int{{else}}string{{/if}} Id) : IRequest<{{pascalCase moduleName}}Response?>;

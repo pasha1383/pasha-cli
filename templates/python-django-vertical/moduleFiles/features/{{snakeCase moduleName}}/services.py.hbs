@@ -1,0 +1,28 @@
+from core.app_error import NotFoundError
+
+from .models import {{pascalCase moduleName}}
+
+
+class {{pascalCase moduleName}}Service:
+    def create(self, **data) -> {{pascalCase moduleName}}:
+        return {{pascalCase moduleName}}.objects.create(**data)
+
+    def get_all(self):
+        return {{pascalCase moduleName}}.objects.all()
+
+    def get_by_id(self, pk) -> {{pascalCase moduleName}}:
+        try:
+            return {{pascalCase moduleName}}.objects.get(pk=pk)
+        except {{pascalCase moduleName}}.DoesNotExist:
+            raise NotFoundError(f"{{pascalCase moduleName}} with id {pk} not found")
+
+    def update(self, pk, **data) -> {{pascalCase moduleName}}:
+        obj = self.get_by_id(pk)
+        for field, value in data.items():
+            setattr(obj, field, value)
+        obj.save()
+        return obj
+
+    def delete(self, pk) -> None:
+        obj = self.get_by_id(pk)
+        obj.delete()

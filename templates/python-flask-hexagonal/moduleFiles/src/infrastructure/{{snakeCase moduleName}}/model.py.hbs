@@ -1,0 +1,14 @@
+{{#if ormSqlalchemy}}
+from src.shared.database.sqlalchemy import db
+
+
+class {{pascalCase moduleName}}Model(db.Model):
+    __tablename__ = "{{snakeCase moduleName}}"
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(255), nullable=False)
+{{/if}}
+{{#if ormNone}}
+class {{pascalCase moduleName}}Model:
+    pass
+{{/if}}

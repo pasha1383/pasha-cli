@@ -1,0 +1,38 @@
+import pytest
+
+from src.core.use_cases.{{snakeCase moduleName}}.{{snakeCase moduleName}}_use_case import {{pascalCase moduleName}}UseCase
+from src.errors.app_error import NotFoundError
+
+from .repository import {{pascalCase moduleName}}Repository
+
+
+@pytest.fixture
+def repo():
+    {{#if ormSqlalchemy}}
+    return {{pascalCase moduleName}}Repository()
+    {{else}}
+    return {{pascalCase moduleName}}Repository()
+    {{/if}}
+
+
+@pytest.fixture
+def use_case(repo):
+    return {{pascalCase moduleName}}UseCase(repo)
+
+
+def test_create_and_get(use_case):
+    created = use_case.create({"name": "test-item"})
+    assert created.name == "test-item"
+
+    found = use_case.get_by_id(created.id)
+    assert found.name == "test-item"
+
+
+def test_get_all_empty(use_case):
+    items = use_case.get_all()
+    assert isinstance(items, list)
+
+
+def test_get_by_id_not_found(use_case):
+    with pytest.raises(NotFoundError):
+        use_case.get_by_id(99999)

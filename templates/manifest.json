@@ -251,6 +251,18 @@
             "layered": {
               "label": "Layered (N-Tier)",
               "template": "python-django-layered"
+            },
+            "clean": {
+              "label": "Clean Architecture",
+              "template": "python-django-clean"
+            },
+            "hexagonal": {
+              "label": "Hexagonal (Ports & Adapters)",
+              "template": "python-django-hexagonal"
+            },
+            "vertical": {
+              "label": "Vertical Slice",
+              "template": "python-django-vertical"
             }
           }
         },
@@ -289,6 +301,18 @@
             "modular": {
               "label": "Modular Monolith",
               "template": "python-flask-modular"
+            },
+            "clean": {
+              "label": "Clean Architecture",
+              "template": "python-flask-clean"
+            },
+            "hexagonal": {
+              "label": "Hexagonal (Ports & Adapters)",
+              "template": "python-flask-hexagonal"
+            },
+            "vertical": {
+              "label": "Vertical Slice",
+              "template": "python-flask-vertical"
             }
           }
         },

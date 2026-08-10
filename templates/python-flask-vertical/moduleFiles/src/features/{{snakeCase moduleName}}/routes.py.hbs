@@ -1,0 +1,48 @@
+from flask import Blueprint, jsonify, request
+
+from .repository import {{pascalCase moduleName}}Repository
+from .service import {{pascalCase moduleName}}Service
+
+_repo = {{pascalCase moduleName}}Repository()
+bp = Blueprint("{{snakeCase moduleName}}", __name__)
+
+
+def _get_service() -> {{pascalCase moduleName}}Service:
+    return {{pascalCase moduleName}}Service(_repo)
+
+
+@bp.route("/", methods=["POST"])
+def create():
+    body = request.get_json(silent=True) or {}
+    svc = _get_service()
+    entity = svc.create(body)
+    return jsonify({"id": entity.id, "name": entity.name}), 201
+
+
+@bp.route("/", methods=["GET"])
+def list_all():
+    svc = _get_service()
+    entities = svc.get_all()
+    return jsonify([{"id": e.id, "name": e.name} for e in entities])
+
+
+@bp.route("/<int:pk>", methods=["GET"])
+def get_one(pk: int):
+    svc = _get_service()
+    entity = svc.get_by_id(pk)
+    return jsonify({"id": entity.id, "name": entity.name})
+
+
+@bp.route("/<int:pk>", methods=["PUT"])
+def update(pk: int):
+    body = request.get_json(silent=True) or {}
+    svc = _get_service()
+    entity = svc.update(pk, body)
+    return jsonify({"id": entity.id, "name": entity.name})
+
+
+@bp.route("/<int:pk>", methods=["DELETE"])
+def delete(pk: int):
+    svc = _get_service()
+    svc.delete(pk)
+    return "", 204

@@ -1,0 +1,44 @@
+import pytest
+from django.test import RequestFactory
+
+from use_cases.{{snakeCase moduleName}}.{{snakeCase moduleName}}_use_case import {{pascalCase moduleName}}UseCase
+from adapters.{{snakeCase moduleName}}.repository import {{pascalCase moduleName}}Repository
+from adapters.{{snakeCase moduleName}}.views import list_create_{{moduleName}}
+
+
+@pytest.mark.django_db
+class Test{{pascalCase moduleName}}UseCase:
+    def test_create(self):
+        repo = {{pascalCase moduleName}}Repository()
+        uc = {{pascalCase moduleName}}UseCase(repo)
+        obj = uc.create({'name': 'test-item'})
+        assert obj.name == 'test-item'
+        assert obj.id is not None
+
+    def test_get_all_empty(self):
+        repo = {{pascalCase moduleName}}Repository()
+        uc = {{pascalCase moduleName}}UseCase(repo)
+        assert uc.get_all() == []
+
+    def test_get_by_id(self):
+        repo = {{pascalCase moduleName}}Repository()
+        uc = {{pascalCase moduleName}}UseCase(repo)
+        obj = uc.create({'name': 'find-me'})
+        found = uc.get_by_id(obj.id)
+        assert found.name == 'find-me'
+
+
+@pytest.mark.django_db
+class Test{{pascalCase moduleName}}Views:
+    def test_create_view(self, rf: RequestFactory):
+        req = rf.post('/', {'name': 'via-view'}, content_type='application/json')
+        resp = list_create_{{moduleName}}(req)
+        assert resp.status_code == 201
+
+    def test_list_view(self, rf: RequestFactory):
+        repo = {{pascalCase moduleName}}Repository()
+        uc = {{pascalCase moduleName}}UseCase(repo)
+        uc.create({'name': 'a'})
+        req = rf.get('/')
+        resp = list_create_{{moduleName}}(req)
+        assert resp.status_code == 200

@@ -1,0 +1,21 @@
+{
+  "name": "Python + Flask + Vertical Slice",
+  "prerequisites": ["python3", "pip3", "git"],
+  "shared": null,
+  "stackFeatures": "flask",
+  "modules": {
+    "enabled": true,
+    "message": "Feature/slice name (e.g. product, user, order)",
+    "default": "product"
+  },
+  "fileConditions": {
+    "docker-compose.yml.hbs": "useDocker",
+    "src/shared/database/sqlalchemy.py.hbs": "ormSqlalchemy",
+    "AGENT.md.hbs": "useAgentDocs",
+    "Dockerfile.hbs": "useAppDockerfile",
+    ".dockerignore.hbs": "useAppDockerfile",
+    ".github": "useCI"
+  },
+  "postInstall": [],
+  "gitInit": true
+}

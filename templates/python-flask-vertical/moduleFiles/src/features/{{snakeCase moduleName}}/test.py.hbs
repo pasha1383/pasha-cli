@@ -1,0 +1,38 @@
+import pytest
+
+from src.errors.app_error import NotFoundError
+
+from .repository import {{pascalCase moduleName}}Repository
+from .service import {{pascalCase moduleName}}Service
+
+
+@pytest.fixture
+def repo():
+    {{#if ormSqlalchemy}}
+    return {{pascalCase moduleName}}Repository()
+    {{else}}
+    return {{pascalCase moduleName}}Repository()
+    {{/if}}
+
+
+@pytest.fixture
+def service(repo):
+    return {{pascalCase moduleName}}Service(repo)
+
+
+def test_create_and_get(service):
+    created = service.create({"name": "test-item"})
+    assert created.name == "test-item"
+
+    found = service.get_by_id(created.id)
+    assert found.name == "test-item"
+
+
+def test_get_all_empty(service):
+    items = service.get_all()
+    assert isinstance(items, list)
+
+
+def test_get_by_id_not_found(service):
+    with pytest.raises(NotFoundError):
+        service.get_by_id(99999)

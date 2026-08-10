@@ -1,0 +1,68 @@
+# {{projectName}}
+
+{{description}}
+
+Built with pasha CLI — **Clean Architecture** on Flask.
+
+## Stack
+
+{{#if ormSqlalchemy}}- **ORM:** SQLAlchemy (Flask-SQLAlchemy){{/if}}
+{{#if ormNone}}- **Data layer:** in-memory repositories{{/if}}
+{{#if hasDatabase}}- **Database:** {{database}}{{/if}}
+
+## Run
+
+```bash
+# set up virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+pip install -r requirements.txt
+{{#if devRequirementsTxt}}
+pip install -r dev-requirements.txt
+{{/if}}
+
+cp .env.example .env
+{{#if useDocker}}
+docker compose up -d       # start databases
+{{/if}}
+flask run --debug
+```
+
+## Modules
+
+{{#each modules}}
+- `{{snakeCase this}}` → `http://localhost:5000/{{this}}`
+{{/each}}
+
+## Architecture
+
+```
+.
+├── app.py
+├── src/
+│   ├── config/
+│   │   └── settings.py
+│   ├── errors/
+│   │   └── app_error.py
+│   ├── shared/
+│   │   └── database/
+│   ├── core/
+│   │   ├── domain/
+│   │   │   └── <module>/
+│   │   │       ├── entity.py              # Pure domain entity
+│   │   │       └── repository_interface.py # Repository ABC
+│   │   └── use_cases/
+│   │       └── <module>/
+│   │           └── <module>_use_case.py
+│   └── adapters/
+│       └── <module>/
+│           ├── __init__.py                # Blueprint export
+│           ├── model.py                   # SQLAlchemy model
+│           ├── repository.py              # Repository implementation
+│           ├── views.py                   # Flask Blueprint
+│           └── test.py
+```
+
+---
+Made with ❤️ by {{author}}

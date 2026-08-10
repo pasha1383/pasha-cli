@@ -1,0 +1,24 @@
+from django.http import JsonResponse{{#if hasOrm}}
+from django.db import connections{{/if}}
+{{#if useRedis}}
+from django.core.cache import cache{{/if}}
+
+
+def health_check(request):
+    status_data = {'status': 'ok'}
+    {{#if healthChecksDb}}
+    try:
+        connections['default'].cursor()
+        status_data['database'] = 'ok'
+    except Exception:
+        status_data['database'] = 'error'
+    {{/if}}
+    {{#if healthChecksRedis}}
+    try:
+        cache.set('health', 'ok', timeout=5)
+        cache.get('health')
+        status_data['redis'] = 'ok'
+    except Exception:
+        status_data['redis'] = 'error'
+    {{/if}}
+    return JsonResponse(status_data)

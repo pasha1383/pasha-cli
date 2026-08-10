@@ -1,0 +1,68 @@
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+from use_cases.{{snakeCase moduleName}}.{{snakeCase moduleName}}_use_case import {{pascalCase moduleName}}UseCase
+{{#if hasValidation}}
+from .serializers import {{pascalCase moduleName}}Serializer
+{{/if}}
+from .repository import {{pascalCase moduleName}}Repository
+
+_repo = {{pascalCase moduleName}}Repository()
+
+
+def _get_use_case() -> {{pascalCase moduleName}}UseCase:
+    return {{pascalCase moduleName}}UseCase(_repo)
+
+
+{{#if hasValidation}}
+def _to_dict(obj):
+    return {{pascalCase moduleName}}Serializer(obj).data
+
+
+def _to_dict_list(objs):
+    return {{pascalCase moduleName}}Serializer(objs, many=True).data
+{{else}}
+def _to_dict(obj):
+    return {'id': obj.id, 'name': obj.name}
+
+
+def _to_dict_list(objs):
+    return [{'id': o.id, 'name': o.name} for o in objs]
+{{/if}}
+
+
+@api_view(['GET', 'POST'])
+def list_create_{{moduleName}}(request):
+    uc = _get_use_case()
+    if request.method == 'GET':
+        objs = uc.get_all()
+        return Response(_to_dict_list(objs))
+    {{#if hasValidation}}
+    serializer = {{pascalCase moduleName}}Serializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    obj = uc.create(serializer.validated_data)
+    {{else}}
+    obj = uc.create(request.data)
+    {{/if}}
+    return Response(_to_dict(obj), status=status.HTTP_201_CREATED)
+
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def get_update_delete_{{moduleName}}(request, pk):
+    uc = _get_use_case()
+    if request.method == 'GET':
+        obj = uc.get_by_id(pk)
+        return Response(_to_dict(obj))
+    elif request.method == 'PUT':
+        {{#if hasValidation}}
+        serializer = {{pascalCase moduleName}}Serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        obj = uc.update(pk, serializer.validated_data)
+        {{else}}
+        obj = uc.update(pk, request.data)
+        {{/if}}
+        return Response(_to_dict(obj))
+    elif request.method == 'DELETE':
+        uc.delete(pk)
+        return Response(status=status.HTTP_204_NO_CONTENT)

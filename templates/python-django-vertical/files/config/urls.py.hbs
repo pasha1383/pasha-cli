@@ -1,0 +1,25 @@
+from django.contrib import admin
+from django.urls import include, path
+{{#if useSwagger}}
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+{{/if}}
+{{#if useHealthCheck}}
+from core.views import health_check
+{{/if}}
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+{{#if useAuth}}
+    path('auth/', include('core.urls_auth')),
+{{/if}}
+{{#if useHealthCheck}}
+    path('health/', health_check, name='health-check'),
+{{/if}}
+{{#if useSwagger}}
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+{{/if}}
+{{#each modules}}
+    path('{{this}}/', include('features.{{snakeCase this}}.urls')),
+{{/each}}
+]

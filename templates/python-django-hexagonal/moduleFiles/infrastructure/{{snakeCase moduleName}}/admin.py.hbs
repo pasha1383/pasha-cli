@@ -1,0 +1,9 @@
+from django.contrib import admin
+
+from .models import {{pascalCase moduleName}}Model
+
+
+@admin.register({{pascalCase moduleName}}Model)
+class {{pascalCase moduleName}}Admin(admin.ModelAdmin):
+    list_display = ['id', 'name']
+    search_fields = ['name']

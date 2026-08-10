@@ -1,0 +1,71 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Framework:** Flask (Python) — Hexagonal/DDD
+- **Architecture:** {{architectureLabel}}
+{{#if ormSqlalchemy}}
+- **ORM:** SQLAlchemy (Flask-SQLAlchemy){{/if}}
+{{#if ormNone}}
+- **Data layer:** in-memory repositories{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}{{/if}}
+
+## Modules
+
+{{#each modules}}
+- `{{snakeCase this}}`
+{{/each}}
+
+## Architecture layers
+
+```
+src/
+  domain/{{snakeCase moduleName}}/         # Entities + repository ports
+  application/{{snakeCase moduleName}}/    # Use cases
+  infrastructure/{{snakeCase moduleName}}/ # Flask Blueprint + repo adapter
+```
+
+- **domain/** — Pure domain model. No framework code.
+- **application/** — Use cases expressing business intent.
+- **infrastructure/** — Flask blueprints and SQLAlchemy repository implementations.
+
+## Commands
+
+```bash
+source venv/bin/activate
+flask run --debug                                # dev server on :5000
+{{#if useDocker}}
+docker compose up -d                             # start databases
+docker compose down
+{{/if}}
+gunicorn app:create_app()                         # production server
+{{#if useLint}}
+ruff check .                                     # lint
+ruff format .                                    # format
+{{/if}}
+{{#if useTests}}
+pytest                                           # run tests
+pytest --cov=. --cov-report=term-missing
+{{/if}}
+```
+
+## Hard rules
+
+1. **Domain layer has no framework imports — pure Python only.**
+2. **Application layer depends on domain ports (interfaces), never on infrastructure.**
+3. **Infrastructure layer implements domain ports** with Flask and SQLAlchemy.
+4. **Every new module needs files in all three layers.**
+5. **Register new Blueprints** in `app.py` or they won't be reachable.
+6. **`src/config/settings.py` is the only file that reads `os.environ`** directly.
+7. **`AppError` / `NotFoundError` / `ValidationError`** from
+   `src/errors/app_error.py` — raise them in application layer.
+
+## When you are unsure
+
+Prefer asking over guessing. Generating a plausible-looking file in the wrong
+layer costs more to unpick than a clarifying question costs to answer.

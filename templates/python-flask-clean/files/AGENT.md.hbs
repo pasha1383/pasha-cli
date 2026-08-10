@@ -1,0 +1,74 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Framework:** Flask (Python) — Clean Architecture
+- **Architecture:** {{architectureLabel}}
+{{#if ormSqlalchemy}}
+- **ORM:** SQLAlchemy (Flask-SQLAlchemy){{/if}}
+{{#if ormNone}}
+- **Data layer:** in-memory repositories{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}{{/if}}
+
+## Modules
+
+{{#each modules}}
+- `{{snakeCase this}}`
+{{/each}}
+
+## Architecture layers
+
+```
+src/
+  core/
+    domain/{{snakeCase moduleName}}/     # Entities + repository interfaces
+    use_cases/{{snakeCase moduleName}}/  # Application use cases
+  adapters/{{snakeCase moduleName}}/     # Flask Blueprint + repository impl
+```
+
+- **core/domain/** — Pure Python, no framework dependencies.
+- **core/use_cases/** — Application logic depending only on domain interfaces.
+- **adapters/** — Flask blueprints and SQLAlchemy repository implementations.
+
+## Commands
+
+```bash
+source venv/bin/activate
+flask run --debug                                # dev server on :5000
+{{#if useDocker}}
+docker compose up -d                             # start databases
+docker compose down
+{{/if}}
+gunicorn app:create_app()                         # production server
+{{#if useLint}}
+ruff check .                                     # lint
+ruff format .                                    # format
+{{/if}}
+{{#if useTests}}
+pytest                                           # run tests
+pytest --cov=. --cov-report=term-missing
+{{/if}}
+```
+
+## Hard rules
+
+1. **Domain layer has no framework imports.** No Flask, no SQLAlchemy.
+2. **Use cases depend on domain interfaces**, never on adapters.
+3. **Adapters implement domain interfaces** with Flask Blueprints and SQLAlchemy.
+4. **Every new module needs files in all three layers** under core/domain,
+   core/use_cases, and adapters/.
+5. **Register new Blueprints** in `app.py` or they won't be reachable.
+6. **`src/config/settings.py` is the only file that reads `os.environ`** directly.
+7. **`AppError` / `NotFoundError` / `ValidationError`** from
+   `src/errors/app_error.py` — raise them in use cases, let the Flask
+   error handler translate them.
+
+## When you are unsure
+
+Prefer asking over guessing. Generating a plausible-looking file in the wrong
+layer costs more to unpick than a clarifying question costs to answer.

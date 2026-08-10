@@ -1,0 +1,18 @@
+from core.app_error import NotFoundError
+
+from domain.{{snakeCase moduleName}}.entity import {{pascalCase moduleName}}
+from domain.{{snakeCase moduleName}}.repository_interface import {{pascalCase moduleName}}RepositoryInterface
+
+
+class Get{{pascalCase moduleName}}UseCase:
+    def __init__(self, repository: {{pascalCase moduleName}}RepositoryInterface):
+        self._repo = repository
+
+    def get_all(self) -> list[{{pascalCase moduleName}}]:
+        return self._repo.find_all()
+
+    def get_by_id(self, pk: int) -> {{pascalCase moduleName}}:
+        entity = self._repo.find_by_id(pk)
+        if entity is None:
+            raise NotFoundError(f"{{pascalCase moduleName}} with id {pk} not found")
+        return entity

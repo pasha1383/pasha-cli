@@ -1,0 +1,22 @@
+{
+  "name": "Python + Django + Vertical Slice",
+  "prerequisites": ["python3", "pip3", "git"],
+  "shared": null,
+  "stackFeatures": "python",
+  "modules": {
+    "enabled": true,
+    "message": "Feature/slice name (e.g. product, user, order)",
+    "default": "product"
+  },
+  "fileConditions": {
+    "docker-compose.yml.hbs": "useDocker",
+    "features/{{snakeCase moduleName}}/tests.py.hbs": "useTests",
+    "features/{{snakeCase moduleName}}/serializers.py.hbs": "hasValidation",
+    "AGENT.md.hbs": "useAgentDocs",
+    "Dockerfile.hbs": "useAppDockerfile",
+    ".dockerignore.hbs": "useAppDockerfile",
+    ".github": "useCI"
+  },
+  "postInstall": [],
+  "gitInit": true
+}

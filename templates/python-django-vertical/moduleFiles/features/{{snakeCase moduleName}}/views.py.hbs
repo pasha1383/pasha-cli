@@ -1,0 +1,59 @@
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+from .models import {{pascalCase moduleName}}
+{{#if hasValidation}}
+from .serializers import {{pascalCase moduleName}}Serializer
+{{/if}}
+from .services import {{pascalCase moduleName}}Service
+
+service = {{pascalCase moduleName}}Service()
+
+{{#if hasValidation}}
+def _to_dict(obj):
+    return {{pascalCase moduleName}}Serializer(obj).data
+
+def _to_dict_list(objs):
+    return {{pascalCase moduleName}}Serializer(objs, many=True).data
+{{else}}
+def _to_dict(obj):
+    return {'id': obj.id, 'name': obj.name}
+
+def _to_dict_list(objs):
+    return [{'id': o.id, 'name': o.name} for o in objs]
+{{/if}}
+
+
+@api_view(['GET', 'POST'])
+def list_create_{{moduleName}}(request):
+    if request.method == 'GET':
+        objs = service.get_all()
+        return Response(_to_dict_list(objs))
+    {{#if hasValidation}}
+    serializer = {{pascalCase moduleName}}Serializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    obj = service.create(**serializer.validated_data)
+    {{else}}
+    obj = service.create(**request.data)
+    {{/if}}
+    return Response(_to_dict(obj), status=status.HTTP_201_CREATED)
+
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def get_update_delete_{{moduleName}}(request, pk):
+    if request.method == 'GET':
+        obj = service.get_by_id(pk)
+        return Response(_to_dict(obj))
+    elif request.method == 'PUT':
+        {{#if hasValidation}}
+        serializer = {{pascalCase moduleName}}Serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        obj = service.update(pk, **serializer.validated_data)
+        {{else}}
+        obj = service.update(pk, **request.data)
+        {{/if}}
+        return Response(_to_dict(obj))
+    elif request.method == 'DELETE':
+        service.delete(pk)
+        return Response(status=status.HTTP_204_NO_CONTENT)

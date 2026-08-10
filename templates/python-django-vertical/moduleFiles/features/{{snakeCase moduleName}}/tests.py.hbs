@@ -1,0 +1,39 @@
+import pytest
+from django.test import RequestFactory
+
+from .models import {{pascalCase moduleName}}
+from .services import {{pascalCase moduleName}}Service
+from .views import list_create_{{moduleName}}
+
+
+@pytest.mark.django_db
+class Test{{pascalCase moduleName}}Service:
+    def test_create(self):
+        svc = {{pascalCase moduleName}}Service()
+        obj = svc.create(name='test-item')
+        assert obj.name == 'test-item'
+        assert obj.id is not None
+
+    def test_get_all_empty(self):
+        svc = {{pascalCase moduleName}}Service()
+        assert svc.get_all().count() == 0
+
+    def test_get_by_id(self):
+        svc = {{pascalCase moduleName}}Service()
+        obj = svc.create(name='find-me')
+        found = svc.get_by_id(obj.id)
+        assert found.name == 'find-me'
+
+
+@pytest.mark.django_db
+class Test{{pascalCase moduleName}}Views:
+    def test_create_view(self, rf: RequestFactory):
+        req = rf.post('/', {'name': 'via-view'}, content_type='application/json')
+        resp = list_create_{{moduleName}}(req)
+        assert resp.status_code == 201
+
+    def test_list_view(self, rf: RequestFactory):
+        {{pascalCase moduleName}}.objects.create(name='a')
+        req = rf.get('/')
+        resp = list_create_{{moduleName}}(req)
+        assert resp.status_code == 200

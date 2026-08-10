@@ -1,0 +1,74 @@
+# {{projectName}}
+
+{{description}}
+
+Built with pasha CLI — **Hexagonal/DDD** architecture on Django.
+
+## Stack
+
+{{#if hasOrm}}- **ORM:** Django ORM{{/if}}
+{{#if ormNone}}- **Data layer:** in-memory repositories{{/if}}
+{{#if hasDatabase}}- **Database:** {{database}}{{/if}}
+{{#if hasValidation}}- **Validation:** Pydantic + DRF serializers{{/if}}
+{{#if useRedis}}- **Cache:** Redis{{/if}}
+{{#if hasBroker}}- **Messaging:** {{broker}}{{/if}}
+
+## Run
+
+```bash
+# set up virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+pip install -r requirements.txt
+{{#if devRequirementsTxt}}
+pip install -r dev-requirements.txt
+{{/if}}
+
+cp .env.example .env
+{{#if useDocker}}
+docker compose up -d       # start databases/brokers
+{{/if}}
+python manage.py migrate
+python manage.py runserver
+```
+
+## Modules
+
+{{#each modules}}
+- `{{snakeCase this}}` → `http://localhost:8000/{{this}}`
+{{/each}}
+
+## Architecture
+
+```
+.
+├── manage.py
+├── config/
+│   ├── settings.py
+│   ├── urls.py
+│   ├── wsgi.py
+│   └── asgi.py
+├── core/
+│   └── app_error.py
+├── domain/
+│   └── <module>/
+│       ├── entity.py                    # Pure domain entity
+│       └── repository_interface.py      # Port interface (ABC)
+├── application/
+│   └── <module>/
+│       ├── create_<module>_use_case.py  # Command
+│       └── get_<module>_use_case.py     # Query
+└── infrastructure/
+    └── <module>/                        # Django app (adapter)
+        ├── apps.py
+        ├── models.py                    # Django ORM model
+        ├── repository.py                # Repository adapter
+        ├── views.py                     # DRF views (controller)
+        ├── urls.py
+        ├── serializers.py
+        └── admin.py
+```
+
+---
+Made with ❤️ by {{author}}

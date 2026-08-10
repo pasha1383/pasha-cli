@@ -1,0 +1,32 @@
+from domain.{{snakeCase moduleName}}.entity import {{pascalCase moduleName}} as {{pascalCase moduleName}}Entity
+from domain.{{snakeCase moduleName}}.repository_interface import {{pascalCase moduleName}}RepositoryInterface
+
+from .models import {{pascalCase moduleName}}Model
+
+
+class {{pascalCase moduleName}}Repository({{pascalCase moduleName}}RepositoryInterface):
+    def save(self, entity: {{pascalCase moduleName}}Entity) -> {{pascalCase moduleName}}Entity:
+        if entity.id:
+            model = {{pascalCase moduleName}}Model.objects.get(pk=entity.id)
+            model.name = entity.name
+        else:
+            model = {{pascalCase moduleName}}Model(name=entity.name)
+        model.save()
+        entity.id = model.id
+        return entity
+
+    def find_all(self) -> list[{{pascalCase moduleName}}Entity]:
+        return [
+            {{pascalCase moduleName}}Entity(id=m.id, name=m.name)
+            for m in {{pascalCase moduleName}}Model.objects.all()
+        ]
+
+    def find_by_id(self, pk: int) -> {{pascalCase moduleName}}Entity | None:
+        try:
+            m = {{pascalCase moduleName}}Model.objects.get(pk=pk)
+            return {{pascalCase moduleName}}Entity(id=m.id, name=m.name)
+        except {{pascalCase moduleName}}Model.DoesNotExist:
+            return None
+
+    def delete(self, pk: int) -> None:
+        {{pascalCase moduleName}}Model.objects.filter(pk=pk).delete()

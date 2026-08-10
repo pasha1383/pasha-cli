@@ -1,0 +1,50 @@
+from flask import Blueprint, jsonify, request
+
+from src.core.use_cases.{{snakeCase moduleName}}.{{snakeCase moduleName}}_use_case import {{pascalCase moduleName}}UseCase
+
+from .repository import {{pascalCase moduleName}}Repository
+
+{{camelCase moduleName}}_bp = Blueprint("{{snakeCase moduleName}}", __name__)
+
+_repo = {{pascalCase moduleName}}Repository()
+
+
+def _get_use_case() -> {{pascalCase moduleName}}UseCase:
+    return {{pascalCase moduleName}}UseCase(_repo)
+
+
+@{{camelCase moduleName}}_bp.route("/", methods=["POST"])
+def create():
+    body = request.get_json(silent=True) or {}
+    uc = _get_use_case()
+    entity = uc.create(body)
+    return jsonify({"id": entity.id, "name": entity.name}), 201
+
+
+@{{camelCase moduleName}}_bp.route("/", methods=["GET"])
+def list_all():
+    uc = _get_use_case()
+    entities = uc.get_all()
+    return jsonify([{"id": e.id, "name": e.name} for e in entities])
+
+
+@{{camelCase moduleName}}_bp.route("/<int:pk>", methods=["GET"])
+def get_one(pk: int):
+    uc = _get_use_case()
+    entity = uc.get_by_id(pk)
+    return jsonify({"id": entity.id, "name": entity.name})
+
+
+@{{camelCase moduleName}}_bp.route("/<int:pk>", methods=["PUT"])
+def update(pk: int):
+    body = request.get_json(silent=True) or {}
+    uc = _get_use_case()
+    entity = uc.update(pk, body)
+    return jsonify({"id": entity.id, "name": entity.name})
+
+
+@{{camelCase moduleName}}_bp.route("/<int:pk>", methods=["DELETE"])
+def delete(pk: int):
+    uc = _get_use_case()
+    uc.delete(pk)
+    return "", 204

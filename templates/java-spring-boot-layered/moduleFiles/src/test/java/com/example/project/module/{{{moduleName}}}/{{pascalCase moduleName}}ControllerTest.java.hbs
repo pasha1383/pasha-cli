@@ -1,0 +1,42 @@
+package com.example.project.module.{{moduleName}};
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+class {{pascalCase moduleName}}ControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Test
+    void shouldCreateAndGet{{pascalCase moduleName}}() throws Exception {
+        String json = """
+                {"name": "test-item"}
+                """;
+
+        mockMvc.perform(post("/{{moduleName}}")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name").value("test-item"));
+    }
+
+    @Test
+    void shouldList{{pascalCase moduleName}}s() throws Exception {
+        mockMvc.perform(get("/{{moduleName}}"))
+                .andExpect(status().isOk());
+    }
+}

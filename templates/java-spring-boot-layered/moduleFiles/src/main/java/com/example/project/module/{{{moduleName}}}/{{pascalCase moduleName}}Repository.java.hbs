@@ -1,0 +1,72 @@
+package com.example.project.module.{{moduleName}};
+
+{{#if ormJpa}}
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface {{pascalCase moduleName}}Repository extends JpaRepository<{{pascalCase moduleName}}, Long> {
+}
+{{/if}}
+
+{{#if ormMybatis}}
+import org.apache.ibatis.annotations.*;
+
+import java.util.List;
+import java.util.Optional;
+
+@Mapper
+public interface {{pascalCase moduleName}}Repository {
+
+    @Select("SELECT * FROM {{snakeCase moduleName}}")
+    List<{{pascalCase moduleName}}> findAll();
+
+    @Select("SELECT * FROM {{snakeCase moduleName}} WHERE id = #{id}")
+    Optional<{{pascalCase moduleName}}> findById(Long id);
+
+    @Insert("INSERT INTO {{snakeCase moduleName}} (name) VALUES (#{name})")
+    @Options(useGeneratedKeys = true, keyProperty = "id")
+    void save({{pascalCase moduleName}} entity);
+
+    @Update("UPDATE {{snakeCase moduleName}} SET name = #{name} WHERE id = #{id}")
+    void update({{pascalCase moduleName}} entity);
+
+    @Delete("DELETE FROM {{snakeCase moduleName}} WHERE id = #{id}")
+    void deleteById(Long id);
+}
+{{/if}}
+
+{{#if ormNone}}
+import org.springframework.stereotype.Repository;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+
+@Repository
+public class {{pascalCase moduleName}}Repository {
+
+    private final Map<Long, {{pascalCase moduleName}}> store = new ConcurrentHashMap<>();
+    private final AtomicLong nextId = new AtomicLong(1);
+
+    public {{pascalCase moduleName}} save({{pascalCase moduleName}} entity) {
+        if (entity.getId() == null || entity.getId() == 0) {
+            entity.setId(nextId.getAndIncrement());
+        }
+        store.put(entity.getId(), entity);
+        return entity;
+    }
+
+    public List<{{pascalCase moduleName}}> findAll() {
+        return new ArrayList<>(store.values());
+    }
+
+    public Optional<{{pascalCase moduleName}}> findById(Long id) {
+        return Optional.ofNullable(store.get(id));
+    }
+
+    public void deleteById(Long id) {
+        store.remove(id);
+    }
+}
+{{/if}}

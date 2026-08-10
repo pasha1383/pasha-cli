@@ -1,0 +1,80 @@
+# {{projectName}}
+
+{{description}}
+
+Built with pasha CLI — **Layered** architecture on Spring Boot.
+
+## Stack
+
+{{#if ormJpa}}- **ORM:** JPA / Hibernate{{/if}}
+{{#if ormMybatis}}- **ORM:** MyBatis{{/if}}
+{{#if ormNone}}- **Data layer:** in-memory repositories{{/if}}
+{{#if hasDatabase}}- **Database:** {{database}}{{/if}}
+{{#if hasValidation}}- **Validation:** Jakarta Bean Validation{{/if}}
+{{#if useRedis}}- **Cache:** Redis{{/if}}
+{{#if hasBroker}}- **Messaging:** {{broker}}{{/if}}
+
+## Run
+
+```bash
+cp .env.example .env
+{{#if useDocker}}
+docker compose up -d
+{{/if}}
+./mvnw spring-boot:run
+```
+
+The app starts at `http://localhost:8080`.
+
+{{#if useSwagger}}
+API docs at `http://localhost:8080/docs`
+{{/if}}
+{{#if dbH2}}
+H2 console at `http://localhost:8080/h2-console` (JDBC URL: `jdbc:h2:mem:{{projectName}}`)
+{{/if}}
+
+## Modules
+
+{{#each modules}}
+- `{{this}}` → `http://localhost:8080/{{this}}`
+{{/each}}
+
+## Structure
+
+```
+src/main/java/com/example/project/
+├── Application.java              ← entry point
+├── config/                       ← app-level configuration
+├── errors/                       ← global error handling
+├── shared/                       ← cross-cutting concerns
+│   ├── database/                 ← ORM setup
+│   ├── cache/                    ← Redis config
+│   ├── auth/                     ← JWT security
+│   ├── health/                   ← health endpoints
+│   ├── kafka/                    ← Kafka config
+│   └── rabbitmq/                 ← RabbitMQ config
+└── module/<module>/
+    ├── <Module>.java             ← entity / model
+    ├── <Module>Controller.java   ← REST endpoints
+    ├── <Module>Service.java      ← business logic
+    └── <Module>Repository.java   ← data access
+```
+
+## Commands
+
+```bash
+./mvnw spring-boot:run             # dev server on :8080
+{{#if useDocker}}
+docker compose up -d               # start databases/brokers
+docker compose down
+{{/if}}
+{{#if useCheckstyle}}
+./mvnw checkstyle:check            # lint
+{{/if}}
+{{#if useTests}}
+./mvnw test                        # run tests
+{{/if}}
+```
+
+---
+Made with ❤️ by {{author}}

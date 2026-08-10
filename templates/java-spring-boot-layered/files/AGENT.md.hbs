@@ -1,0 +1,75 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Framework:** Spring Boot (Java 17) — Layered architecture
+- **Architecture:** {{architectureLabel}}
+{{#if ormJpa}}
+- **ORM:** JPA / Hibernate{{/if}}
+{{#if ormMybatis}}
+- **ORM:** MyBatis{{/if}}
+{{#if ormNone}}
+- **Data layer:** in-memory repositories{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}{{/if}}
+{{#if hasValidation}}
+- **Validation:** Jakarta Bean Validation{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis{{/if}}
+{{#if hasBroker}}
+- **Message broker:** {{broker}}{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/docs`{{/if}}
+{{#if useAuth}}
+- **Auth:** JWT with Spring Security{{/if}}
+{{#if useHealthCheck}}
+- **Health:** Actuator at `/actuator/health`{{/if}}
+
+## Modules
+
+{{#each modules}}
+- `{{snakeCase this}}`
+{{/each}}
+
+## Commands
+
+```bash
+./mvnw spring-boot:run               # dev server on :8080
+{{#if useDocker}}
+docker compose up -d                  # start databases/brokers
+docker compose down
+{{/if}}
+{{#if useCheckstyle}}
+./mvnw checkstyle:check               # lint
+{{/if}}
+{{#if useTests}}
+./mvnw test                           # run tests
+{{/if}}
+```
+
+## Hard rules
+
+1. **Controller → Service → Repository.** A layer only calls the one directly
+   below it. Controllers never touch repositories directly.
+2. **Entities live in `module/<module>/<Module>.java`.** JPA entities are in
+   the same package as their related code.
+3. **Error handling** uses `AppError` / `NotFoundException` from
+   `com.example.project.errors` — throw them in services, let the
+   `GlobalExceptionHandler` translate them to HTTP responses.
+4. **Adding a module means adding:** `{{pascalCase moduleName}}.java`,
+   `{{pascalCase moduleName}}Controller.java`, `{{pascalCase moduleName}}Service.java`,
+   `{{pascalCase moduleName}}Repository.java`.
+5. **Configuration** goes in `src/main/resources/application.yml`.
+{{#if useAuth}}
+6. **Protected endpoints** require a valid JWT Bearer token in the
+   `Authorization` header. The `JwtAuthFilter` extracts it automatically.
+{{/if}}
+
+## When you are unsure
+
+Prefer asking over guessing. Generating a plausible-looking file in the wrong
+layer costs more to unpick than a clarifying question costs to answer.

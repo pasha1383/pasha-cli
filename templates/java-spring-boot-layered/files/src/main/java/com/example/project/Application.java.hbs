@@ -1,0 +1,19 @@
+package com.example.project;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+{{#if hasBroker}}
+{{#if useKafka}}
+import org.springframework.kafka.annotation.EnableKafka;
+{{/if}}
+{{/if}}
+
+@SpringBootApplication
+{{#if useKafka}}
+@EnableKafka
+{{/if}}
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}

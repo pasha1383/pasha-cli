@@ -1,0 +1,47 @@
+package com.example.project.module.{{moduleName}};
+
+{{#if useBeanValidation}}
+import jakarta.validation.Valid;
+{{/if}}
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/{{moduleName}}")
+public class {{pascalCase moduleName}}Controller {
+
+    private final {{pascalCase moduleName}}Service service;
+
+    public {{pascalCase moduleName}}Controller({{pascalCase moduleName}}Service service) {
+        this.service = service;
+    }
+
+    @PostMapping
+    public ResponseEntity<{{pascalCase moduleName}}> create({{#if useBeanValidation}}@Valid {{/if}}@RequestBody {{pascalCase moduleName}} body) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.create(body));
+    }
+
+    @GetMapping
+    public List<{{pascalCase moduleName}}> listAll() {
+        return service.getAll();
+    }
+
+    @GetMapping("/{id}")
+    public {{pascalCase moduleName}} getOne(@PathVariable Long id) {
+        return service.getById(id);
+    }
+
+    @PutMapping("/{id}")
+    public {{pascalCase moduleName}} update(@PathVariable Long id, {{#if useBeanValidation}}@Valid {{/if}}@RequestBody {{pascalCase moduleName}} body) {
+        return service.update(id, body);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+}

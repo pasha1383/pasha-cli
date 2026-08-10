@@ -1,0 +1,11 @@
+package com.example.project.shared.database;
+
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+
+@Configuration
+@EntityScan("com.example.project")
+@EnableJpaRepositories("com.example.project")
+public class JpaConfig {
+}

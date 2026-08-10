@@ -1,0 +1,73 @@
+package com.example.project.shared.health;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.Map;
+{{#if healthChecksDb}}
+import javax.sql.DataSource;
+import java.sql.Connection;
+{{/if}}
+{{#if healthChecksRedis}}
+import org.springframework.data.redis.core.RedisTemplate;
+{{/if}}
+
+@RestController
+public class HealthController {
+
+    {{#if healthChecksDb}}
+    private final DataSource dataSource;
+    {{/if}}
+    {{#if healthChecksRedis}}
+    private final RedisTemplate<String, Object> redisTemplate;
+    {{/if}}
+
+    {{#if healthChecksDb}}
+    {{#if healthChecksRedis}}
+    public HealthController(DataSource dataSource, RedisTemplate<String, Object> redisTemplate) {
+        this.dataSource = dataSource;
+        this.redisTemplate = redisTemplate;
+    }
+    {{else}}
+    public HealthController(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+    {{/if}}
+    {{else}}
+    {{#if healthChecksRedis}}
+    public HealthController(RedisTemplate<String, Object> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
+    {{/if}}
+    {{/if}}
+
+    {{^healthChecksDb}}{{^healthChecksRedis}}
+    public HealthController() {
+    }
+    {{/healthChecksRedis}}{{/healthChecksDb}}
+
+    @GetMapping("/actuator/health/custom")
+    public ResponseEntity<Map<String, Object>> customHealth() {
+        Map<String, Object> result = new HashMap<>();
+        result.put("status", "UP");
+        {{#if healthChecksDb}}
+        try (Connection conn = dataSource.getConnection()) {
+            conn.createStatement().execute("SELECT 1");
+            result.put("database", "ok");
+        } catch (Exception e) {
+            result.put("database", "error");
+        }
+        {{/if}}
+        {{#if healthChecksRedis}}
+        try {
+            redisTemplate.getConnectionFactory().getConnection().ping();
+            result.put("redis", "ok");
+        } catch (Exception e) {
+            result.put("redis", "error");
+        }
+        {{/if}}
+        return ResponseEntity.ok(result);
+    }
+}

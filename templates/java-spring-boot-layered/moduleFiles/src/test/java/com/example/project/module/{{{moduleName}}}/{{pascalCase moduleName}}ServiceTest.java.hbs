@@ -1,0 +1,57 @@
+package com.example.project.module.{{moduleName}};
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class {{pascalCase moduleName}}ServiceTest {
+
+    @Mock
+    private {{pascalCase moduleName}}Repository repository;
+
+    private {{pascalCase moduleName}}Service service;
+
+    @BeforeEach
+    void setUp() {
+        service = new {{pascalCase moduleName}}Service(repository);
+    }
+
+    @Test
+    void shouldCreateAndReturn() {
+        {{pascalCase moduleName}} entity = new {{pascalCase moduleName}}(1L, "test");
+        when(repository.save(any())).thenReturn(entity);
+
+        {{pascalCase moduleName}} result = service.create(new {{pascalCase moduleName}}(null, "test"));
+
+        assertThat(result.getId()).isEqualTo(1L);
+        assertThat(result.getName()).isEqualTo("test");
+    }
+
+    @Test
+    void shouldReturnAll() {
+        when(repository.findAll()).thenReturn(List.of(
+                new {{pascalCase moduleName}}(1L, "a"),
+                new {{pascalCase moduleName}}(2L, "b")
+        ));
+
+        assertThat(service.getAll()).hasSize(2);
+    }
+
+    @Test
+    void shouldFindById() {
+        {{pascalCase moduleName}} entity = new {{pascalCase moduleName}}(1L, "x");
+        when(repository.findById(1L)).thenReturn(Optional.of(entity));
+
+        assertThat(service.getById(1L).getName()).isEqualTo("x");
+    }
+}

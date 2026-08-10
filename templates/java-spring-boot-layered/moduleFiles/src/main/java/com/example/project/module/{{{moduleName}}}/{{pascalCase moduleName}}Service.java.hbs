@@ -1,0 +1,44 @@
+package com.example.project.module.{{moduleName}};
+
+import com.example.project.errors.NotFoundException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+public class {{pascalCase moduleName}}Service {
+
+    private final {{pascalCase moduleName}}Repository repository;
+
+    public {{pascalCase moduleName}}Service({{pascalCase moduleName}}Repository repository) {
+        this.repository = repository;
+    }
+
+    @Transactional
+    public {{pascalCase moduleName}} create({{pascalCase moduleName}} entity) {
+        return repository.save(entity);
+    }
+
+    public List<{{pascalCase moduleName}}> getAll() {
+        return repository.findAll();
+    }
+
+    public {{pascalCase moduleName}} getById(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new NotFoundException("{{pascalCase moduleName}} with id " + id + " not found"));
+    }
+
+    @Transactional
+    public {{pascalCase moduleName}} update(Long id, {{pascalCase moduleName}} data) {
+        {{pascalCase moduleName}} existing = getById(id);
+        existing.setName(data.getName());
+        return repository.save(existing);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        {{pascalCase moduleName}} existing = getById(id);
+        repository.deleteById(existing.getId());
+    }
+}

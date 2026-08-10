@@ -1,0 +1,17 @@
+import { Middleware } from 'koa';
+import { validate } from 'class-validator';
+import { plainToInstance } from 'class-transformer';
+import { ValidationError } from '../errors/app-error';
+
+export function validateBodyDto<T extends object>(dtoClass: new () => T): Middleware {
+  return async (ctx, next) => {
+    const dto = plainToInstance(dtoClass, ctx.request.body);
+    const errors = await validate(dto);
+    if (errors.length > 0) {
+      const messages = errors.map((e) => Object.values(e.constraints ?? {}).join(', ')).join('; ');
+      throw new ValidationError(messages);
+    }
+    ctx.request.body = dto;
+    await next();
+  };
+}

@@ -1,0 +1,62 @@
+import { Router, Request, Response } from 'express';
+{{#if ormPrisma}}
+import { prisma } from '../database/prisma.client';
+{{/if}}
+{{#if ormTypeorm}}
+import { AppDataSource } from '../database/typeorm.datasource';
+{{/if}}
+{{#if ormMongoose}}
+import mongoose from 'mongoose';
+{{/if}}
+{{#if useRedis}}
+import { redis } from '../cache/redis.client';
+{{/if}}
+
+export const healthRouter = Router();
+
+/**
+ * GET /health
+ *
+ * Reports liveness and readiness. Orchestrators (K8s, ECS, Docker Compose
+ * healthcheck) poll this every few seconds, so each check is intentionally
+ * cheap — no expensive queries, no heavy computation.
+ */
+healthRouter.get('/health', async (_req: Request, res: Response) => {
+  const checks: Record<string, string> = {};
+
+  // Always available: checks that the process itself is not critically low on memory.
+  const mem = process.memoryUsage();
+  checks.heapUsedMB = Math.round(mem.heapUsed / (1024 * 1024)).toString();
+
+{{#if ormPrisma}}
+  try {
+    await prisma.$executeRawUnsafe('SELECT 1');
+    checks.database = 'ok';
+  } catch {
+    checks.database = 'error';
+  }
+{{/if}}
+{{#if ormTypeorm}}
+  try {
+    await AppDataSource.query('SELECT 1');
+    checks.database = 'ok';
+  } catch {
+    checks.database = 'error';
+  }
+{{/if}}
+{{#if ormMongoose}}
+  // Mongoose readyState: 1 = connected, 2 = connecting, 0 = disconnected
+  checks.database = mongoose.connection.readyState === 1 ? 'ok' : 'error';
+{{/if}}
+{{#if useRedis}}
+  try {
+    await redis.ping();
+    checks.redis = 'ok';
+  } catch {
+    checks.redis = 'error';
+  }
+{{/if}}
+
+  const allOk = Object.values(checks).every((v) => v === 'ok');
+  res.status(allOk ? 200 : 503).json({ status: allOk ? 'ok' : 'degraded', checks });
+});

@@ -1,0 +1,10 @@
+import { FastifyInstance } from 'fastify';
+import { {{pascalCase moduleName}}Controller } from './{{moduleName}}.controller';
+
+export function {{camelCase moduleName}}Routes(controller: {{pascalCase moduleName}}Controller) {
+  return async (fastify: FastifyInstance) => {
+    fastify.post('/', controller.create);
+    fastify.get('/', controller.getAll);
+    fastify.get('/:id', controller.getOne);
+  };
+}

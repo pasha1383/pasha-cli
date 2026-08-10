@@ -1,0 +1,38 @@
+import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
+import type { Express } from 'express';
+
+/**
+ * Mounts interactive API docs at /api/docs. Called once from app.ts.
+{{#if useAuth}}
+ * The "bearer" security scheme lets you click "Authorize" in the UI and
+ * attach a JWT to every request made from the docs page.
+{{/if}}
+ */
+export function setupSwagger(app: Express): void {
+  const options: swaggerJsdoc.Options = {
+    definition: {
+      openapi: '3.0.3',
+      info: {
+        title: '{{projectName}}',
+        description: '{{description}}',
+        version: '0.1.0',
+      },
+{{#if useAuth}}
+      components: {
+        securitySchemes: {
+          bearer: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT',
+          },
+        },
+      },
+{{/if}}
+    },
+    apis: ['./src/modules/**/*.ts'],
+  };
+
+  const specs = swaggerJsdoc(options);
+  app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(specs));
+}

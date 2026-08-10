@@ -1,0 +1,112 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository. Read this before
+generating or editing code.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Framework:** Express (TypeScript, strict mode) — no DI container. Wiring
+  is manual (see `routes.ts` in each module).
+- **Architecture:** {{architectureLabel}}
+- **Data layer:** {{#if ormNone}}in-memory repositories (no ORM){{else}}{{orm}}{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+- **Validation:** {{#if hasValidation}}{{validation}}{{else}}none{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis (via `ioredis`)
+{{/if}}
+{{#if hasBroker}}
+- **Message broker:** {{broker}}
+{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/api/docs` (swagger-jsdoc)
+{{/if}}
+{{#if useAuth}}
+- **Auth:** JWT + passport (POST /auth/login, Bearer token)
+{{/if}}
+{{#if useHealthCheck}}
+- **Health:** `GET /health` reports liveness/readiness
+{{/if}}
+{{#if useRateLimit}}
+- **Rate limiting:** express-rate-limit (configurable via env)
+{{/if}}
+
+## Modules
+
+{{#each modules}}
+- `{{this}}`
+{{/each}}
+
+## Commands
+
+```bash
+npm run start:dev      # watch mode (tsx)
+npm run build           # tsc
+{{#if useDocker}}
+npm run infra:up        # start databases/brokers via docker compose
+npm run infra:down
+{{/if}}
+{{#if ormPrisma}}
+npm run prisma:migrate  # create and apply a migration
+npm run prisma:generate
+{{/if}}
+{{#if useLint}}
+npm run lint            # ESLint with auto-fix
+npm run format          # Prettier
+{{/if}}
+{{#if useTests}}
+npm run test            # unit tests (Jest)
+npm run test:watch
+npm run test:cov        # with coverage
+npm run test:e2e        # e2e tests (supertest)
+{{/if}}
+```
+
+## Hard rules
+
+1. **Modules are self-contained.** Every module under `src/modules/<name>/`
+   exports only its public API through `index.ts` (the service class). All
+   other files — entity, repository, controller, routes, DTOs — are module
+   internals.
+2. **Modules import from modules only through barrel files.** If module `order`
+   needs module `product`, it imports `{ ProductService }` from
+   `../product/index.ts` — never from `../product/product.service.ts` or any
+   other internal path.
+3. **`src/shared/` is the shared kernel.** Database clients, cache, auth
+   middleware, health checks, config, errors, generic middlewares — anything
+   used by more than one module lives in `shared/`. Do not add per-module
+   infra here.
+4. **No DI container.** Every module's `routes.ts` manually constructs
+   `repository → service → controller`, once. Do not introduce a
+   framework-level injector to "simplify" this — it's the one place that
+   wiring happens, and that's deliberate.
+5. **TypeScript is strict.** No `any`, no non-null assertions to silence the
+   compiler.{{#if ormTypeorm}} TypeORM entity fields use `!:` because the ORM
+   populates them, not a constructor — that's the one sanctioned exception.{{/if}}
+6. **Adding a module means adding every file.** `index.ts`, entity, repository,
+   service, controller, routes, service spec, and a `dto/` folder with at
+   least a create DTO — a new feature gets its full slice.
+7. **Mount new routers** in `src/app.ts` or they will not be reachable.
+8. **Controllers never touch the repository directly.** Always go through
+   the service.
+9. **Every controller method calls `next(err)` on failure**, never lets an
+   error escape unhandled — Express does not catch async rejections for you
+   without it landing in the error middleware.
+{{#if hasValidation}}
+10. **Every request body needs validation** before it reaches a controller.
+{{/if}}
+11. **`config/env.ts` is the only file that reads `process.env`** directly.
+    Everywhere else imports `env` from there.
+{{#if useAuth}}
+12. **Protected routes** use `authenticate` from `shared/auth/auth.middleware`.
+    Inject `req.user` — it carries `{ sub, username }` after successful validation.
+{{/if}}
+
+## When you are unsure
+
+Prefer asking over guessing. Generating a plausible-looking file in the wrong
+module or bypassing the barrel file costs more to unpick than a clarifying
+question costs to answer.

@@ -1,0 +1,27 @@
+import router from '@adonisjs/core/services/router';
+{{#if useHealthCheck}}
+import { healthRouter } from '../src/shared/health/health.routes.js';
+{{/if}}
+{{#each modules}}
+const {{camelCase this}}ControllerModule = await import('../app/controllers/{{this}}_controller.js');
+const {{camelCase this}}Controller = {{camelCase this}}ControllerModule.{{pascalCase this}}Controller;
+{{/each}}
+
+router.get('/', async () => {
+  return { app: '{{projectName}}', version: '0.1.0' };
+});
+
+{{#if useHealthCheck}}
+router.group(() => {
+  healthRouter();
+}).prefix('/health');
+{{/if}}
+
+{{#each modules}}
+const {{camelCase this}}Ctrl = new {{camelCase this}}Controller();
+router.get('/{{this}}', async (ctx) => {{camelCase this}}Ctrl.index(ctx));
+router.get('/{{this}}/:id', async (ctx) => {{camelCase this}}Ctrl.show(ctx));
+router.post('/{{this}}', async (ctx) => {{camelCase this}}Ctrl.store(ctx));
+router.put('/{{this}}/:id', async (ctx) => {{camelCase this}}Ctrl.update(ctx));
+router.delete('/{{this}}/:id', async (ctx) => {{camelCase this}}Ctrl.destroy(ctx));
+{{/each}}

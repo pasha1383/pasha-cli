@@ -1,0 +1,23 @@
+{{#if useZod}}
+import { z } from 'zod';
+
+export const create{{pascalCase moduleName}}Dto = z.object({
+  name: z.string().min(1).max(255),
+});
+
+export type Create{{pascalCase moduleName}}Dto = z.infer<typeof create{{pascalCase moduleName}}Dto>;
+{{/if}}
+{{#if useExpressValidator}}
+import { body } from 'express-validator';
+
+export const create{{pascalCase moduleName}}Validation = [
+  body('name').isString().trim().notEmpty().isLength({ max: 255 }),
+];
+{{/if}}
+{{#unless useZod}}
+{{#unless useExpressValidator}}
+export interface Create{{pascalCase moduleName}}Dto {
+  name: string;
+}
+{{/unless}}
+{{/unless}}

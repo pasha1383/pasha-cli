@@ -1,0 +1,70 @@
+import { Router, Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import passport from 'passport';
+import { ExtractJwt, Strategy as JwtStrategy } from 'passport-jwt';
+import { env } from '../../config/env';
+
+interface JwtPayload {
+  sub: string;
+  username: string;
+}
+
+passport.use(
+  new JwtStrategy(
+    {
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      secretOrKey: env.jwtSecret,
+    },
+    (payload: JwtPayload, done) => {
+      if (!payload?.sub) {
+        return done(null, false);
+      }
+      return done(null, payload);
+    },
+  ),
+);
+
+passport.serializeUser((user, done) => done(null, user));
+passport.deserializeUser((user: Express.User, done) => done(null, user));
+
+/**
+ * Attach this to any route that requires a valid JWT.
+ *
+ * Usage:
+ *   router.get('/protected', authenticate, controller.protected);
+ */
+export function authenticate(req: Request, res: Response, next: NextFunction): void {
+  passport.authenticate('jwt', { session: false }, (err: Error | null, user: Express.User | false) => {
+    if (err) return next(err);
+    if (!user) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+    req.user = user;
+    next();
+  })(req, res, next);
+}
+
+export const authRouter = Router();
+
+/**
+ * POST /auth/login
+ *
+ * Minimal starter auth: validates against ADMIN_USER / ADMIN_PASSWORD
+ * from the environment and returns a signed JWT. Replace the credential
+ * check with a real lookup (hashed password, user table) before this
+ * goes anywhere near production.
+ */
+authRouter.post('/auth/login', (req: Request, res: Response) => {
+  const { username, password } = req.body;
+
+  if (username !== env.adminUser || password !== env.adminPassword) {
+    res.status(401).json({ error: 'Invalid credentials' });
+    return;
+  }
+
+  const payload = { sub: '1', username };
+  const token = jwt.sign(payload, env.jwtSecret, { expiresIn: env.jwtExpiresIn });
+
+  res.json({ accessToken: token });
+});

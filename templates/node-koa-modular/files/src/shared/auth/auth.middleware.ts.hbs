@@ -1,0 +1,49 @@
+import Router from '@koa/router';
+import jwt from 'jsonwebtoken';
+import { Middleware } from 'koa';
+import { env } from '../../config/env';
+
+interface JwtPayload {
+  sub: string;
+  username: string;
+}
+
+interface KoaStateWithUser {
+  user?: JwtPayload;
+}
+
+export const authenticate: Middleware<KoaStateWithUser> = async (ctx, next) => {
+  const authHeader = ctx.headers.authorization;
+  if (!authHeader?.startsWith('Bearer ')) {
+    ctx.status = 401;
+    ctx.body = { error: 'Unauthorized' };
+    return;
+  }
+
+  const token = authHeader.slice(7);
+  try {
+    const payload = jwt.verify(token, env.jwtSecret) as JwtPayload;
+    ctx.state.user = payload;
+    await next();
+  } catch {
+    ctx.status = 401;
+    ctx.body = { error: 'Invalid token' };
+  }
+};
+
+export const authRouter = new Router();
+
+authRouter.post('/auth/login', async (ctx) => {
+  const { username, password } = ctx.request.body as Record<string, string>;
+
+  if (username !== env.adminUser || password !== env.adminPassword) {
+    ctx.status = 401;
+    ctx.body = { error: 'Invalid credentials' };
+    return;
+  }
+
+  const payload = { sub: '1', username };
+  const token = jwt.sign(payload, env.jwtSecret, { expiresIn: env.jwtExpiresIn });
+
+  ctx.body = { accessToken: token };
+});

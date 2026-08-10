@@ -1,0 +1,21 @@
+import app from '@adonisjs/core/services/app';
+import { defineConfig } from '@adonisjs/core/http';
+
+export default defineConfig({
+  http: {
+    allowMethodSpoofing: false,
+    subdomainOffset: 2,
+    generateRequestId: true,
+    trustProxy: app.getEnv('NODE_ENV') === 'production',
+    etag: false,
+    jsonpCallbackName: 'callback',
+    cookie: {
+      maxAge: '2h',
+      path: '/',
+      httpOnly: true,
+      secure: app.getEnv('NODE_ENV') === 'production',
+      sameSite: 'lax',
+    },
+    forceContentNegotiationTo: 'application/json',
+  },
+});

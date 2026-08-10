@@ -1,0 +1,23 @@
+import { FastifyRequest, FastifyReply } from 'fastify';
+import { {{pascalCase moduleName}}Service } from './{{moduleName}}.service';
+import { Create{{pascalCase moduleName}}Dto } from './{{moduleName}}.dto';
+
+export class {{pascalCase moduleName}}Controller {
+  constructor(private readonly service: {{pascalCase moduleName}}Service) {}
+
+  create = async (request: FastifyRequest<{ Body: Create{{pascalCase moduleName}}Dto }>, reply: FastifyReply): Promise<void> => {
+    const entity = await this.service.create(request.body);
+    reply.status(201).send(entity);
+  };
+
+  getAll = async (_request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+    const entities = await this.service.findAll();
+    reply.send(entities);
+  };
+
+  getOne = async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply): Promise<void> => {
+    const { id } = request.params;
+    const entity = await this.service.findOne(id);
+    reply.send(entity);
+  };
+}

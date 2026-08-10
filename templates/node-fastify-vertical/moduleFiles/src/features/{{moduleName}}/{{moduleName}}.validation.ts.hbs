@@ -1,0 +1,7 @@
+{{#if useZod}}
+import { z } from 'zod';
+
+export const create{{pascalCase moduleName}}Schema = z.object({
+  name: z.string().min(1).max(255),
+});
+{{/if}}

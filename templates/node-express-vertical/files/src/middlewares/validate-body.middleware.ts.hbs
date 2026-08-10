@@ -1,0 +1,16 @@
+import { Middleware } from 'express';
+import { ZodSchema } from 'zod';
+import { ValidationError } from '../errors/app-error';
+
+export function validateBody(schema: ZodSchema): Middleware {
+  return (req, _res, next) => {
+    const result = schema.safeParse(req.body);
+    if (!result.success) {
+      return next(
+        new ValidationError(result.error.issues.map((i) => i.message).join(', ')),
+      );
+    }
+    req.body = result.data;
+    next();
+  };
+}

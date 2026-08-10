@@ -1,0 +1,36 @@
+import 'reflect-metadata';
+import { Ignitor, prettyPrintError } from '@adonisjs/core';
+
+const APP_ROOT = new URL('../', import.meta.url);
+
+const IMPORTER = (filePath: string) => {
+  if (filePath.startsWith('./') || filePath.startsWith('../')) {
+    return import(new URL(filePath, APP_ROOT).href);
+  }
+  return import(filePath);
+};
+
+new Ignitor(APP_ROOT, { importer: IMPORTER })
+  .tap((app) => {
+    app.booting(() => {
+      app.useEnv({
+        NODE_ENV: app.nodeEnvironment,
+        HOST: app.config.get('app.http.host'),
+        PORT: app.config.get('app.http.port'),
+        APP_KEY: app.config.get('app.appKey'),
+      });
+    });
+    app.starting(() => {
+      console.log('🚀 {{projectName}} starting...');
+    });
+    app.ready(() => {
+      console.log(`🚀 {{projectName}} is ready`);
+    });
+    app.terminating(() => {
+      console.log('👋 {{projectName}} shutting down...');
+    });
+  })
+  .handleError((error) => {
+    prettyPrintError(error);
+  })
+  .start();

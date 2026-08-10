@@ -1,0 +1,15 @@
+import router from '@adonisjs/core/services/router';
+import server from '@adonisjs/core/services/server';
+{{#if ormLucid}}
+import logger from '@adonisjs/core/services/logger';
+{{/if}}
+
+server.errorHandler(() => import('../src/errors/app-error.js'));
+
+{{#if ormLucid}}
+process.on('SIGTERM', async () => {
+  const db = await import('@adonisjs/lucid/database');
+  await db.default.manager.closeAll();
+  logger.info('Database connections closed');
+});
+{{/if}}

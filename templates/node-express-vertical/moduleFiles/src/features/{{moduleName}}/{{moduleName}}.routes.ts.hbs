@@ -1,0 +1,30 @@
+import { Router } from 'express';
+{{#if useZod}}
+import { create{{pascalCase moduleName}}Dto } from './{{moduleName}}.dto';
+import { validateBody } from '../../middlewares/validate-body.middleware';
+{{/if}}
+{{#if useExpressValidator}}
+import { create{{pascalCase moduleName}}Validation } from './{{moduleName}}.validation';
+import { handleValidationErrors } from '../../middlewares/handle-validation-errors.middleware';
+{{/if}}
+import { {{pascalCase moduleName}}Repository } from './{{moduleName}}.repository';
+import { {{pascalCase moduleName}}Service } from './{{moduleName}}.service';
+import { {{pascalCase moduleName}}Controller } from './{{moduleName}}.controller';
+
+const repository = new {{pascalCase moduleName}}Repository();
+const service = new {{pascalCase moduleName}}Service(repository);
+const controller = new {{pascalCase moduleName}}Controller(service);
+
+export const {{camelCase moduleName}}Router = Router();
+
+{{#if useZod}}
+{{camelCase moduleName}}Router.post('/', validateBody(create{{pascalCase moduleName}}Dto), controller.create);
+{{else}}
+{{#if useExpressValidator}}
+{{camelCase moduleName}}Router.post('/', create{{pascalCase moduleName}}Validation, handleValidationErrors, controller.create);
+{{else}}
+{{camelCase moduleName}}Router.post('/', controller.create);
+{{/if}}
+{{/if}}
+{{camelCase moduleName}}Router.get('/', controller.findAll);
+{{camelCase moduleName}}Router.get('/:id', controller.findOne);

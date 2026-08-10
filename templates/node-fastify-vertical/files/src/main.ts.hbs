@@ -1,0 +1,28 @@
+import { buildApp } from './app';
+import { env } from './config/env';
+{{#if ormTypeorm}}
+import { AppDataSource } from './shared/database/typeorm.datasource';
+{{/if}}
+{{#if ormMongoose}}
+import { connectMongoose } from './shared/database/mongoose.connection';
+{{/if}}
+
+async function bootstrap() {
+{{#if ormTypeorm}}
+  await AppDataSource.initialize();
+  console.log('Data source initialized');
+{{/if}}
+{{#if ormMongoose}}
+  await connectMongoose();
+  console.log('Mongoose connected');
+{{/if}}
+
+  const app = await buildApp();
+  await app.listen({ port: env.port });
+  console.log(`Server running on http://localhost:${env.port}`);
+}
+
+bootstrap().catch((err) => {
+  console.error('Failed to start:', err);
+  process.exit(1);
+});

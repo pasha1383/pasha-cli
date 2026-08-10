@@ -1,0 +1,36 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Unit;
+
+use App\Services\{{pascalCase moduleName}}Service;
+use App\Repositories\{{pascalCase moduleName}}Repository;
+use App\Models\{{pascalCase moduleName}};
+use Mockery;
+use Tests\TestCase;
+
+class {{pascalCase moduleName}}ServiceTest extends TestCase
+{
+    public function test_get_all_delegates_to_repository(): void
+    {
+        $repository = Mockery::mock({{pascalCase moduleName}}Repository::class);
+        $repository->shouldReceive('all')->once()->andReturn(collect([]));
+
+        $service = new {{pascalCase moduleName}}Service($repository);
+        $result = $service->getAll();
+
+        $this->assertEmpty($result);
+    }
+
+    public function test_get_by_id_throws_on_missing_item(): void
+    {
+        $repository = Mockery::mock({{pascalCase moduleName}}Repository::class);
+        $repository->shouldReceive('findById')->with(999)->once()->andReturn(null);
+
+        $service = new {{pascalCase moduleName}}Service($repository);
+
+        $this->expectException(\Symfony\Component\HttpKernel\Exception\NotFoundHttpException::class);
+        $service->getById(999);
+    }
+}

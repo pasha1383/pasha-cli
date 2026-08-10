@@ -1,0 +1,52 @@
+{{#if useDocker}}services:
+{{#if dbPostgres}}
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: {{shellDefault "DB_USERNAME" dbName}}
+      POSTGRES_PASSWORD: {{shellDefault "DB_PASSWORD" "secret"}}
+      POSTGRES_DB: {{shellDefault "DB_DATABASE" dbName}}
+    ports:
+      - '${DB_PORT:-5432}:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U {{shellDefault "DB_USERNAME" dbName}}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+{{/if}}
+{{#if dbMysql}}
+  mysql:
+    image: mysql:8
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_DATABASE: {{shellDefault "DB_DATABASE" dbName}}
+    ports:
+      - '${DB_PORT:-3306}:3306'
+    volumes:
+      - mysql-data:/var/lib/mysql
+{{/if}}
+{{#if useRedis}}
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    volumes:
+      - redis-data:/data
+{{/if}}
+
+volumes:
+{{#if dbPostgres}}
+  postgres-data:
+{{/if}}
+{{#if dbMysql}}
+  mysql-data:
+{{/if}}
+{{#if useRedis}}
+  redis-data:
+{{/if}}
+{{/if}}

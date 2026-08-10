@@ -1,0 +1,51 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{{pascalCase moduleName}}\Http\Controllers;
+
+use App\Http\Controllers\Controller;
+use Modules\{{pascalCase moduleName}}\Http\Requests\Store{{pascalCase moduleName}}Request;
+use Modules\{{pascalCase moduleName}}\Http\Requests\Update{{pascalCase moduleName}}Request;
+use Modules\{{pascalCase moduleName}}\Http\Resources\{{pascalCase moduleName}}Resource;
+use Modules\{{pascalCase moduleName}}\Services\{{pascalCase moduleName}}Service;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Symfony\Component\HttpFoundation\Response;
+
+class {{pascalCase moduleName}}Controller extends Controller
+{
+    public function __construct(
+        private readonly {{pascalCase moduleName}}Service $service,
+    ) {
+    }
+
+    public function index(): AnonymousResourceCollection
+    {
+        return {{pascalCase moduleName}}Resource::collection($this->service->getAll());
+    }
+
+    public function store(Store{{pascalCase moduleName}}Request $request): {{pascalCase moduleName}}Resource
+    {
+        $item = $this->service->create($request->validated());
+
+        return new {{pascalCase moduleName}}Resource($item);
+    }
+
+    public function show(int $id): {{pascalCase moduleName}}Resource
+    {
+        return new {{pascalCase moduleName}}Resource($this->service->getById($id));
+    }
+
+    public function update(Update{{pascalCase moduleName}}Request $request, int $id): {{pascalCase moduleName}}Resource
+    {
+        return new {{pascalCase moduleName}}Resource($this->service->update($id, $request->validated()));
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $this->service->delete($id);
+
+        return response()->json(null, Response::HTTP_NO_CONTENT);
+    }
+}

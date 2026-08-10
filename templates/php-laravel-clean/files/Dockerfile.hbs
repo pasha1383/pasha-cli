@@ -1,0 +1,45 @@
+FROM php:8.3-fpm-alpine AS base
+
+RUN apk add --no-cache \
+    postgresql-dev \
+    libpq \
+    libpng-dev \
+    oniguruma-dev \
+    libxml2-dev \
+    curl \
+    git \
+    unzip
+
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+        pdo \
+        pdo_mysql \
+        pdo_pgsql \
+        mbstring \
+        xml \
+        opcache \
+    && rm -rf /var/cache/apk/*
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www
+
+COPY composer.json composer.lock* ./
+
+RUN composer install --no-dev --no-interaction --no-scripts --no-autoloader --prefer-dist
+
+COPY . .
+
+RUN composer dump-autoload --optimize --no-dev \
+    && mkdir -p storage/framework/{sessions,views,cache} \
+    && mkdir -p storage/logs \
+    && chown -R www-data:www-data storage bootstrap/cache
+
+RUN php artisan config:cache && php artisan route:cache
+
+EXPOSE 9000
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD php artisan inspire || exit 1
+
+CMD ["php-fpm"]

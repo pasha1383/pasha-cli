@@ -1,0 +1,33 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Src\Application\UseCases;
+
+use Src\Domain\{{pascalCase moduleName}}Entity;
+use Src\Domain\{{pascalCase moduleName}}RepositoryInterface;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+
+class Get{{pascalCase moduleName}}UseCase
+{
+    public function __construct(
+        private readonly {{pascalCase moduleName}}RepositoryInterface $repository,
+    ) {
+    }
+
+    public function getAll(): array
+    {
+        return $this->repository->findAll();
+    }
+
+    public function getById(int $id): {{pascalCase moduleName}}Entity
+    {
+        $entity = $this->repository->findById($id);
+
+        if ($entity === null) {
+            throw new NotFoundHttpException('{{pascalCase moduleName}} not found.');
+        }
+
+        return $entity;
+    }
+}

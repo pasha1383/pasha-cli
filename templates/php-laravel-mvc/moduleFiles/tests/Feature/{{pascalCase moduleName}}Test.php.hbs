@@ -1,0 +1,81 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature;
+
+use Tests\TestCase;
+
+class {{pascalCase moduleName}}Test extends TestCase
+{
+    public function test_can_list_{{snakeCase moduleName}}(): void
+    {
+        $response = $this->getJson('/api/{{snakeCase moduleName}}');
+
+        $response->assertStatus(200);
+    }
+
+    public function test_can_create_{{snakeCase moduleName}}(): void
+    {
+        $response = $this->postJson('/api/{{snakeCase moduleName}}', [
+            'name' => 'Test {{pascalCase moduleName}}',
+            'description' => 'A test description',
+        ]);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.name', 'Test {{pascalCase moduleName}}');
+    }
+
+    public function test_can_show_{{snakeCase moduleName}}(): void
+    {
+        $createResponse = $this->postJson('/api/{{snakeCase moduleName}}', [
+            'name' => 'Show Me',
+        ]);
+
+        $id = $createResponse->json('data.id');
+
+        $response = $this->getJson("/api/{{snakeCase moduleName}}/{$id}");
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.name', 'Show Me');
+    }
+
+    public function test_can_update_{{snakeCase moduleName}}(): void
+    {
+        $createResponse = $this->postJson('/api/{{snakeCase moduleName}}', [
+            'name' => 'Old Name',
+        ]);
+
+        $id = $createResponse->json('data.id');
+
+        $response = $this->putJson("/api/{{snakeCase moduleName}}/{$id}", [
+            'name' => 'New Name',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.name', 'New Name');
+    }
+
+    public function test_can_delete_{{snakeCase moduleName}}(): void
+    {
+        $createResponse = $this->postJson('/api/{{snakeCase moduleName}}', [
+            'name' => 'Delete Me',
+        ]);
+
+        $id = $createResponse->json('data.id');
+
+        $response = $this->deleteJson("/api/{{snakeCase moduleName}}/{$id}");
+
+        $response->assertStatus(204);
+    }
+
+    public function test_validation_fails_for_empty_name(): void
+    {
+        $response = $this->postJson('/api/{{snakeCase moduleName}}', [
+            'name' => '',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['name']);
+    }
+}

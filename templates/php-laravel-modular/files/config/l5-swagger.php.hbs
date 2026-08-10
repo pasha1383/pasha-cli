@@ -1,0 +1,35 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'api' => [
+        'title' => '{{projectName}} API',
+        'description' => '{{description}}',
+        'version' => '1.0.0',
+    ],
+
+    'routes' => [
+        'api' => [
+            base_path('routes/api.php'),
+        ],
+    ],
+
+    'paths' => [
+        'annotations' => [
+            base_path('app/Http/Controllers'),
+            base_path('app/Models'),
+        ],
+        'docs' => storage_path('api-docs'),
+        'docs_json' => 'api-docs.json',
+        'format_to_use_for_docs' => 'json',
+        'view' => storage_path('api-docs'),
+    ],
+
+    'generate_always' => env('L5_SWAGGER_GENERATE_ALWAYS', false),
+    'swagger_version' => '3.0',
+
+    'constants' => [
+        'L5_SWAGGER_CONST_HOST' => env('L5_SWAGGER_CONST_HOST', 'http://localhost:8000/api'),
+    ],
+];

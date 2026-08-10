@@ -1,0 +1,20 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Src\Application\UseCases;
+
+use Src\Domain\{{pascalCase moduleName}}RepositoryInterface;
+
+class Delete{{pascalCase moduleName}}UseCase
+{
+    public function __construct(
+        private readonly {{pascalCase moduleName}}RepositoryInterface $repository,
+    ) {
+    }
+
+    public function execute(int $id): void
+    {
+        $this->repository->delete($id);
+    }
+}

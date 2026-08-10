@@ -1,0 +1,63 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Src\Infrastructure\Http\Controllers;
+
+use App\Http\Controllers\Controller;
+use Src\Application\UseCases\Create{{pascalCase moduleName}}UseCase;
+use Src\Application\UseCases\Delete{{pascalCase moduleName}}UseCase;
+use Src\Application\UseCases\Get{{pascalCase moduleName}}UseCase;
+use Src\Application\UseCases\Update{{pascalCase moduleName}}UseCase;
+use Src\Infrastructure\Http\Requests\Store{{pascalCase moduleName}}Request;
+use Src\Infrastructure\Http\Requests\Update{{pascalCase moduleName}}Request;
+use Src\Infrastructure\Http\Resources\{{pascalCase moduleName}}Resource;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Symfony\Component\HttpFoundation\Response;
+
+class {{pascalCase moduleName}}Controller extends Controller
+{
+    public function __construct(
+        private readonly Create{{pascalCase moduleName}}UseCase $createUseCase,
+        private readonly Get{{pascalCase moduleName}}UseCase $getUseCase,
+        private readonly Update{{pascalCase moduleName}}UseCase $updateUseCase,
+        private readonly Delete{{pascalCase moduleName}}UseCase $deleteUseCase,
+    ) {
+    }
+
+    public function index(): AnonymousResourceCollection
+    {
+        $entities = $this->getUseCase->getAll();
+
+        return {{pascalCase moduleName}}Resource::collection($entities);
+    }
+
+    public function store(Store{{pascalCase moduleName}}Request $request): {{pascalCase moduleName}}Resource
+    {
+        $entity = $this->createUseCase->execute($request->validated());
+
+        return new {{pascalCase moduleName}}Resource($entity);
+    }
+
+    public function show(int $id): {{pascalCase moduleName}}Resource
+    {
+        $entity = $this->getUseCase->getById($id);
+
+        return new {{pascalCase moduleName}}Resource($entity);
+    }
+
+    public function update(Update{{pascalCase moduleName}}Request $request, int $id): {{pascalCase moduleName}}Resource
+    {
+        $entity = $this->updateUseCase->execute($id, $request->validated());
+
+        return new {{pascalCase moduleName}}Resource($entity);
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $this->deleteUseCase->execute($id);
+
+        return response()->json(null, Response::HTTP_NO_CONTENT);
+    }
+}

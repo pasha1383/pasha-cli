@@ -1,0 +1,24 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Src\Infrastructure\Persistence;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Eloquent{{pascalCase moduleName}}Model extends Model
+{
+    use HasFactory;
+
+    protected $table = '{{snakeCase moduleName}}';
+
+    protected $fillable = [
+        'name',
+        'description',
+    ];
+
+    protected $casts = [
+        'id' => 'integer',
+    ];
+}

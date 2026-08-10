@@ -1,0 +1,18 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\File;
+
+Route::prefix('api')->group(function () {
+    {{#if useHealthCheck}}
+    Route::get('/health', [\App\Http\Controllers\HealthController::class, 'index']);
+    {{/if}}
+
+    // Module routes are auto-discovered from Modules/*/Routes/api.php
+    $moduleRoutes = File::glob(base_path('Modules/*/Routes/api.php'));
+    foreach ($moduleRoutes as $routeFile) {
+        Route::group([], $routeFile);
+    }
+});

@@ -1,0 +1,15 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Support\Facades\Route;
+
+Route::prefix('api')->group(function () {
+    {{#if useHealthCheck}}
+    Route::get('/health', [\App\Http\Controllers\HealthController::class, 'index']);
+    {{/if}}
+
+    {{#each modules}}
+    Route::apiResource('{{this}}', \App\Http\Controllers\{{pascalCase this}}Controller::class);
+    {{/each}}
+});

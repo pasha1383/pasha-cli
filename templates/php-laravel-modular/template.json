@@ -1,0 +1,33 @@
+{
+  "name": "PHP + Laravel + Modular Monolith",
+  "prerequisites": ["php", "composer", "git"],
+  "shared": null,
+  "stackFeatures": "laravel",
+  "modules": {
+    "enabled": true,
+    "message": "Module/entity name (e.g. product, user, order)",
+    "default": "product"
+  },
+  "fileConditions": {
+    "docker-compose.yml.hbs": "useDocker",
+    ".github": "useCI",
+    "Dockerfile.hbs": "useAppDockerfile",
+    ".dockerignore.hbs": "useAppDockerfile",
+    "config/l5-swagger.php.hbs": "useSwagger",
+    "bootstrap/auth.php.hbs": "useAuth",
+    "app/Http/Middleware/Authenticate.php.hbs": "useAuth",
+    "app/Providers/AuthServiceProvider.php.hbs": "useAuth",
+    "app/Http/Controllers/HealthController.php.hbs": "useHealthCheck",
+    "AGENT.md.hbs": "useAgentDocs",
+    "Modules/{{pascalCase moduleName}}/AGENT.md.hbs": "useAgentDocs",
+    "pint.json.hbs": "useLint",
+    "app/Providers/RateLimitServiceProvider.php.hbs": "useRateLimit",
+    "Modules/{{pascalCase moduleName}}/Tests": "useTests",
+    "Modules/{{pascalCase moduleName}}/Http/Requests/Store{{pascalCase moduleName}}Request.php.hbs": "hasValidation",
+    "Modules/{{pascalCase moduleName}}/Models/{{pascalCase moduleName}}.php.hbs": "ormEloquent",
+    "Modules/{{pascalCase moduleName}}/Repositories/{{pascalCase moduleName}}Repository.php.hbs": "ormEloquent",
+    "Modules/{{pascalCase moduleName}}/Database/Migrations/{{yyyy}}_{{mm}}_{{dd}}_{{timestamp}}_create_{{snakeCase moduleName}}_table.php.hbs": "ormEloquent"
+  },
+  "postInstall": ["composer install"],
+  "gitInit": true
+}

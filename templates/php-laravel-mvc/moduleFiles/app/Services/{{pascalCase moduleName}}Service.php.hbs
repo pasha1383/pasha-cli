@@ -1,0 +1,52 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Services;
+
+use App\Repositories\{{pascalCase moduleName}}Repository;
+use Illuminate\Database\Eloquent\Collection;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+
+class {{pascalCase moduleName}}Service
+{
+    public function __construct(
+        private readonly {{pascalCase moduleName}}Repository $repository,
+    ) {
+    }
+
+    public function getAll(): Collection
+    {
+        return $this->repository->all();
+    }
+
+    public function getById(int $id): \App\Models\{{pascalCase moduleName}}
+    {
+        $item = $this->repository->findById($id);
+
+        if ($item === null) {
+            throw new NotFoundHttpException('{{pascalCase moduleName}} not found.');
+        }
+
+        return $item;
+    }
+
+    public function create(array $data): \App\Models\{{pascalCase moduleName}}
+    {
+        return $this->repository->create($data);
+    }
+
+    public function update(int $id, array $data): \App\Models\{{pascalCase moduleName}}
+    {
+        $item = $this->getById($id);
+
+        return $this->repository->update($item, $data);
+    }
+
+    public function delete(int $id): void
+    {
+        $item = $this->getById($id);
+
+        $this->repository->delete($item);
+    }
+}

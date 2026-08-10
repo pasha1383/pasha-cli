@@ -1,0 +1,19 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Src\Application\Ports;
+
+use Src\Domain\{{pascalCase moduleName}};
+
+interface {{pascalCase moduleName}}RepositoryPort
+{
+    /** @return {{pascalCase moduleName}}[] */
+    public function findAll(): array;
+
+    public function findById(int $id): ?{{pascalCase moduleName}};
+
+    public function save({{pascalCase moduleName}} $entity): {{pascalCase moduleName}};
+
+    public function delete(int $id): void;
+}

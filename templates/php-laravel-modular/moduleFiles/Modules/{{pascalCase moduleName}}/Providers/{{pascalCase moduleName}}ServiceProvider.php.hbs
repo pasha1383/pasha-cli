@@ -1,0 +1,29 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{{pascalCase moduleName}}\Providers;
+
+use Illuminate\Support\ServiceProvider;
+
+class {{pascalCase moduleName}}ServiceProvider extends ServiceProvider
+{
+    public function register(): void
+    {
+        $this->app->bind(
+            \Modules\{{pascalCase moduleName}}\Services\{{pascalCase moduleName}}Service::class,
+            function ($app) {
+                return new \Modules\{{pascalCase moduleName}}\Services\{{pascalCase moduleName}}Service(
+                    new \Modules\{{pascalCase moduleName}}\Repositories\{{pascalCase moduleName}}Repository()
+                );
+            }
+        );
+    }
+
+    public function boot(): void
+    {
+        $this->loadMigrationsFrom(__DIR__ . '/../Database/Migrations');
+
+        $this->loadRoutesFrom(__DIR__ . '/../Routes/api.php');
+    }
+}

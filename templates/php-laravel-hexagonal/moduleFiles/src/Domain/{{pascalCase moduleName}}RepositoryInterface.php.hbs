@@ -1,0 +1,17 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Src\Domain;
+
+interface {{pascalCase moduleName}}RepositoryInterface
+{
+    /** @return {{pascalCase moduleName}}Entity[] */
+    public function findAll(): array;
+
+    public function findById(int $id): ?{{pascalCase moduleName}}Entity;
+
+    public function save({{pascalCase moduleName}}Entity $entity): {{pascalCase moduleName}}Entity;
+
+    public function delete(int $id): void;
+}

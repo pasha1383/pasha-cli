@@ -1,0 +1,59 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Src\Infrastructure\Persistence;
+
+use Src\Domain\{{pascalCase moduleName}}Entity;
+use Src\Domain\{{pascalCase moduleName}}RepositoryInterface;
+
+class Eloquent{{pascalCase moduleName}}Repository implements {{pascalCase moduleName}}RepositoryInterface
+{
+    public function findAll(): array
+    {
+        return Eloquent{{pascalCase moduleName}}Model::all()
+            ->map(fn (Eloquent{{pascalCase moduleName}}Model $model) => $this->toEntity($model))
+            ->all();
+    }
+
+    public function findById(int $id): ?{{pascalCase moduleName}}Entity
+    {
+        $model = Eloquent{{pascalCase moduleName}}Model::find($id);
+
+        return $model ? $this->toEntity($model) : null;
+    }
+
+    public function save({{pascalCase moduleName}}Entity $entity): {{pascalCase moduleName}}Entity
+    {
+        if ($entity->id !== null) {
+            $model = Eloquent{{pascalCase moduleName}}Model::findOrFail($entity->id);
+            $model->update([
+                'name' => $entity->name,
+                'description' => $entity->description,
+            ]);
+        } else {
+            $model = Eloquent{{pascalCase moduleName}}Model::create([
+                'name' => $entity->name,
+                'description' => $entity->description,
+            ]);
+        }
+
+        return $this->toEntity($model);
+    }
+
+    public function delete(int $id): void
+    {
+        Eloquent{{pascalCase moduleName}}Model::destroy($id);
+    }
+
+    private function toEntity(Eloquent{{pascalCase moduleName}}Model $model): {{pascalCase moduleName}}Entity
+    {
+        return new {{pascalCase moduleName}}Entity(
+            id: $model->id,
+            name: $model->name,
+            description: $model->description,
+            createdAt: new \DateTimeImmutable($model->created_at->toDateTimeString()),
+            updatedAt: new \DateTimeImmutable($model->updated_at->toDateTimeString()),
+        );
+    }
+}

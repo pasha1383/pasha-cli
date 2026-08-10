@@ -1,0 +1,36 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Src\Application\UseCases;
+
+use Src\Domain\{{pascalCase moduleName}}Entity;
+use Src\Domain\{{pascalCase moduleName}}RepositoryInterface;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+
+class Update{{pascalCase moduleName}}UseCase
+{
+    public function __construct(
+        private readonly {{pascalCase moduleName}}RepositoryInterface $repository,
+    ) {
+    }
+
+    public function execute(int $id, array $data): {{pascalCase moduleName}}Entity
+    {
+        $existing = $this->repository->findById($id);
+
+        if ($existing === null) {
+            throw new NotFoundHttpException('{{pascalCase moduleName}} not found.');
+        }
+
+        $updated = new {{pascalCase moduleName}}Entity(
+            id: $existing->id,
+            name: $data['name'] ?? $existing->name,
+            description: $data['description'] ?? $existing->description,
+            createdAt: $existing->createdAt,
+            updatedAt: new \DateTimeImmutable(),
+        );
+
+        return $this->repository->save($updated);
+    }
+}

@@ -15,6 +15,8 @@ const CHECK_CMDS = {
   pip3: 'pip3',
   go: 'go',
   java: 'java',
+  mvn: 'mvn',
+  dotnet: 'dotnet',
 };
 
 const INSTALL_MAP = {
@@ -24,6 +26,8 @@ const INSTALL_MAP = {
     python3: ['brew', 'install', 'python3'],
     go: ['brew', 'install', 'go'],
     java: ['brew', 'install', 'openjdk'],
+    mvn: ['brew', 'install', 'maven'],
+    dotnet: ['brew', 'install', 'dotnet-sdk'],
   },
   'apt-get': {
     node: ['sudo', 'apt-get', 'install', '-y', 'nodejs', 'npm'],
@@ -31,6 +35,8 @@ const INSTALL_MAP = {
     python3: ['sudo', 'apt-get', 'install', '-y', 'python3', 'python3-pip'],
     go: ['sudo', 'apt-get', 'install', '-y', 'golang-go'],
     java: ['sudo', 'apt-get', 'install', '-y', 'default-jdk'],
+    mvn: ['sudo', 'apt-get', 'install', '-y', 'maven'],
+    dotnet: null,
   },
   dnf: {
     node: ['sudo', 'dnf', 'install', '-y', 'nodejs', 'npm'],
@@ -38,6 +44,8 @@ const INSTALL_MAP = {
     python3: ['sudo', 'dnf', 'install', '-y', 'python3', 'python3-pip'],
     go: ['sudo', 'dnf', 'install', '-y', 'golang'],
     java: ['sudo', 'dnf', 'install', '-y', 'java-latest-openjdk'],
+    mvn: ['sudo', 'dnf', 'install', '-y', 'maven'],
+    dotnet: ['sudo', 'dnf', 'install', '-y', 'dotnet-sdk-8.0'],
   },
   pacman: {
     node: ['sudo', 'pacman', '-S', '--noconfirm', 'nodejs', 'npm'],
@@ -45,6 +53,8 @@ const INSTALL_MAP = {
     python3: ['sudo', 'pacman', '-S', '--noconfirm', 'python', 'python-pip'],
     go: ['sudo', 'pacman', '-S', '--noconfirm', 'go'],
     java: ['sudo', 'pacman', '-S', '--noconfirm', 'jdk-openjdk'],
+    mvn: ['sudo', 'pacman', '-S', '--noconfirm', 'maven'],
+    dotnet: ['sudo', 'pacman', '-S', '--noconfirm', 'dotnet-sdk'],
   },
 };
 

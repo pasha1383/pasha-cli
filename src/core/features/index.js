@@ -11,6 +11,11 @@ const go = require('./go');
 const goStdlib = require('./go-stdlib');
 const chi = require('./chi');
 const hapi = require('./hapi');
+const springBoot = require('./spring-boot');
+const aspnet = require('./aspnet');
+const adonis = require('./adonis');
+const litestar = require('./litestar');
+const tornado = require('./tornado');
 
 const REGISTRY = {
   nestjs,
@@ -24,6 +29,11 @@ const REGISTRY = {
   'go-stdlib': goStdlib,
   chi,
   hapi,
+  'spring-boot': springBoot,
+  aspnet,
+  adonis,
+  litestar,
+  tornado,
 };
 
 // Validates at load time that every module exports the required interface

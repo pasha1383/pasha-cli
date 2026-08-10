@@ -5,6 +5,7 @@ const ORM_DATABASE_SUPPORT = {
   typeorm: ['postgres', 'mysql', 'sqlite', 'mongo'],
   mongoose: ['mongo'],
   gorm: ['postgres', 'mysql', 'sqlite'],
+  lucid: ['postgres', 'mysql', 'sqlite'],
   django: ['postgres', 'mysql', 'sqlite'],
   sqlalchemy: ['postgres', 'mysql', 'sqlite'],
   tortoise: ['postgres', 'mysql', 'sqlite'],

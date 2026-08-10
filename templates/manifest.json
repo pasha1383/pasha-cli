@@ -103,10 +103,6 @@
             "vertical": {
               "label": "Vertical Slice",
               "template": "node-nestjs-vertical"
-            },
-            "modular": {
-              "label": "Modular Monolith",
-              "template": "node-express-modular"
             }
           }
         },
@@ -182,6 +178,31 @@
               "template": "node-serverless"
             }
           }
+        },
+        "adonis": {
+          "label": "AdonisJS",
+          "architectures": {
+            "mvc": {
+              "label": "MVC (Adonis Native)",
+              "template": "node-adonisjs-mvc"
+            },
+            "layered": {
+              "label": "Layered (Service-Repository)",
+              "template": "node-adonisjs-layered"
+            },
+            "clean": {
+              "label": "Clean Architecture",
+              "template": "node-adonisjs-clean"
+            },
+            "modular": {
+              "label": "Modular Monolith",
+              "template": "node-adonisjs-modular"
+            },
+            "hexagonal": {
+              "label": "Hexagonal / DDD",
+              "template": "node-adonisjs-hexagonal"
+            }
+          }
         }
       }
     },
@@ -236,6 +257,48 @@
             "modular": {
               "label": "Modular Monolith",
               "template": "python-flask-modular"
+            }
+          }
+        },
+        "litestar": {
+          "label": "Litestar",
+          "architectures": {
+            "layered": {
+              "label": "Layered (Controller-Service-Repository)",
+              "template": "python-litestar-layered"
+            },
+            "hexagonal": {
+              "label": "Hexagonal / DDD",
+              "template": "python-litestar-hexagonal"
+            },
+            "clean": {
+              "label": "Clean Architecture",
+              "template": "python-litestar-clean"
+            },
+            "modular": {
+              "label": "Modular Monolith",
+              "template": "python-litestar-modular"
+            },
+            "vertical": {
+              "label": "Vertical Slice",
+              "template": "python-litestar-vertical"
+            }
+          }
+        },
+        "tornado": {
+          "label": "Tornado",
+          "architectures": {
+            "layered": {
+              "label": "Layered (Handler-Service-Repository)",
+              "template": "python-tornado-layered"
+            },
+            "clean": {
+              "label": "Clean Architecture",
+              "template": "python-tornado-clean"
+            },
+            "hexagonal": {
+              "label": "Hexagonal / DDD",
+              "template": "python-tornado-hexagonal"
             }
           }
         }

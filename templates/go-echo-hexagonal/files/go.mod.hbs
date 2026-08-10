@@ -1,0 +1,13 @@
+module {{github}}/{{projectName}}
+
+go 1.22
+
+require (
+	github.com/labstack/echo/v4 v4.12.0
+{{#if useSwagger}}
+	github.com/swaggo/echo-swagger v1.4.1
+{{/if}}
+{{#each goModules}}
+	{{module}} {{version}}
+{{/each}}
+)

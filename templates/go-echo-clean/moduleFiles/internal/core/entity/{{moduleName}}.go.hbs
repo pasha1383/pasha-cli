@@ -1,0 +1,22 @@
+package entity
+
+{{#if ormGorm}}
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
+
+type {{pascalCase moduleName}} struct {
+	ID        uint           `gorm:"primaryKey" json:"id"`
+	Name      string         `gorm:"size:255;not null" json:"name"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+}
+{{else}}
+type {{pascalCase moduleName}} struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+{{/if}}

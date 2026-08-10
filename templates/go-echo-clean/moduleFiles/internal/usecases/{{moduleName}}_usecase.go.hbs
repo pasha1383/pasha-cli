@@ -1,0 +1,45 @@
+package usecases
+
+import (
+{{#if ormNone}}
+	"github.com/google/uuid"
+{{/if}}
+
+	"{{github}}/{{projectName}}/internal/core/entity"
+	"{{github}}/{{projectName}}/internal/core/repository"
+)
+
+type {{pascalCase moduleName}}UseCase struct {
+	repo repository.{{pascalCase moduleName}}Repository
+}
+
+func New{{pascalCase moduleName}}UseCase(repo repository.{{pascalCase moduleName}}Repository) *{{pascalCase moduleName}}UseCase {
+	return &{{pascalCase moduleName}}UseCase{repo: repo}
+}
+
+func (uc *{{pascalCase moduleName}}UseCase) Create(name string) (*entity.{{pascalCase moduleName}}, error) {
+	model := &entity.{{pascalCase moduleName}}{
+{{#if ormGorm}}
+		Name: name,
+{{else}}
+		ID:   uuid.New().String(),
+		Name: name,
+{{/if}}
+	}
+	if err := uc.repo.Save(model); err != nil {
+		return nil, err
+	}
+	return model, nil
+}
+
+func (uc *{{pascalCase moduleName}}UseCase) List() ([]entity.{{pascalCase moduleName}}, error) {
+	return uc.repo.FindAll()
+}
+
+func (uc *{{pascalCase moduleName}}UseCase) GetByID(id {{#if ormGorm}}uint{{else}}string{{/if}}) (*entity.{{pascalCase moduleName}}, error) {
+	return uc.repo.FindByID(id)
+}
+
+func (uc *{{pascalCase moduleName}}UseCase) Delete(id {{#if ormGorm}}uint{{else}}string{{/if}}) error {
+	return uc.repo.Delete(id)
+}

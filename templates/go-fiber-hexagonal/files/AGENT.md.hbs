@@ -1,0 +1,106 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository. Read this before
+generating or editing code.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Language:** Go 1.22+
+- **Framework:** Fiber — Express-inspired HTTP framework. No DI container.
+  Wiring is manual (see `routes.go` in each module).
+- **Architecture:** {{architectureLabel}}
+- **Module:** `{{github}}/{{projectName}}`
+{{#if ormNone}}
+- **Data layer:** in-memory repositories (no ORM)
+{{else}}
+- **ORM:** GORM (`gorm.io/gorm`)
+{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+{{#if hasValidation}}
+- **Validation:** go-playground/validator
+{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis (go-redis/v9)
+{{/if}}
+{{#if hasBroker}}
+- **Message broker:** {{broker}}
+{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/swagger/index.html` (swaggo/swag)
+{{/if}}
+{{#if useAuth}}
+- **Auth:** JWT (golang-jwt/jwt/v5, HMAC-SHA256)
+{{/if}}
+{{#if useHealthCheck}}
+- **Health:** `GET /health` reports liveness/readiness
+{{/if}}
+{{#if useRateLimit}}
+- **Rate limiting:** Token bucket via `golang.org/x/time/rate`
+{{/if}}
+
+## Modules
+
+{{#each modules}}
+- `{{this}}`
+{{/each}}
+
+## Commands
+
+```bash
+make run                 # build and run
+make build               # compile to bin/
+{{#if useTests}}
+make test                # run all tests
+make test-cover          # with coverage report
+{{/if}}
+{{#if useDocker}}
+make infra-up            # start databases/brokers via docker compose
+make infra-down
+{{/if}}
+{{#if useLint}}
+make lint                # golangci-lint
+{{/if}}
+{{#if useSwagger}}
+make swagger             # generate OpenAPI spec from annotations
+{{/if}}
+```
+
+## Hard rules
+
+1. **No DI container.** Every module's `routes.go` manually constructs
+   `repository → service → handler` in `RegisterRoutes`. That's the one place
+   wiring happens, and that's deliberate.
+2. **`cmd/` is for entry points**, `internal/` is for everything else. Never
+   import an `internal/` package from outside the module.
+3. **Adding a module means adding every file.** model, repository, service,
+   handler, dto, routes — a new feature gets its full slice.
+4. **Register new routes** in `cmd/main.go` — otherwise they will not be
+   reachable.
+5. **Handlers never touch the repository directly.** Always go through the
+   service layer.
+6. **`config/config.go` is the only file that reads `os.Getenv` directly.**
+   Everywhere else accepts a `*config.Config`.
+7. **Fiber handlers return `error`.** Always return the result of
+   `c.Status(...).JSON(...)` or `c.Next()` — Fiber uses the return value
+   for error handling.
+{{#if ormGorm}}
+8. **GORM models** use pointer receivers for `Save`/`Delete`. Pass `&model`
+   to GORM methods; the ORM mutates in place.
+{{/if}}
+{{#if useAuth}}
+9. **Protected routes** use `authMiddleware.Handler()`. User claims are stored
+   via `c.Locals("user", claims)` and retrieved with `c.Locals("user")`.
+{{/if}}
+{{#if useSwagger}}
+10. **Swagger annotations** go on handler methods. Run `make swagger` to
+    regenerate `internal/docs/` after changing annotations.
+{{/if}}
+
+## When you are unsure
+
+Prefer asking over guessing. Generating a plausible-looking file in the wrong
+layer costs more to unpick than a clarifying question costs to answer.

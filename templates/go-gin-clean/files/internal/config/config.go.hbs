@@ -1,0 +1,89 @@
+package config
+
+import (
+	"fmt"
+	"os"
+
+	"github.com/joho/godotenv"
+)
+
+type Config struct {
+	Port              string
+	AppEnv            string
+	DBHost            string
+	DBPort            string
+	DBUser            string
+	DBPassword        string
+	DBName            string
+	DBFile            string
+	RedisHost         string
+	RedisPort         string
+	JWTSecret         string
+	JWTExpiresIn      string
+	RateLimitRPS      int
+	RateLimitBurst    int
+	KafkaBrokers      string
+	KafkaGroupID      string
+	RabbitMQURL       string
+	RabbitMQQueue     string
+}
+
+func Load() *Config {
+	_ = godotenv.Load()
+
+	cfg := &Config{
+		Port:           env("PORT", "8080"),
+		AppEnv:         env("APP_ENV", "development"),
+{{#if hasDatabase}}
+{{#unless dbSqlite}}
+		DBHost:         env("DB_HOST", "localhost"),
+		DBPort:         env("DB_PORT", "{{dbPort}}"),
+		DBUser:         env("DB_USER", "{{#if dbPostgres}}postgres{{/if}}{{#if dbMysql}}root{{/if}}"),
+		DBPassword:     env("DB_PASSWORD", "{{#if dbPostgres}}postgres{{/if}}{{#if dbMysql}}root{{/if}}"),
+		DBName:         env("DB_NAME", "{{snakeCase projectName}}"),
+{{/unless}}
+{{#if dbSqlite}}
+		DBFile:         env("DB_FILE", "./data/{{snakeCase projectName}}.sqlite"),
+{{/if}}
+{{/if}}
+{{#if useRedis}}
+		RedisHost:      env("REDIS_HOST", "localhost"),
+		RedisPort:      env("REDIS_PORT", "6379"),
+{{/if}}
+{{#if useAuth}}
+		JWTSecret:      env("JWT_SECRET", "change-me"),
+		JWTExpiresIn:   env("JWT_EXPIRES_IN", "1h"),
+{{/if}}
+{{#if useRateLimit}}
+		RateLimitRPS:   intEnv("RATE_LIMIT_RPS", 100),
+		RateLimitBurst: intEnv("RATE_LIMIT_BURST", 200),
+{{/if}}
+{{#if useKafka}}
+		KafkaBrokers:   env("KAFKA_BROKERS", "localhost:9092"),
+		KafkaGroupID:   env("KAFKA_GROUP_ID", "{{projectName}}-consumer"),
+{{/if}}
+{{#if useRabbitmq}}
+		RabbitMQURL:    env("RABBITMQ_URL", "amqp://guest:guest@localhost:5672"),
+		RabbitMQQueue:  env("RABBITMQ_QUEUE", "{{projectName}}-queue"),
+{{/if}}
+	}
+
+	return cfg
+}
+
+func env(key, fallback string) string {
+	if val := os.Getenv(key); val != "" {
+		return val
+	}
+	return fallback
+}
+
+func intEnv(key string, fallback int) int {
+	if val := os.Getenv(key); val != "" {
+		var n int
+		if _, err := fmt.Sscanf(val, "%d", &n); err == nil {
+			return n
+		}
+	}
+	return fallback
+}

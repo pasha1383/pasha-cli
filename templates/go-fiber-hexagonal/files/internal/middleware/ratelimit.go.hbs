@@ -1,0 +1,16 @@
+package middleware
+
+import (
+	"github.com/gofiber/fiber/v3"
+	"golang.org/x/time/rate"
+)
+
+func NewRateLimiter(rps, burst int) fiber.Handler {
+	limiter := rate.NewLimiter(rate.Limit(rps), burst)
+	return func(c fiber.Ctx) error {
+		if !limiter.Allow() {
+			return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{"error": "rate limit exceeded"})
+		}
+		return c.Next()
+	}
+}

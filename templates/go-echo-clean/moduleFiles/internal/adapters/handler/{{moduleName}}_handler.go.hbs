@@ -1,0 +1,163 @@
+package handler
+
+import (
+	"net/http"
+{{#if ormGorm}}
+	"strconv"
+
+	"gorm.io/gorm"
+{{/if}}
+
+	"github.com/labstack/echo/v4"
+	"{{github}}/{{projectName}}/internal/core/entity"
+	"{{github}}/{{projectName}}/internal/errors"
+	"{{github}}/{{projectName}}/internal/usecases"
+)
+
+type {{pascalCase moduleName}}Handler struct {
+	uc *usecases.{{pascalCase moduleName}}UseCase
+}
+
+func New{{pascalCase moduleName}}Handler(uc *usecases.{{pascalCase moduleName}}UseCase) *{{pascalCase moduleName}}Handler {
+	return &{{pascalCase moduleName}}Handler{uc: uc}
+}
+
+type create{{pascalCase moduleName}}Request struct {
+	Name string `json:"name"{{#if useValidator}} validate:"required,min=1,max=255"{{/if}}`
+}
+
+type {{pascalCase moduleName}}Response struct {
+{{#if ormGorm}}
+	ID        uint   `json:"id"`
+{{else}}
+	ID        string `json:"id"`
+{{/if}}
+	Name      string `json:"name"`
+{{#if ormGorm}}
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
+{{/if}}
+}
+
+func toResponse(m *entity.{{pascalCase moduleName}}) {{pascalCase moduleName}}Response {
+	return {{pascalCase moduleName}}Response{
+		ID:   m.ID,
+		Name: m.Name,
+{{#if ormGorm}}
+		CreatedAt: m.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		UpdatedAt: m.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
+{{/if}}
+	}
+}
+
+func toResponseList(models []entity.{{pascalCase moduleName}}) []{{pascalCase moduleName}}Response {
+	result := make([]{{pascalCase moduleName}}Response, len(models))
+	for i, m := range models {
+		result[i] = toResponse(&m)
+	}
+	return result
+}
+
+{{#if useSwagger}}
+// @Summary      List {{pascalCase moduleName}}
+// @Description  Get all {{moduleName}} records
+// @Tags         {{moduleName}}
+// @Produce      json
+// @Success      200  {array}  {{pascalCase moduleName}}Response
+// @Router       /{{moduleName}} [get]
+{{/if}}
+func (h *{{pascalCase moduleName}}Handler) List(c echo.Context) error {
+	models, err := h.uc.List()
+	if err != nil {
+		return errors.ErrorResponse(c, err)
+	}
+	return c.JSON(http.StatusOK, toResponseList(models))
+}
+
+{{#if useSwagger}}
+// @Summary      Get {{pascalCase moduleName}}
+// @Description  Get a {{moduleName}} by ID
+// @Tags         {{moduleName}}
+// @Produce      json
+// @Param        id  path  int  true  "{{pascalCase moduleName}} ID"
+// @Success      200  {object}  {{pascalCase moduleName}}Response
+// @Router       /{{moduleName}}/{id} [get]
+{{/if}}
+func (h *{{pascalCase moduleName}}Handler) GetByID(c echo.Context) error {
+{{#if ormGorm}}
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		return errors.BadRequest(c, "invalid id")
+	}
+	model, err := h.uc.GetByID(uint(id))
+{{else}}
+	id := c.Param("id")
+	model, err := h.uc.GetByID(id)
+{{/if}}
+	if err != nil {
+{{#if ormGorm}}
+		if err == gorm.ErrRecordNotFound {
+			return errors.NotFound(c, "{{moduleName}} not found")
+		}
+{{else}}
+		if model == nil {
+			return errors.NotFound(c, "{{moduleName}} not found")
+		}
+{{/if}}
+		return errors.ErrorResponse(c, err)
+	}
+	return c.JSON(http.StatusOK, toResponse(model))
+}
+
+{{#if useSwagger}}
+// @Summary      Create {{pascalCase moduleName}}
+// @Description  Create a new {{moduleName}}
+// @Tags         {{moduleName}}
+// @Accept       json
+// @Produce      json
+// @Param        body  body  create{{pascalCase moduleName}}Request  true  "{{pascalCase moduleName}} data"
+// @Success      201   {object}  {{pascalCase moduleName}}Response
+// @Router       /{{moduleName}} [post]
+{{/if}}
+func (h *{{pascalCase moduleName}}Handler) Create(c echo.Context) error {
+	var req create{{pascalCase moduleName}}Request
+	if err := c.Bind(&req); err != nil {
+		return errors.BadRequest(c, err.Error())
+	}
+{{#if useValidator}}
+	if err := c.Validate(req); err != nil {
+		return errors.BadRequest(c, err.Error())
+	}
+{{/if}}
+
+	model, err := h.uc.Create(req.Name)
+	if err != nil {
+		return errors.ErrorResponse(c, err)
+	}
+	return c.JSON(http.StatusCreated, toResponse(model))
+}
+
+{{#if useSwagger}}
+// @Summary      Delete {{pascalCase moduleName}}
+// @Description  Delete a {{moduleName}} by ID
+// @Tags         {{moduleName}}
+// @Param        id  path  int  true  "{{pascalCase moduleName}} ID"
+// @Success      204
+// @Router       /{{moduleName}}/{id} [delete]
+{{/if}}
+func (h *{{pascalCase moduleName}}Handler) Delete(c echo.Context) error {
+{{#if ormGorm}}
+	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		return errors.BadRequest(c, "invalid id")
+	}
+	err = h.uc.Delete(uint(id))
+{{else}}
+	id := c.Param("id")
+	err := h.uc.Delete(id)
+{{/if}}
+	if err != nil {
+		return errors.ErrorResponse(c, err)
+	}
+	return c.NoContent(http.StatusNoContent)
+}

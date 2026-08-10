@@ -1,0 +1,44 @@
+package errors
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+type AppError struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
+
+func (e *AppError) Error() string {
+	return e.Message
+}
+
+func NewAppError(code int, message string) *AppError {
+	return &AppError{Code: code, Message: message}
+}
+
+func NotFound(c *gin.Context, message string) {
+	c.JSON(http.StatusNotFound, gin.H{"error": message})
+}
+
+func BadRequest(c *gin.Context, message string) {
+	c.JSON(http.StatusBadRequest, gin.H{"error": message})
+}
+
+func Unauthorized(c *gin.Context, message string) {
+	c.JSON(http.StatusUnauthorized, gin.H{"error": message})
+}
+
+func InternalServer(c *gin.Context, message string) {
+	c.JSON(http.StatusInternalServerError, gin.H{"error": message})
+}
+
+func ErrorResponse(c *gin.Context, err error) {
+	if appErr, ok := err.(*AppError); ok {
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message})
+		return
+	}
+	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+}

@@ -1,0 +1,10 @@
+package repository
+
+import "{{github}}/{{projectName}}/internal/core/entity"
+
+type {{pascalCase moduleName}}Repository interface {
+	Save(model *entity.{{pascalCase moduleName}}) error
+	FindAll() ([]entity.{{pascalCase moduleName}}, error)
+	FindByID(id {{#if ormGorm}}uint{{else}}string{{/if}}) (*entity.{{pascalCase moduleName}}, error)
+	Delete(id {{#if ormGorm}}uint{{else}}string{{/if}}) error
+}

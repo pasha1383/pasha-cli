@@ -1,0 +1,86 @@
+package persistence
+
+import (
+{{#if ormGorm}}
+	"gorm.io/gorm"
+{{else}}
+	"sync"
+{{/if}}
+
+	"{{github}}/{{projectName}}/internal/domain"
+)
+
+{{#if ormGorm}}
+type {{pascalCase moduleName}}Repo struct {
+	db *gorm.DB
+}
+
+func New{{pascalCase moduleName}}Repository(db *gorm.DB) domain.{{pascalCase moduleName}}Repository {
+	return &{{pascalCase moduleName}}Repo{db: db}
+}
+
+func (r *{{pascalCase moduleName}}Repo) Save(model *domain.{{pascalCase moduleName}}) error {
+	return r.db.Save(model).Error
+}
+
+func (r *{{pascalCase moduleName}}Repo) FindAll() ([]domain.{{pascalCase moduleName}}, error) {
+	var models []domain.{{pascalCase moduleName}}
+	err := r.db.Find(&models).Error
+	return models, err
+}
+
+func (r *{{pascalCase moduleName}}Repo) FindByID(id uint) (*domain.{{pascalCase moduleName}}, error) {
+	var model domain.{{pascalCase moduleName}}
+	err := r.db.First(&model, id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &model, nil
+}
+
+func (r *{{pascalCase moduleName}}Repo) Delete(id uint) error {
+	return r.db.Delete(&domain.{{pascalCase moduleName}}{}, id).Error
+}
+{{else}}
+type {{pascalCase moduleName}}Repo struct {
+	mu    sync.RWMutex
+	items map[string]*domain.{{pascalCase moduleName}}
+}
+
+func New{{pascalCase moduleName}}Repository() domain.{{pascalCase moduleName}}Repository {
+	return &{{pascalCase moduleName}}Repo{items: make(map[string]*domain.{{pascalCase moduleName}})}
+}
+
+func (r *{{pascalCase moduleName}}Repo) Save(model *domain.{{pascalCase moduleName}}) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.items[model.ID] = model
+	return nil
+}
+
+func (r *{{pascalCase moduleName}}Repo) FindAll() ([]domain.{{pascalCase moduleName}}, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	result := make([]domain.{{pascalCase moduleName}}, 0, len(r.items))
+	for _, m := range r.items {
+		result = append(result, *m)
+	}
+	return result, nil
+}
+
+func (r *{{pascalCase moduleName}}Repo) FindByID(id string) (*domain.{{pascalCase moduleName}}, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	if m, ok := r.items[id]; ok {
+		return m, nil
+	}
+	return nil, nil
+}
+
+func (r *{{pascalCase moduleName}}Repo) Delete(id string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	delete(r.items, id)
+	return nil
+}
+{{/if}}

@@ -1,0 +1,111 @@
+package main
+
+import (
+	"log"
+
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/logger"
+	"github.com/gofiber/fiber/v3/middleware/recover"
+	"{{github}}/{{projectName}}/internal/config"
+{{#if ormGorm}}
+	"{{github}}/{{projectName}}/internal/shared/database"
+{{/if}}
+{{#if useRedis}}
+	"{{github}}/{{projectName}}/internal/shared/cache"
+{{/if}}
+{{#if useAuth}}
+	"{{github}}/{{projectName}}/internal/middleware"
+{{/if}}
+{{#if useRateLimit}}
+	"{{github}}/{{projectName}}/internal/middleware"
+{{/if}}
+{{#if useHealthCheck}}
+	"{{github}}/{{projectName}}/internal/shared/health"
+{{/if}}
+{{#if useSwagger}}
+	_ "{{github}}/{{projectName}}/internal/docs"
+	fiberSwagger "github.com/swaggo/fiber-swagger"
+{{/if}}
+	infhdl "{{github}}/{{projectName}}/internal/infrastructure/handler"
+	infprs "{{github}}/{{projectName}}/internal/infrastructure/persistence"
+	appuc "{{github}}/{{projectName}}/internal/application"
+)
+
+func main() {
+	cfg := config.Load()
+
+	app := fiber.New(fiber.Config{
+		AppName: "{{projectName}}",
+	})
+
+	app.Use(logger.New())
+	app.Use(recover.New())
+
+{{#if useRateLimit}}
+	app.Use(middleware.NewRateLimiter(cfg.RateLimitRPS, cfg.RateLimitBurst))
+{{/if}}
+
+{{#if ormGorm}}
+	db, err := database.Connect(cfg)
+	if err != nil {
+		log.Fatalf("failed to connect to database: %v", err)
+	}
+{{/if}}
+
+{{#if useRedis}}
+	redisClient, err := cache.NewRedisClient(cfg)
+	if err != nil {
+		log.Fatalf("failed to connect to redis: %v", err)
+	}
+	_ = redisClient
+{{/if}}
+
+{{#if useAuth}}
+	authMiddleware := middleware.NewAuthMiddleware(cfg.JWTSecret)
+{{/if}}
+
+{{#if useHealthCheck}}
+{{#if ormGorm}}
+	healthHandler := health.NewHandler(db)
+{{else}}
+	healthHandler := health.NewHandler(nil)
+{{/if}}
+	app.Get("/health", healthHandler.Check)
+{{/if}}
+
+{{#if useSwagger}}
+	app.Get("/swagger/*", fiberSwagger.WrapHandler)
+{{/if}}
+
+	api := app.Group("/api")
+{{#if useAuth}}
+	api.Use(authMiddleware.Handler())
+{{/if}}
+
+{{#each modules}}
+	{
+{{#if ../ormGorm}}
+		repo := infprs.New{{pascalCase this}}Repository(db)
+		uc := appuc.New{{pascalCase this}}UseCase(repo)
+		h := infhdl.New{{pascalCase this}}Handler(uc)
+{{else}}
+		repo := infprs.New{{pascalCase this}}Repository()
+		uc := appuc.New{{pascalCase this}}UseCase(repo)
+		h := infhdl.New{{pascalCase this}}Handler(uc)
+{{/if}}
+		r := api.Group("/{{this}}")
+		r.Get("/{{this}}", h.List)
+		r.Get("/{{this}}/:id", h.GetByID)
+		r.Post("/{{this}}", h.Create)
+		r.Delete("/{{this}}/:id", h.Delete)
+	}
+{{/each}}
+
+	app.Use(func(c fiber.Ctx) error {
+		return c.Status(404).JSON(fiber.Map{"error": "route not found"})
+	})
+
+	addr := ":" + cfg.Port
+	log.Printf("server starting on %s", addr)
+	log.Fatal(app.Listen(addr))
+}

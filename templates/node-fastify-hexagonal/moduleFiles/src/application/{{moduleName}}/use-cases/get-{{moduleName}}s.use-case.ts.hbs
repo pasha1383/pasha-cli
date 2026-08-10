@@ -1,5 +1,5 @@
-import { {{pascalCase moduleName}} } from '../../domain/{{moduleName}}/entities/{{moduleName}}.entity';
-import { I{{pascalCase moduleName}}Repository } from '../../domain/{{moduleName}}/repositories/{{moduleName}}.repository.interface';
+import { {{pascalCase moduleName}} } from '../../../domain/{{moduleName}}/entities/{{moduleName}}.entity';
+import { I{{pascalCase moduleName}}Repository } from '../../../domain/{{moduleName}}/repositories/{{moduleName}}.repository.interface';
 
 export class Get{{pascalCase moduleName}}sUseCase {
   constructor(private readonly repository: I{{pascalCase moduleName}}Repository) {}

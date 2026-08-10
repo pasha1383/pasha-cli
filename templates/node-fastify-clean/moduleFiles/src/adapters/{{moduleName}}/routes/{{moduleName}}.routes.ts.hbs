@@ -14,7 +14,7 @@ import { InMemory{{pascalCase moduleName}}Repository } from '../repositories/{{m
 import {
   Create{{pascalCase moduleName}}UseCase,
   Get{{pascalCase moduleName}}UseCase,
-} from '../../core/use-cases/{{moduleName}}/{{moduleName}}.use-cases';
+} from '../../../core/use-cases/{{moduleName}}/{{moduleName}}.use-cases';
 
 export default async function {{camelCase moduleName}}Routes(fastify: FastifyInstance) {
 {{#if ormPrisma}}

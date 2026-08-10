@@ -353,10 +353,10 @@ function buildContext(flags, modules, baseAnswers, ctx) {
     dbName: String(baseAnswers.projectName).replace(/-/g, '_').toLowerCase(),
   });
 
-  if (flavor === 'go') {
+  if (flavor === 'go' || flavor === 'chi' || flavor === 'go-stdlib') {
     const deps = fm.resolveDependencies(flags);
     fullCtx.goModules = deps.goModules;
-  } else if (flavor === 'python') {
+  } else if (flavor === 'python' || flavor === 'flask') {
     const deps = fm.resolveDependencies(flags);
     fullCtx.requirementsTxt = deps.requirements.join('\n') + '\n';
     if (deps.devRequirements && deps.devRequirements.length > 0)
@@ -373,7 +373,7 @@ function buildContext(flags, modules, baseAnswers, ctx) {
   return fullCtx;
 }
 
-async function renderProject(ctx) {
+async function renderProject(ctx, renderOpts = {}) {
   const outDir = path.resolve(process.cwd(), ctx.projectName);
   if (await fs.pathExists(outDir)) {
     log.fail(`Directory "${ctx.projectName}" already exists.`);
@@ -407,7 +407,7 @@ async function renderProject(ctx) {
     process.exit(1);
   }
 
-  if (tc.postInstall && tc.postInstall.includes('npm install')) {
+  if (!renderOpts.skipInstall && tc.postInstall && tc.postInstall.includes('npm install')) {
     section('Installing dependencies');
     const npmPath = resolveCommandPath('npm');
     if (!npmPath) {
@@ -424,7 +424,7 @@ async function renderProject(ctx) {
     }
   }
 
-  if (tc.gitInit) {
+  if (!renderOpts.skipGit && tc.gitInit) {
     const { doGit } = await prompt([
       { type: 'confirm', name: 'doGit', message: 'Run git init and first commit?', default: true },
     ]);
@@ -821,7 +821,7 @@ async function createNonInteractive(opts) {
   if (opts.dryRun) {
     await renderProjectDry(fullCtx);
   } else {
-    const outDir = await renderProject(fullCtx);
+    const outDir = await renderProject(fullCtx, { skipInstall: opts.skipInstall, skipGit: opts.skipGit });
     await history.saveSession(fullCtx);
     done(outDir, fullCtx);
     await writePashaJson(outDir, fullCtx);

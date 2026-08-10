@@ -1,0 +1,103 @@
+package com.example.project.adapter.out.persistence;
+
+import com.example.project.domain.model.{{pascalCase moduleName}};
+import com.example.project.domain.port.out.{{pascalCase moduleName}}Repository;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+@Component
+public class {{pascalCase moduleName}}RepositoryAdapter implements {{pascalCase moduleName}}Repository {
+
+    {{#if ormJpa}}
+    private final {{pascalCase moduleName}}JpaRepository jpaRepository;
+
+    public {{pascalCase moduleName}}RepositoryAdapter({{pascalCase moduleName}}JpaRepository jpaRepository) {
+        this.jpaRepository = jpaRepository;
+    }
+    {{/if}}
+
+    {{#if ormMybatis}}
+    private final {{pascalCase moduleName}}MybatisRepository mybatisRepository;
+
+    public {{pascalCase moduleName}}RepositoryAdapter({{pascalCase moduleName}}MybatisRepository mybatisRepository) {
+        this.mybatisRepository = mybatisRepository;
+    }
+    {{/if}}
+
+    {{#if ormNone}}
+    private final {{pascalCase moduleName}}InMemoryRepository inMemoryRepository;
+
+    public {{pascalCase moduleName}}RepositoryAdapter({{pascalCase moduleName}}InMemoryRepository inMemoryRepository) {
+        this.inMemoryRepository = inMemoryRepository;
+    }
+    {{/if}}
+
+    @Override
+    public {{pascalCase moduleName}} save({{pascalCase moduleName}} entity) {
+        var jpaEntity = {{pascalCase moduleName}}Entity.from(entity);
+        {{#if ormJpa}}
+        var saved = jpaRepository.save(jpaEntity);
+        {{/if}}
+        {{#if ormMybatis}}
+        if (jpaEntity.getId() == null) {
+            mybatisRepository.save(jpaEntity);
+        } else {
+            mybatisRepository.update(jpaEntity);
+        }
+        var saved = mybatisRepository.findById(jpaEntity.getId())
+                .orElse(jpaEntity);
+        {{/if}}
+        {{#if ormNone}}
+        var saved = inMemoryRepository.save(jpaEntity);
+        {{/if}}
+        return saved.toDomain();
+    }
+
+    @Override
+    public Optional<{{pascalCase moduleName}}> findById(Long id) {
+        {{#if ormJpa}}
+        return jpaRepository.findById(id).map({{pascalCase moduleName}}Entity::toDomain);
+        {{/if}}
+        {{#if ormMybatis}}
+        return mybatisRepository.findById(id).map({{pascalCase moduleName}}Entity::toDomain);
+        {{/if}}
+        {{#if ormNone}}
+        return inMemoryRepository.findById(id).map({{pascalCase moduleName}}Entity::toDomain);
+        {{/if}}
+    }
+
+    @Override
+    public List<{{pascalCase moduleName}}> findAll() {
+        {{#if ormJpa}}
+        return jpaRepository.findAll().stream()
+                .map({{pascalCase moduleName}}Entity::toDomain)
+                .collect(Collectors.toList());
+        {{/if}}
+        {{#if ormMybatis}}
+        return mybatisRepository.findAll().stream()
+                .map({{pascalCase moduleName}}Entity::toDomain)
+                .collect(Collectors.toList());
+        {{/if}}
+        {{#if ormNone}}
+        return inMemoryRepository.findAll().stream()
+                .map({{pascalCase moduleName}}Entity::toDomain)
+                .collect(Collectors.toList());
+        {{/if}}
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        {{#if ormJpa}}
+        jpaRepository.deleteById(id);
+        {{/if}}
+        {{#if ormMybatis}}
+        mybatisRepository.deleteById(id);
+        {{/if}}
+        {{#if ormNone}}
+        inMemoryRepository.deleteById(id);
+        {{/if}}
+    }
+}

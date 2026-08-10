@@ -1,0 +1,28 @@
+package com.example.project.controller.{{moduleName}};
+
+{{#if useBeanValidation}}
+import jakarta.validation.constraints.NotBlank;
+{{/if}}
+
+public class {{pascalCase moduleName}}Dto {
+
+    {{#if useBeanValidation}}
+    @NotBlank(message = "Name is required")
+    {{/if}}
+    private String name;
+
+    public {{pascalCase moduleName}}Dto() {
+    }
+
+    public {{pascalCase moduleName}}Dto(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+}

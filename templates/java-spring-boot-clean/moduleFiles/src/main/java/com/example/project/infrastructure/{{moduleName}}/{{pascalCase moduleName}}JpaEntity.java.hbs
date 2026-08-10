@@ -1,0 +1,54 @@
+package com.example.project.infrastructure.{{moduleName}};
+{{#if ormJpa}}
+
+import jakarta.persistence.*;
+{{/if}}
+
+{{#if ormJpa}}
+@Entity
+@Table(name = "{{snakeCase moduleName}}")
+{{/if}}
+public class {{pascalCase moduleName}}JpaEntity {
+    {{#if ormJpa}}
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    {{/if}}
+    private Long id;
+
+    {{#if ormJpa}}
+    @Column(nullable = false)
+    {{/if}}
+    private String name;
+
+    public {{pascalCase moduleName}}JpaEntity() {
+    }
+
+    public {{pascalCase moduleName}}JpaEntity(Long id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public static {{pascalCase moduleName}}JpaEntity from(com.example.project.domain.{{moduleName}}.{{pascalCase moduleName}} domain) {
+        return new {{pascalCase moduleName}}JpaEntity(domain.getId(), domain.getName());
+    }
+
+    public com.example.project.domain.{{moduleName}}.{{pascalCase moduleName}} toDomain() {
+        return new com.example.project.domain.{{moduleName}}.{{pascalCase moduleName}}(id, name);
+    }
+}

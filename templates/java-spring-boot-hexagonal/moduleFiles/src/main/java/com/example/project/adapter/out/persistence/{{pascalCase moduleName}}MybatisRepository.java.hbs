@@ -1,0 +1,25 @@
+package com.example.project.adapter.out.persistence;
+
+import org.apache.ibatis.annotations.*;
+import java.util.List;
+import java.util.Optional;
+
+@Mapper
+public interface {{pascalCase moduleName}}MybatisRepository {
+
+    @Select("SELECT * FROM {{snakeCase moduleName}}")
+    List<{{pascalCase moduleName}}Entity> findAll();
+
+    @Select("SELECT * FROM {{snakeCase moduleName}} WHERE id = #{id}")
+    Optional<{{pascalCase moduleName}}Entity> findById(Long id);
+
+    @Insert("INSERT INTO {{snakeCase moduleName}} (name) VALUES (#{name})")
+    @Options(useGeneratedKeys = true, keyProperty = "id")
+    void save({{pascalCase moduleName}}Entity entity);
+
+    @Update("UPDATE {{snakeCase moduleName}} SET name = #{name} WHERE id = #{id}")
+    void update({{pascalCase moduleName}}Entity entity);
+
+    @Delete("DELETE FROM {{snakeCase moduleName}} WHERE id = #{id}")
+    void deleteById(Long id);
+}

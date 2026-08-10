@@ -1,0 +1,35 @@
+package com.example.project.query.{{moduleName}};
+
+import com.example.project.event.{{moduleName}}.{{pascalCase moduleName}}CreatedEvent;
+import com.example.project.event.{{moduleName}}.{{pascalCase moduleName}}DeletedEvent;
+import com.example.project.event.{{moduleName}}.{{pascalCase moduleName}}UpdatedEvent;
+import org.axonframework.eventhandling.EventHandler;
+import org.springframework.stereotype.Component;
+
+@Component
+public class {{pascalCase moduleName}}EventProjection {
+
+    private final {{pascalCase moduleName}}ProjectionRepository repository;
+
+    public {{pascalCase moduleName}}EventProjection({{pascalCase moduleName}}ProjectionRepository repository) {
+        this.repository = repository;
+    }
+
+    @EventHandler
+    public void on({{pascalCase moduleName}}CreatedEvent event) {
+        repository.save(new {{pascalCase moduleName}}Projection(event.getId(), event.getName(){{#if ormJpa}}, java.time.Instant.now(){{/if}}));
+    }
+
+    @EventHandler
+    public void on({{pascalCase moduleName}}UpdatedEvent event) {
+        repository.findById(event.getId()).ifPresent(projection -> {
+            projection.setName(event.getName());
+            repository.save(projection);
+        });
+    }
+
+    @EventHandler
+    public void on({{pascalCase moduleName}}DeletedEvent event) {
+        repository.deleteById(event.getId());
+    }
+}

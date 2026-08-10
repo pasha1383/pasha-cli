@@ -1,0 +1,18 @@
+package com.example.project.domain.port.in;
+
+import com.example.project.domain.model.{{pascalCase moduleName}};
+
+import java.util.List;
+
+public interface {{pascalCase moduleName}}UseCase {
+
+    {{pascalCase moduleName}} create({{pascalCase moduleName}} entity);
+
+    {{pascalCase moduleName}} getById(Long id);
+
+    List<{{pascalCase moduleName}}> getAll();
+
+    {{pascalCase moduleName}} update(Long id, {{pascalCase moduleName}} data);
+
+    void delete(Long id);
+}

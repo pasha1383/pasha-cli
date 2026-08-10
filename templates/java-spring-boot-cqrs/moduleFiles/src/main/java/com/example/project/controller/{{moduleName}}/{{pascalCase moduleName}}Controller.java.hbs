@@ -1,0 +1,67 @@
+package com.example.project.controller.{{moduleName}};
+
+import com.example.project.command.{{moduleName}}.Create{{pascalCase moduleName}}Command;
+import com.example.project.command.{{moduleName}}.Delete{{pascalCase moduleName}}Command;
+import com.example.project.command.{{moduleName}}.Update{{pascalCase moduleName}}Command;
+import com.example.project.query.{{moduleName}}.Find{{pascalCase moduleName}}Query;
+import com.example.project.query.{{moduleName}}.FindAll{{pascalCase moduleName}}sQuery;
+import com.example.project.query.{{moduleName}}.{{pascalCase moduleName}}Projection;
+{{#if useBeanValidation}}
+import jakarta.validation.Valid;
+{{/if}}
+import org.axonframework.commandhandling.gateway.CommandGateway;
+import org.axonframework.queryhandling.QueryGateway;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+
+@RestController
+@RequestMapping("/{{moduleName}}")
+public class {{pascalCase moduleName}}Controller {
+
+    private final CommandGateway commandGateway;
+    private final QueryGateway queryGateway;
+
+    public {{pascalCase moduleName}}Controller(CommandGateway commandGateway, QueryGateway queryGateway) {
+        this.commandGateway = commandGateway;
+        this.queryGateway = queryGateway;
+    }
+
+    @PostMapping
+    public CompletableFuture<ResponseEntity<String>> create({{#if useBeanValidation}}@Valid {{/if}}@RequestBody {{pascalCase moduleName}}Dto dto) {
+        String id = UUID.randomUUID().toString();
+        var command = new Create{{pascalCase moduleName}}Command(id, dto.getName());
+        return commandGateway.send(command)
+                .thenApply(v -> ResponseEntity.status(HttpStatus.CREATED).body(id));
+    }
+
+    @GetMapping
+    public CompletableFuture<List<{{pascalCase moduleName}}Projection>> listAll() {
+        return queryGateway.query(new FindAll{{pascalCase moduleName}}sQuery(),
+                org.axonframework.messaging.responsetypes.ResponseTypes.multipleInstancesOf({{pascalCase moduleName}}Projection.class));
+    }
+
+    @GetMapping("/{id}")
+    public CompletableFuture<{{pascalCase moduleName}}Projection> getOne(@PathVariable String id) {
+        return queryGateway.query(new Find{{pascalCase moduleName}}Query(id),
+                org.axonframework.messaging.responsetypes.ResponseTypes.instanceOf({{pascalCase moduleName}}Projection.class));
+    }
+
+    @PutMapping("/{id}")
+    public CompletableFuture<ResponseEntity<Void>> update(@PathVariable String id, {{#if useBeanValidation}}@Valid {{/if}}@RequestBody {{pascalCase moduleName}}Dto dto) {
+        var command = new Update{{pascalCase moduleName}}Command(id, dto.getName());
+        return commandGateway.send(command)
+                .thenApply(v -> ResponseEntity.ok().build());
+    }
+
+    @DeleteMapping("/{id}")
+    public CompletableFuture<ResponseEntity<Void>> delete(@PathVariable String id) {
+        var command = new Delete{{pascalCase moduleName}}Command(id);
+        return commandGateway.send(command)
+                .thenApply(v -> ResponseEntity.noContent().build());
+    }
+}

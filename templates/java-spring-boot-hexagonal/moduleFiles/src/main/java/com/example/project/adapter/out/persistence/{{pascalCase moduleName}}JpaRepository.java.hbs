@@ -1,0 +1,8 @@
+package com.example.project.adapter.out.persistence;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface {{pascalCase moduleName}}JpaRepository extends JpaRepository<{{pascalCase moduleName}}Entity, Long> {
+}

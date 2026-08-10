@@ -1,0 +1,23 @@
+package com.example.project.command.{{moduleName}};
+
+import org.axonframework.modelling.command.TargetAggregateIdentifier;
+
+public class Create{{pascalCase moduleName}}Command {
+
+    @TargetAggregateIdentifier
+    private final String id;
+    private final String name;
+
+    public Create{{pascalCase moduleName}}Command(String id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+}

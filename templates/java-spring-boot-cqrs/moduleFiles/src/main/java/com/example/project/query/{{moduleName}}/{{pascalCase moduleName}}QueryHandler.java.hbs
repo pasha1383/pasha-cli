@@ -1,0 +1,28 @@
+package com.example.project.query.{{moduleName}};
+
+import org.axonframework.queryhandling.QueryHandler;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+
+@Component
+public class {{pascalCase moduleName}}QueryHandler {
+
+    private final {{pascalCase moduleName}}ProjectionRepository repository;
+
+    public {{pascalCase moduleName}}QueryHandler({{pascalCase moduleName}}ProjectionRepository repository) {
+        this.repository = repository;
+    }
+
+    @QueryHandler
+    public {{pascalCase moduleName}}Projection handle(Find{{pascalCase moduleName}}Query query) {
+        return repository.findById(query.getId())
+                .orElseThrow(() -> new com.example.project.errors.NotFoundException(
+                        "{{pascalCase moduleName}} with id " + query.getId() + " not found"));
+    }
+
+    @QueryHandler
+    public List<{{pascalCase moduleName}}Projection> handle(FindAll{{pascalCase moduleName}}sQuery query) {
+        return repository.findAll();
+    }
+}

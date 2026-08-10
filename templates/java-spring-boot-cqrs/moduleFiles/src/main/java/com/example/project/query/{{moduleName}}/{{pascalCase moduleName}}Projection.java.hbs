@@ -1,0 +1,58 @@
+package com.example.project.query.{{moduleName}};
+
+{{#if ormJpa}}
+import jakarta.persistence.*;
+{{/if}}
+import java.time.Instant;
+
+{{#if ormJpa}}
+@Entity
+@Table(name = "{{snakeCase moduleName}}_projection")
+{{/if}}
+public class {{pascalCase moduleName}}Projection {
+    {{#if ormJpa}}
+    @Id
+    {{/if}}
+    private String id;
+    private String name;
+    {{#if ormJpa}}
+    private Instant createdAt;
+    {{/if}}
+
+    public {{pascalCase moduleName}}Projection() {
+    }
+
+    public {{pascalCase moduleName}}Projection(String id, String name{{#if ormJpa}}, Instant createdAt{{/if}}) {
+        this.id = id;
+        this.name = name;
+        {{#if ormJpa}}
+        this.createdAt = createdAt;
+        {{/if}}
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    {{#if ormJpa}}
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+    {{/if}}
+}

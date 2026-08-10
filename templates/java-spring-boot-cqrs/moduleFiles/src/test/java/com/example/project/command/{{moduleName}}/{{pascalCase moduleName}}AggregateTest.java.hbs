@@ -1,0 +1,37 @@
+package com.example.project.command.{{moduleName}};
+
+import org.axonframework.test.aggregate.AggregateTestFixture;
+import org.axonframework.test.aggregate.FixtureConfiguration;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+class {{pascalCase moduleName}}AggregateTest {
+
+    private FixtureConfiguration<{{pascalCase moduleName}}Aggregate> fixture;
+
+    @BeforeEach
+    void setUp() {
+        fixture = new AggregateTestFixture<>({{pascalCase moduleName}}Aggregate.class);
+    }
+
+    @Test
+    void shouldCreateAggregate() {
+        fixture.givenNoPriorActivity()
+                .when(new Create{{pascalCase moduleName}}Command("1", "test"))
+                .expectEvents(new com.example.project.event.{{moduleName}}.{{pascalCase moduleName}}CreatedEvent("1", "test"));
+    }
+
+    @Test
+    void shouldUpdateAggregate() {
+        fixture.given(new com.example.project.event.{{moduleName}}.{{pascalCase moduleName}}CreatedEvent("1", "test"))
+                .when(new Update{{pascalCase moduleName}}Command("1", "updated"))
+                .expectEvents(new com.example.project.event.{{moduleName}}.{{pascalCase moduleName}}UpdatedEvent("1", "updated"));
+    }
+
+    @Test
+    void shouldDeleteAggregate() {
+        fixture.given(new com.example.project.event.{{moduleName}}.{{pascalCase moduleName}}CreatedEvent("1", "test"))
+                .when(new Delete{{pascalCase moduleName}}Command("1"))
+                .expectEvents(new com.example.project.event.{{moduleName}}.{{pascalCase moduleName}}DeletedEvent("1"));
+    }
+}

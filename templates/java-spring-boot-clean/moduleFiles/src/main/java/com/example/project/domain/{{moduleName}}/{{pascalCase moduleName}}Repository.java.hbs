@@ -1,0 +1,15 @@
+package com.example.project.domain.{{moduleName}};
+
+import java.util.List;
+import java.util.Optional;
+
+public interface {{pascalCase moduleName}}Repository {
+
+    {{pascalCase moduleName}} save({{pascalCase moduleName}} entity);
+
+    Optional<{{pascalCase moduleName}}> findById(Long id);
+
+    List<{{pascalCase moduleName}}> findAll();
+
+    void deleteById(Long id);
+}

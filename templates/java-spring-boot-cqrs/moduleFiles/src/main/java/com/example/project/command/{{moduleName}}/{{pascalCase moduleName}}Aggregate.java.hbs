@@ -1,0 +1,60 @@
+package com.example.project.command.{{moduleName}};
+
+import com.example.project.event.{{moduleName}}.{{pascalCase moduleName}}CreatedEvent;
+import com.example.project.event.{{moduleName}}.{{pascalCase moduleName}}DeletedEvent;
+import com.example.project.event.{{moduleName}}.{{pascalCase moduleName}}UpdatedEvent;
+import org.axonframework.commandhandling.CommandHandler;
+import org.axonframework.eventsourcing.EventSourcingHandler;
+import org.axonframework.modelling.command.AggregateIdentifier;
+import org.axonframework.modelling.command.AggregateLifecycle;
+import org.axonframework.spring.stereotype.Aggregate;
+
+@Aggregate
+public class {{pascalCase moduleName}}Aggregate {
+
+    @AggregateIdentifier
+    private String id;
+    private String name;
+
+    protected {{pascalCase moduleName}}Aggregate() {
+    }
+
+    @CommandHandler
+    public {{pascalCase moduleName}}Aggregate(Create{{pascalCase moduleName}}Command cmd) {
+        AggregateLifecycle.apply(new {{pascalCase moduleName}}CreatedEvent(cmd.getId(), cmd.getName()));
+    }
+
+    @CommandHandler
+    public void handle(Update{{pascalCase moduleName}}Command cmd) {
+        AggregateLifecycle.apply(new {{pascalCase moduleName}}UpdatedEvent(cmd.getId(), cmd.getName()));
+    }
+
+    @CommandHandler
+    public void handle(Delete{{pascalCase moduleName}}Command cmd) {
+        AggregateLifecycle.apply(new {{pascalCase moduleName}}DeletedEvent(cmd.getId()));
+    }
+
+    @EventSourcingHandler
+    public void on({{pascalCase moduleName}}CreatedEvent event) {
+        this.id = event.getId();
+        this.name = event.getName();
+    }
+
+    @EventSourcingHandler
+    public void on({{pascalCase moduleName}}UpdatedEvent event) {
+        this.name = event.getName();
+    }
+
+    @EventSourcingHandler
+    public void on({{pascalCase moduleName}}DeletedEvent event) {
+        AggregateLifecycle.markDeleted();
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+}

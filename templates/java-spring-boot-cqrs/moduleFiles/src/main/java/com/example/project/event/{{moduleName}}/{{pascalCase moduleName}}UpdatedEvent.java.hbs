@@ -1,0 +1,20 @@
+package com.example.project.event.{{moduleName}};
+
+public class {{pascalCase moduleName}}UpdatedEvent {
+
+    private final String id;
+    private final String name;
+
+    public {{pascalCase moduleName}}UpdatedEvent(String id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+}

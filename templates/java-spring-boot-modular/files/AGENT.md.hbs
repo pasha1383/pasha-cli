@@ -1,0 +1,94 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Framework:** Spring Boot (Java 17) — Modular Monolith
+- **Architecture:** {{architectureLabel}}
+{{#if ormJpa}}
+- **ORM:** JPA / Hibernate{{/if}}
+{{#if ormMybatis}}
+- **ORM:** MyBatis{{/if}}
+{{#if ormNone}}
+- **Data layer:** in-memory repositories{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}{{/if}}
+{{#if hasValidation}}
+- **Validation:** Jakarta Bean Validation{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis{{/if}}
+{{#if hasBroker}}
+- **Message broker:** {{broker}}{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/docs`{{/if}}
+{{#if useAuth}}
+- **Auth:** JWT with Spring Security{{/if}}
+{{#if useHealthCheck}}
+- **Health:** Actuator at `/actuator/health`{{/if}}
+
+## Module structure
+
+Each module under `module/<module>/` is a self-contained vertical slice:
+
+```
+module/<module>/
+├── api/                    ← public surface (controllers, DTOs, events)
+│   ├── <Module>Controller.java
+│   ├── <Module>Dto.java
+│   └── <Module>Events.java
+└── internal/               ← internal implementation (entity, repo, service)
+    ├── <Module>.java
+    ├── <Module>Repository.java
+    └── <Module>Service.java
+```
+
+- `api/` — The module's public contract. Other modules MAY depend on this.
+- `internal/` — Private implementation. Other modules MUST NOT import from here.
+
+## Modules
+
+{{#each modules}}
+- `{{snakeCase this}}`
+{{/each}}
+
+## Commands
+
+```bash
+./mvnw spring-boot:run               # dev server on :8080
+{{#if useDocker}}
+docker compose up -d                  # start databases/brokers
+docker compose down
+{{/if}}
+{{#if useCheckstyle}}
+./mvnw checkstyle:check               # lint
+{{/if}}
+{{#if useTests}}
+./mvnw test                           # run tests
+{{/if}}
+```
+
+## Hard rules
+
+1. **No cross-module internal imports.** Modules communicate only through
+   their `api/` package (controllers, DTOs, events). Never import from another
+   module's `internal/` package.
+2. **Controller → Service → Repository** within each module. Standard layered
+   flow inside each vertical slice.
+3. **JPA entities live in `internal/`.** Each module owns its own data. Use
+   Spring's `@Entity` directly since there is no separate domain model.
+4. **Shared infrastructure** (`shared/database`, `shared/auth`, etc.) is
+   framework-level configuration, accessed via Spring DI.
+5. **Adding a module means:** entity + repository + service + controller +
+   DTO. All within `module/<module>/`.
+{{#if useAuth}}
+6. **Protected endpoints** require a valid JWT Bearer token.
+{{/if}}
+
+## When you are unsure
+
+Prefer asking over guessing. If you need data from another module, create an
+integration event in the source module's `api/Events.java` or call the other
+module's public REST endpoint.

@@ -1,0 +1,44 @@
+package com.example.project.presentation.{{moduleName}};
+
+import com.example.project.domain.{{moduleName}}.{{pascalCase moduleName}};
+{{#if useBeanValidation}}
+import jakarta.validation.constraints.NotBlank;
+{{/if}}
+
+public class {{pascalCase moduleName}}Dto {
+
+    private Long id;
+
+    {{#if useBeanValidation}}
+    @NotBlank(message = "Name is required")
+    {{/if}}
+    private String name;
+
+    public {{pascalCase moduleName}}Dto() {
+    }
+
+    public {{pascalCase moduleName}}Dto(Long id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public static {{pascalCase moduleName}}Dto from({{pascalCase moduleName}} entity) {
+        return new {{pascalCase moduleName}}Dto(entity.getId(), entity.getName());
+    }
+}

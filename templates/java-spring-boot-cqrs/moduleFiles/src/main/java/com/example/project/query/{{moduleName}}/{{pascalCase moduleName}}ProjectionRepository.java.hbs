@@ -1,0 +1,65 @@
+package com.example.project.query.{{moduleName}};
+
+{{#if ormJpa}}
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface {{pascalCase moduleName}}ProjectionRepository extends JpaRepository<{{pascalCase moduleName}}Projection, String> {
+}
+{{/if}}
+
+{{#if ormMybatis}}
+import org.apache.ibatis.annotations.*;
+import java.util.List;
+import java.util.Optional;
+
+@Mapper
+public interface {{pascalCase moduleName}}ProjectionRepository {
+
+    @Select("SELECT * FROM {{snakeCase moduleName}}_projection")
+    List<{{pascalCase moduleName}}Projection> findAll();
+
+    @Select("SELECT * FROM {{snakeCase moduleName}}_projection WHERE id = #{id}")
+    Optional<{{pascalCase moduleName}}Projection> findById(String id);
+
+    @Insert("INSERT INTO {{snakeCase moduleName}}_projection (id, name) VALUES (#{id}, #{name})")
+    void save({{pascalCase moduleName}}Projection entity);
+
+    @Update("UPDATE {{snakeCase moduleName}}_projection SET name = #{name} WHERE id = #{id}")
+    void update({{pascalCase moduleName}}Projection entity);
+
+    @Delete("DELETE FROM {{snakeCase moduleName}}_projection WHERE id = #{id}")
+    void deleteById(String id);
+}
+{{/if}}
+
+{{#if ormNone}}
+import org.springframework.stereotype.Repository;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
+@Repository
+public class {{pascalCase moduleName}}ProjectionRepository {
+
+    private final Map<String, {{pascalCase moduleName}}Projection> store = new ConcurrentHashMap<>();
+
+    public {{pascalCase moduleName}}Projection save({{pascalCase moduleName}}Projection entity) {
+        store.put(entity.getId(), entity);
+        return entity;
+    }
+
+    public List<{{pascalCase moduleName}}Projection> findAll() {
+        return new ArrayList<>(store.values());
+    }
+
+    public Optional<{{pascalCase moduleName}}Projection> findById(String id) {
+        return Optional.ofNullable(store.get(id));
+    }
+
+    public void deleteById(String id) {
+        store.remove(id);
+    }
+}
+{{/if}}

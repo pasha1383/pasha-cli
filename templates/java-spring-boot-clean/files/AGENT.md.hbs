@@ -1,0 +1,90 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Framework:** Spring Boot (Java 17) — Clean Architecture
+- **Architecture:** {{architectureLabel}}
+{{#if ormJpa}}
+- **ORM:** JPA / Hibernate{{/if}}
+{{#if ormMybatis}}
+- **ORM:** MyBatis{{/if}}
+{{#if ormNone}}
+- **Data layer:** in-memory repositories{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}{{/if}}
+{{#if hasValidation}}
+- **Validation:** Jakarta Bean Validation{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis{{/if}}
+{{#if hasBroker}}
+- **Message broker:** {{broker}}{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/docs`{{/if}}
+{{#if useAuth}}
+- **Auth:** JWT with Spring Security{{/if}}
+{{#if useHealthCheck}}
+- **Health:** Actuator at `/actuator/health`{{/if}}
+
+## Layers (outside-in dependency rule)
+
+```
+Controller  →  UseCase (interface)  →  Domain Entity  →  Repository (interface)
+                                               ↑
+                                      Infrastructure (JPA adapter)
+```
+
+- `domain/` — Entities, repository interfaces (no framework dependencies)
+- `application/` — Use case implementations (orchestrates domain objects)
+- `infrastructure/` — JPA/MyBatis adapters, concrete repository classes
+- `presentation/` — REST controllers, DTOs, request/response mapping
+
+## Modules
+
+{{#each modules}}
+- `{{snakeCase this}}`
+{{/each}}
+
+## Commands
+
+```bash
+./mvnw spring-boot:run               # dev server on :8080
+{{#if useDocker}}
+docker compose up -d                  # start databases/brokers
+docker compose down
+{{/if}}
+{{#if useCheckstyle}}
+./mvnw checkstyle:check               # lint
+{{/if}}
+{{#if useTests}}
+./mvnw test                           # run tests
+{{/if}}
+```
+
+## Hard rules
+
+1. **Dependency rule matters.** Domain has zero framework imports. Application
+   depends only on domain. Infrastructure depends on domain + frameworks.
+   Presentation depends on application.
+2. **Domain entities are NOT JPA entities.** JPA `@Entity` classes live in
+   `infrastructure/{{moduleName}}/` and map to/from domain entities.
+3. **Repository interfaces** are declared in `domain/{{moduleName}}/` as plain
+   Java interfaces. Concrete JPA/MyBatis implementations reside in
+   `infrastructure/{{moduleName}}/`.
+4. **Adding a module means adding files in all 4 layers:**
+   `domain/`, `application/`, `infrastructure/`, `presentation/`.
+5. **Error handling** uses `AppError` / `NotFoundException` from
+   `com.example.project.errors` — throw them in use cases, let the
+   `GlobalExceptionHandler` translate them.
+{{#if useAuth}}
+6. **Protected endpoints** require a valid JWT Bearer token in the
+   `Authorization` header.
+{{/if}}
+
+## When you are unsure
+
+Prefer asking over guessing. Violating the dependency rule (e.g. importing
+`@Entity` into domain) is a common mistake — double-check imports.

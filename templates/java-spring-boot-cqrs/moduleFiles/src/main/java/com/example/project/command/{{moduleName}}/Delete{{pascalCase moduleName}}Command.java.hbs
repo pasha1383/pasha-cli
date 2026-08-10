@@ -1,0 +1,17 @@
+package com.example.project.command.{{moduleName}};
+
+import org.axonframework.modelling.command.TargetAggregateIdentifier;
+
+public class Delete{{pascalCase moduleName}}Command {
+
+    @TargetAggregateIdentifier
+    private final String id;
+
+    public Delete{{pascalCase moduleName}}Command(String id) {
+        this.id = id;
+    }
+
+    public String getId() {
+        return id;
+    }
+}

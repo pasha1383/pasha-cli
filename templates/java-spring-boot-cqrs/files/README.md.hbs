@@ -1,0 +1,86 @@
+# {{projectName}}
+
+{{description}}
+
+Built with pasha CLI — **CQRS (Axon Framework)** architecture on Spring Boot.
+
+## Stack
+
+- **CQRS:** Axon Framework 4.9
+- {{#if ormJpa}}- **ORM:** JPA / Hibernate{{/if}}
+{{#if ormMybatis}}- **ORM:** MyBatis{{/if}}
+{{#if ormNone}}- **Data layer:** in-memory repositories{{/if}}
+{{#if hasDatabase}}- **Database:** {{database}}{{/if}}
+{{#if hasValidation}}- **Validation:** Jakarta Bean Validation{{/if}}
+{{#if useRedis}}- **Cache:** Redis{{/if}}
+{{#if hasBroker}}- **Messaging:** {{broker}}{{/if}}
+
+## Run
+
+```bash
+cp .env.example .env
+{{#if useDocker}}
+docker compose up -d
+{{/if}}
+./mvnw spring-boot:run
+```
+
+The app starts at `http://localhost:8080`.
+
+{{#if useSwagger}}
+API docs at `http://localhost:8080/docs`
+{{/if}}
+{{#if dbH2}}
+H2 console at `http://localhost:8080/h2-console` (JDBC URL: `jdbc:h2:mem:{{projectName}}`)
+{{/if}}
+
+## Modules
+
+{{#each modules}}
+- `{{this}}` → `http://localhost:8080/{{this}}`
+{{/each}}
+
+## Structure
+
+```
+src/main/java/com/example/project/
+├── Application.java                    ← entry point
+├── errors/                             ← global error handling
+├── shared/                             ← cross-cutting concerns
+├── command/<module>/                   ← write side
+│   ├── Create<Module>Command.java
+│   ├── Update<Module>Command.java
+│   ├── Delete<Module>Command.java
+│   └── <Module>Aggregate.java
+├── event/<module>/                     ← domain events
+│   ├── <Module>CreatedEvent.java
+│   ├── <Module>UpdatedEvent.java
+│   └── <Module>DeletedEvent.java
+├── query/<module>/                     ← read side
+│   ├── Find<Module>Query.java
+│   ├── FindAll<Module>sQuery.java
+│   ├── <Module>Projection.java
+│   └── <Module>QueryHandler.java
+└── controller/<module>/                ← REST API
+    ├── <Module>Controller.java
+    └── <Module>Dto.java
+```
+
+## Commands
+
+```bash
+./mvnw spring-boot:run              # dev server on :8080
+{{#if useDocker}}
+docker compose up -d                # start databases/brokers
+docker compose down
+{{/if}}
+{{#if useCheckstyle}}
+./mvnw checkstyle:check             # lint
+{{/if}}
+{{#if useTests}}
+./mvnw test                         # run tests
+{{/if}}
+```
+
+---
+Made with ❤️ by {{author}}

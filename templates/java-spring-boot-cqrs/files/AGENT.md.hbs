@@ -1,0 +1,96 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Framework:** Spring Boot (Java 17) — CQRS with Axon Framework
+- **Architecture:** {{architectureLabel}}
+{{#if ormJpa}}
+- **ORM:** JPA / Hibernate (for projections){{/if}}
+{{#if ormMybatis}}
+- **ORM:** MyBatis{{/if}}
+{{#if ormNone}}
+- **Data layer:** in-memory repositories{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}{{/if}}
+{{#if hasValidation}}
+- **Validation:** Jakarta Bean Validation{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis{{/if}}
+{{#if hasBroker}}
+- **Message broker:** {{broker}}{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/docs`{{/if}}
+{{#if useAuth}}
+- **Auth:** JWT with Spring Security{{/if}}
+{{#if useHealthCheck}}
+- **Health:** Actuator at `/actuator/health`{{/if}}
+
+## CQRS pattern
+
+```
+Command (write)                      Query (read)
+     |                                     |
+CommandGateway → Aggregate           QueryGateway → QueryHandler
+     |        → @CommandHandler           |        → @QueryHandler
+     |             |                       |             |
+  @EventSourcingHandler            Projection (@EventHandler)
+     |                                     |
+   Event Store                          Read DB / cache
+```
+
+- **Commands** — Immutable POJOs. Express intent: `Create{{pascalCase moduleName}}Command`.
+- **Aggregate** — Axon `@Aggregate`. Handles commands, applies events, maintains state.
+- **Events** — Immutable POJOs. Record facts: `{{pascalCase moduleName}}CreatedEvent`.
+- **Projections** — `@EventHandler` classes that update the read model from events.
+- **Queries** — Immutable POJOs. `Find{{pascalCase moduleName}}Query`, `FindAll{{pascalCase moduleName}}sQuery`.
+- **QueryHandlers** — `@QueryHandler` methods that serve read-side data.
+
+## Modules
+
+{{#each modules}}
+- `{{snakeCase this}}`
+{{/each}}
+
+## Commands
+
+```bash
+./mvnw spring-boot:run               # dev server on :8080
+{{#if useDocker}}
+docker compose up -d                  # start databases/brokers
+docker compose down
+{{/if}}
+{{#if useCheckstyle}}
+./mvnw checkstyle:check               # lint
+{{/if}}
+{{#if useTests}}
+./mvnw test                           # run tests
+{{/if}}
+```
+
+## Hard rules
+
+1. **Commands are fire-and-forget.** Use `commandGateway.send(command)` — never
+   `sendAndWait` for synchronous patterns.
+2. **Events are facts, not commands.** Event classes describe what HAPPENED
+   (past tense). Command classes describe what SHOULD happen (imperative).
+3. **Aggregate defines business rules.** Put invariants and validation in the
+   aggregate's `@CommandHandler` methods, not in the controller.
+4. **Projections are denormalized.** Build read models optimized for query
+   performance. They can combine data from multiple events.
+5. **Never update projections from commands.** Projections only react to
+   events via `@EventHandler` methods.
+6. **Adding a module means:** command classes + aggregate + event classes +
+   projection + query classes + query handler + controller + DTO.
+{{#if useAuth}}
+7. **Protected endpoints** require a valid JWT Bearer token.
+{{/if}}
+
+## When you are unsure
+
+Prefer asking over guessing. CQRS adds complexity; not every feature needs
+event sourcing. Use simple CRUD for configuration data unless history/mutability
+is required.

@@ -1,0 +1,52 @@
+package com.example.project.domain.service;
+
+import com.example.project.domain.model.{{pascalCase moduleName}};
+import com.example.project.domain.port.in.{{pascalCase moduleName}}UseCase;
+import com.example.project.domain.port.out.{{pascalCase moduleName}}Repository;
+import com.example.project.errors.NotFoundException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+public class {{pascalCase moduleName}}DomainService implements {{pascalCase moduleName}}UseCase {
+
+    private final {{pascalCase moduleName}}Repository repository;
+
+    public {{pascalCase moduleName}}DomainService({{pascalCase moduleName}}Repository repository) {
+        this.repository = repository;
+    }
+
+    @Override
+    @Transactional
+    public {{pascalCase moduleName}} create({{pascalCase moduleName}} entity) {
+        return repository.save(entity);
+    }
+
+    @Override
+    public {{pascalCase moduleName}} getById(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new NotFoundException("{{pascalCase moduleName}} with id " + id + " not found"));
+    }
+
+    @Override
+    public List<{{pascalCase moduleName}}> getAll() {
+        return repository.findAll();
+    }
+
+    @Override
+    @Transactional
+    public {{pascalCase moduleName}} update(Long id, {{pascalCase moduleName}} data) {
+        {{pascalCase moduleName}} existing = getById(id);
+        existing.setName(data.getName());
+        return repository.save(existing);
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long id) {
+        {{pascalCase moduleName}} existing = getById(id);
+        repository.deleteById(existing.getId());
+    }
+}

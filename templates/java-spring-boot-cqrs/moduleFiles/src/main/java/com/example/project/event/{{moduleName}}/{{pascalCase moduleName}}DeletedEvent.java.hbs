@@ -1,0 +1,14 @@
+package com.example.project.event.{{moduleName}};
+
+public class {{pascalCase moduleName}}DeletedEvent {
+
+    private final String id;
+
+    public {{pascalCase moduleName}}DeletedEvent(String id) {
+        this.id = id;
+    }
+
+    public String getId() {
+        return id;
+    }
+}

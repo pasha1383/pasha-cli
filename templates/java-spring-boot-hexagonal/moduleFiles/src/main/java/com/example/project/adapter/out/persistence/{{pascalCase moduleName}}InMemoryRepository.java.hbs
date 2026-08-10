@@ -1,0 +1,34 @@
+package com.example.project.adapter.out.persistence;
+
+import org.springframework.stereotype.Repository;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+
+@Repository
+public class {{pascalCase moduleName}}InMemoryRepository {
+
+    private final Map<Long, {{pascalCase moduleName}}Entity> store = new ConcurrentHashMap<>();
+    private final AtomicLong nextId = new AtomicLong(1);
+
+    public {{pascalCase moduleName}}Entity save({{pascalCase moduleName}}Entity entity) {
+        if (entity.getId() == null || entity.getId() == 0) {
+            entity.setId(nextId.getAndIncrement());
+        }
+        store.put(entity.getId(), entity);
+        return entity;
+    }
+
+    public List<{{pascalCase moduleName}}Entity> findAll() {
+        return new ArrayList<>(store.values());
+    }
+
+    public Optional<{{pascalCase moduleName}}Entity> findById(Long id) {
+        return Optional.ofNullable(store.get(id));
+    }
+
+    public void deleteById(Long id) {
+        store.remove(id);
+    }
+}

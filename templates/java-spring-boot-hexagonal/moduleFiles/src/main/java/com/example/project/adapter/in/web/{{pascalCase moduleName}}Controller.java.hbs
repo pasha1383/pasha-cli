@@ -1,0 +1,56 @@
+package com.example.project.adapter.in.web;
+
+import com.example.project.adapter.in.web.dto.{{pascalCase moduleName}}Dto;
+import com.example.project.domain.model.{{pascalCase moduleName}};
+import com.example.project.domain.port.in.{{pascalCase moduleName}}UseCase;
+{{#if useBeanValidation}}
+import jakarta.validation.Valid;
+{{/if}}
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping("/{{moduleName}}")
+public class {{pascalCase moduleName}}Controller {
+
+    private final {{pascalCase moduleName}}UseCase useCase;
+
+    public {{pascalCase moduleName}}Controller({{pascalCase moduleName}}UseCase useCase) {
+        this.useCase = useCase;
+    }
+
+    @PostMapping
+    public ResponseEntity<{{pascalCase moduleName}}Dto> create({{#if useBeanValidation}}@Valid {{/if}}@RequestBody {{pascalCase moduleName}}Dto dto) {
+        var entity = new {{pascalCase moduleName}}(null, dto.getName());
+        var result = useCase.create(entity);
+        return ResponseEntity.status(HttpStatus.CREATED).body({{pascalCase moduleName}}Dto.from(result));
+    }
+
+    @GetMapping
+    public List<{{pascalCase moduleName}}Dto> listAll() {
+        return useCase.getAll().stream()
+                .map({{pascalCase moduleName}}Dto::from)
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("/{id}")
+    public {{pascalCase moduleName}}Dto getOne(@PathVariable Long id) {
+        return {{pascalCase moduleName}}Dto.from(useCase.getById(id));
+    }
+
+    @PutMapping("/{id}")
+    public {{pascalCase moduleName}}Dto update(@PathVariable Long id, {{#if useBeanValidation}}@Valid {{/if}}@RequestBody {{pascalCase moduleName}}Dto dto) {
+        var data = new {{pascalCase moduleName}}(id, dto.getName());
+        return {{pascalCase moduleName}}Dto.from(useCase.update(id, data));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        useCase.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+}

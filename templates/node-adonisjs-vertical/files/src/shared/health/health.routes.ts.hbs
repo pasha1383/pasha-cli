@@ -1,0 +1,39 @@
+import router from '@adonisjs/core/services/router'
+{{#if healthChecksDb}}
+import db from '@adonisjs/lucid/services/db'
+{{/if}}
+{{#if healthChecksRedis}}
+import redis from '@adonisjs/redis/services/main'
+{{/if}}
+
+export function healthRouter() {
+  router.get('/', async () => {
+    const checks: Record<string, unknown> = {
+      app: '{{projectName}}',
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+    }
+
+    {{#if healthChecksDb}}
+    try {
+      await db.rawQuery('SELECT 1')
+      checks.database = 'connected'
+    } catch {
+      checks.database = 'error'
+      checks.status = 'unhealthy'
+    }
+    {{/if}}
+
+    {{#if healthChecksRedis}}
+    try {
+      await redis.ping()
+      checks.redis = 'connected'
+    } catch {
+      checks.redis = 'error'
+      checks.status = 'unhealthy'
+    }
+    {{/if}}
+
+    return checks
+  })
+}

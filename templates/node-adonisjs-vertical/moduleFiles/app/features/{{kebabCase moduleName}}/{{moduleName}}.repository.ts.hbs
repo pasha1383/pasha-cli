@@ -1,0 +1,69 @@
+{{#if ormLucid}}
+import {{pascalCase moduleName}}Model from './{{moduleName}}.model.js'
+
+export class {{pascalCase moduleName}}Repository {
+  async findAll() {
+    return {{pascalCase moduleName}}Model.all()
+  }
+
+  async findById(id: string) {
+    return {{pascalCase moduleName}}Model.find(id)
+  }
+
+  async create(data: { name: string }) {
+    const record = await {{pascalCase moduleName}}Model.create(data)
+    return record
+  }
+
+  async update(id: string, data: { name?: string }) {
+    const record = await {{pascalCase moduleName}}Model.find(id)
+    if (!record) return null
+    if (data.name !== undefined) record.name = data.name
+    await record.save()
+    return record
+  }
+
+  async delete(id: string) {
+    const record = await {{pascalCase moduleName}}Model.find(id)
+    if (!record) return false
+    await record.delete()
+    return true
+  }
+}
+{{else}}
+import { randomUUID } from 'node:crypto'
+
+interface {{pascalCase moduleName}}Row {
+  id: string
+  name: string
+}
+
+export class {{pascalCase moduleName}}Repository {
+  private items = new Map<string, {{pascalCase moduleName}}Row>()
+
+  async findAll() {
+    return Array.from(this.items.values())
+  }
+
+  async findById(id: string) {
+    return this.items.get(id) ?? null
+  }
+
+  async create(data: { name: string }) {
+    const row: {{pascalCase moduleName}}Row = { id: randomUUID(), name: data.name }
+    this.items.set(row.id, row)
+    return row
+  }
+
+  async update(id: string, data: { name?: string }) {
+    const row = this.items.get(id)
+    if (!row) return null
+    if (data.name !== undefined) row.name = data.name
+    return row
+  }
+
+  async delete(id: string) {
+    return this.items.delete(id)
+  }
+}
+{{/if}}

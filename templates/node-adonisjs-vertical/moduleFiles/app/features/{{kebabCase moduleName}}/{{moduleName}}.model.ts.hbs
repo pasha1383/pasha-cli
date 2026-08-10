@@ -1,0 +1,25 @@
+{{#if ormLucid}}
+import { DateTime } from 'luxon'
+import { BaseModel, column } from '@adonisjs/lucid/orm'
+
+export default class {{pascalCase moduleName}}Model extends BaseModel {
+  static table = '{{snakeCase moduleName}}'
+
+  @column({ isPrimary: true })
+  declare id: number
+
+  @column()
+  declare name: string
+
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+{{else}}
+export interface {{pascalCase moduleName}}Model {
+  id: string
+  name: string
+}
+{{/if}}

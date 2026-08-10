@@ -1,0 +1,59 @@
+{{#if ormLucid}}
+import { defineConfig } from '@adonisjs/lucid';
+
+export default defineConfig({
+  connection: '{{#if dbPostgres}}pg{{/if}}{{#if dbMysql}}mysql2{{/if}}{{#if dbSqlite}}sqlite{{/if}}',
+  connections: {
+    {{#if dbSqlite}}
+    sqlite: {
+      client: 'better-sqlite3',
+      connection: {
+        filename: process.env.DB_DATABASE || './data/{{snakeCase projectName}}.sqlite',
+      },
+      pool: {
+        afterCreate: (conn: any, cb: Function) => {
+          conn.pragma('journal_mode = WAL');
+          cb();
+        },
+      },
+      migrations: {
+        naturalSort: true,
+        paths: ['database/migrations'],
+      },
+    },
+    {{/if}}
+    {{#if dbPostgres}}
+    pg: {
+      client: 'pg',
+      connection: {
+        host: process.env.DB_HOST || 'localhost',
+        port: Number(process.env.DB_PORT) || 5432,
+        user: process.env.DB_USER || 'postgres',
+        password: process.env.DB_PASSWORD || 'postgres',
+        database: process.env.DB_DATABASE || '{{snakeCase projectName}}',
+      },
+      migrations: {
+        naturalSort: true,
+        paths: ['database/migrations'],
+      },
+    },
+    {{/if}}
+    {{#if dbMysql}}
+    mysql2: {
+      client: 'mysql2',
+      connection: {
+        host: process.env.DB_HOST || 'localhost',
+        port: Number(process.env.DB_PORT) || 3306,
+        user: process.env.DB_USER || 'root',
+        password: process.env.DB_PASSWORD || 'root',
+        database: process.env.DB_DATABASE || '{{snakeCase projectName}}',
+      },
+      migrations: {
+        naturalSort: true,
+        paths: ['database/migrations'],
+      },
+    },
+    {{/if}}
+  },
+});
+{{/if}}

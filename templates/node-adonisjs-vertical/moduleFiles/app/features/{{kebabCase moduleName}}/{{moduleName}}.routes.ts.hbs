@@ -1,0 +1,64 @@
+import router from '@adonisjs/core/services/router'
+import { {{pascalCase moduleName}}Service } from './{{moduleName}}.service.js'
+{{#if useVine}}
+import { create{{pascalCase moduleName}}Validator, update{{pascalCase moduleName}}Validator } from './{{moduleName}}.validator.js'
+{{/if}}
+
+const service = new {{pascalCase moduleName}}Service()
+
+export function register{{pascalCase moduleName}}Routes() {
+  router.get('/', async (ctx) => {
+    const items = await service.findAll()
+    return ctx.response.json(items)
+  })
+
+  router.get('/:id', async (ctx) => {
+    const item = await service.findById(ctx.params.id)
+    if (!item) {
+      return ctx.response.notFound({ message: '{{pascalCase moduleName}} not found' })
+    }
+    return ctx.response.json(item)
+  })
+
+  {{#if useVine}}
+  router.post('/', async (ctx) => {
+    const payload = ctx.request.body()
+    const data = await create{{pascalCase moduleName}}Validator.validate(payload)
+    const item = await service.create(data)
+    return ctx.response.created(item)
+  })
+
+  router.put('/:id', async (ctx) => {
+    const payload = ctx.request.body()
+    const data = await update{{pascalCase moduleName}}Validator.validate(payload)
+    const item = await service.update(ctx.params.id, data)
+    if (!item) {
+      return ctx.response.notFound({ message: '{{pascalCase moduleName}} not found' })
+    }
+    return ctx.response.json(item)
+  })
+  {{else}}
+  router.post('/', async (ctx) => {
+    const payload = ctx.request.body()
+    const item = await service.create(payload)
+    return ctx.response.created(item)
+  })
+
+  router.put('/:id', async (ctx) => {
+    const payload = ctx.request.body()
+    const item = await service.update(ctx.params.id, payload)
+    if (!item) {
+      return ctx.response.notFound({ message: '{{pascalCase moduleName}} not found' })
+    }
+    return ctx.response.json(item)
+  })
+  {{/if}}
+
+  router.delete('/:id', async (ctx) => {
+    const deleted = await service.delete(ctx.params.id)
+    if (!deleted) {
+      return ctx.response.notFound({ message: '{{pascalCase moduleName}} not found' })
+    }
+    return ctx.response.noContent()
+  })
+}

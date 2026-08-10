@@ -1,0 +1,11 @@
+import { defineConfig } from '@adonisjs/cors';
+
+export default defineConfig({
+  enabled: true,
+  origin: '*',
+  methods: ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  headers: '*',
+  exposeHeaders: [],
+  credentials: false,
+  maxAge: 90,
+});

@@ -1,0 +1,43 @@
+import { {{pascalCase moduleName}}Repository } from './{{moduleName}}.repository.js'
+
+{{#if ormLucid}}
+interface CreateData {
+  name: string
+}
+
+interface UpdateData {
+  name?: string
+}
+{{else}}
+interface CreateData {
+  name: string
+}
+
+interface UpdateData {
+  name?: string
+}
+{{/if}}
+
+export class {{pascalCase moduleName}}Service {
+  private repository = new {{pascalCase moduleName}}Repository()
+
+  async findAll() {
+    return this.repository.findAll()
+  }
+
+  async findById(id: string) {
+    return this.repository.findById(id)
+  }
+
+  async create(data: CreateData) {
+    return this.repository.create(data)
+  }
+
+  async update(id: string, data: UpdateData) {
+    return this.repository.update(id, data)
+  }
+
+  async delete(id: string) {
+    return this.repository.delete(id)
+  }
+}

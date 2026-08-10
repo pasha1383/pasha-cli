@@ -1,0 +1,15 @@
+{{#if useVine}}
+import vine from '@vinejs/vine'
+
+export const create{{pascalCase moduleName}}Validator = vine.compile(
+  vine.object({
+    name: vine.string().trim().minLength(1).maxLength(255),
+  })
+)
+
+export const update{{pascalCase moduleName}}Validator = vine.compile(
+  vine.object({
+    name: vine.string().trim().minLength(1).maxLength(255).optional(),
+  })
+)
+{{/if}}

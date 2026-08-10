@@ -1,0 +1,26 @@
+# AGENT.md — src/adapters/
+
+The "outside" layer. Everything here depends on `core/` — never the reverse.
+
+## What lives here
+
+- `handlers/` — Hapi request handlers (request, h). Handlers receive use-cases
+  through their constructor. Errors are caught and returned as proper JSON
+  responses with the matching HTTP status.
+- `routes/` — factories that take a pre-wired handler and return
+  `ServerRoute[]`. The wiring happens in `server.ts`.
+- `dto/` — request body shapes and validation schemas.
+- `persistence/` — concrete implementations of core ports. Depending on the
+  chosen ORM, this contains:
+  - `{{moduleName}}.orm-entity.ts` — TypeORM entity (persistence-only)
+  - `{{moduleName}}.schema.ts` — Mongoose schema/model (persistence-only)
+  - `{{moduleName}}.repository.ts` — all ORM implementations + in-memory
+
+## Rules
+
+- Handlers are plain classes — no decorators. The routes factory binds
+  HTTP methods to handler methods.
+- Repositories implement the port from `core/ports/`. They map between ORM
+  rows and domain entities.
+- ORM entities (`orm-entity.ts`, `.schema.ts`) are persistence details — they
+  are NOT the domain entity. Keep them in this layer.

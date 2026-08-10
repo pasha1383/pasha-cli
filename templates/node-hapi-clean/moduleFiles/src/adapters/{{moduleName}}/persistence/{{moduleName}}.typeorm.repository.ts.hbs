@@ -1,0 +1,28 @@
+import { Repository } from 'typeorm';
+import { AppDataSource } from '../../../shared/database/typeorm.datasource';
+import { {{pascalCase moduleName}} } from '../../../core/entities/{{moduleName}}.entity';
+import { I{{pascalCase moduleName}}Repository } from '../../../core/ports/{{moduleName}}.repository.port';
+import { {{pascalCase moduleName}}OrmEntity } from './{{moduleName}}.orm-entity';
+
+export class {{pascalCase moduleName}}TypeormRepository implements I{{pascalCase moduleName}}Repository {
+  private readonly repo: Repository<{{pascalCase moduleName}}OrmEntity> =
+    AppDataSource.getRepository({{pascalCase moduleName}}OrmEntity);
+
+  private toDomain(row: {{pascalCase moduleName}}OrmEntity): {{pascalCase moduleName}} {
+    return new {{pascalCase moduleName}}(row.id, row.name);
+  }
+
+  async save(entity: {{pascalCase moduleName}}): Promise<void> {
+    await this.repo.save({ id: entity.id, name: entity.name });
+  }
+
+  async findAll(): Promise<{{pascalCase moduleName}}[]> {
+    const rows = await this.repo.find();
+    return rows.map((r) => this.toDomain(r));
+  }
+
+  async findById(id: string): Promise<{{pascalCase moduleName}} | null> {
+    const row = await this.repo.findOne({ where: { id } });
+    return row ? this.toDomain(row) : null;
+  }
+}

@@ -1,0 +1,13 @@
+import { randomUUID } from 'crypto';
+import { {{pascalCase moduleName}} } from '../../entities/{{moduleName}}.entity';
+import { I{{pascalCase moduleName}}Repository } from '../../ports/{{moduleName}}.repository.port';
+
+export class Create{{pascalCase moduleName}}UseCase {
+  constructor(private readonly repository: I{{pascalCase moduleName}}Repository) {}
+
+  async execute(name: string): Promise<{{pascalCase moduleName}}> {
+    const entity = new {{pascalCase moduleName}}(randomUUID(), name);
+    await this.repository.save(entity);
+    return entity;
+  }
+}

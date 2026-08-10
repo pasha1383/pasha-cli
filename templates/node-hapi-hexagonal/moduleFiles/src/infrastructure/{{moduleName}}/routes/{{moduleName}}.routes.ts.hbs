@@ -1,0 +1,32 @@
+import { ServerRoute } from '@hapi/hapi';
+{{#if useJoi}}
+import { create{{pascalCase moduleName}}Schema } from '../../../application/{{moduleName}}/dto/create-{{moduleName}}.dto';
+{{/if}}
+import { {{pascalCase moduleName}}Handler } from '../handlers/{{moduleName}}.handler';
+
+export function {{camelCase moduleName}}Routes(handler: {{pascalCase moduleName}}Handler): ServerRoute[] {
+  return [
+    {
+      method: 'POST',
+      path: '/{{moduleName}}',
+      handler: handler.create,
+{{#if useJoi}}
+      options: {
+        validate: {
+          payload: create{{pascalCase moduleName}}Schema,
+        },
+      },
+{{/if}}
+    },
+    {
+      method: 'GET',
+      path: '/{{moduleName}}',
+      handler: handler.findAll,
+    },
+    {
+      method: 'GET',
+      path: '/{{moduleName}}/{id}',
+      handler: handler.findOne,
+    },
+  ];
+}

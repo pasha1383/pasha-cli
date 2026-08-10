@@ -1,0 +1,98 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository. Read this before
+generating or editing code. Each significant directory has its own `AGENT.md`
+with rules specific to that layer.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Framework:** Koa (TypeScript, strict mode) — no DI container. Wiring is
+  manual (see `routes.ts` in each module).
+- **Architecture:** {{architectureLabel}}
+- **Data layer:** {{#if ormNone}}in-memory repositories (no ORM){{else}}{{orm}}{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+- **Validation:** {{#if hasValidation}}{{validation}}{{else}}none{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis (via `ioredis`)
+{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/api/docs` (swagger-jsdoc + koa2-swagger-ui)
+{{/if}}
+{{#if useAuth}}
+- **Auth:** JWT (POST /auth/login, Bearer token)
+{{/if}}
+{{#if useHealthCheck}}
+- **Health:** `GET /health` reports liveness/readiness
+{{/if}}
+{{#if useRateLimit}}
+- **Rate limiting:** koa2-ratelimit
+{{/if}}
+
+## Modules
+
+{{#each modules}}
+- `{{this}}`
+{{/each}}
+
+## Commands
+
+```bash
+npm run start:dev      # watch mode (tsx)
+npm run build           # tsc
+{{#if useDocker}}
+npm run infra:up        # start databases via docker compose
+npm run infra:down
+{{/if}}
+{{#if ormPrisma}}
+npm run prisma:migrate  # create and apply a migration
+npm run prisma:generate
+{{/if}}
+{{#if useLint}}
+npm run lint            # ESLint with auto-fix
+npm run format          # Prettier
+{{/if}}
+{{#if useTests}}
+npm run test            # unit tests (Jest)
+npm run test:watch
+npm run test:cov        # with coverage
+npm run test:e2e        # e2e tests (supertest)
+{{/if}}
+```
+
+## Hard rules
+
+1. **No DI container.** Every module's `<module>.routes.ts` manually
+   constructs `repository → service → controller`, once. Do not introduce a
+   framework-level injector.
+2. **TypeScript is strict.** No `any`, no non-null assertions to silence the
+   compiler.{{#if ormTypeorm}} TypeORM entity fields use `!:` because the ORM
+   populates them, not a constructor — that's the one sanctioned exception.{{/if}}
+3. **Adding a module means adding every file.** entity, repository, service,
+   controller, routes{{#if hasValidation}}, validation{{/if}} — a new feature
+   gets its full slice.
+4. **Mount new routers** in `src/app.ts` or they will not be reachable.
+5. **Controllers never touch the repository directly.** Always go through
+   the service.
+6. **Koa is async/await everywhere.** The top-level error handler middleware
+   in `app.ts` catches all thrown errors — you do not need try/catch in
+   controller methods like Express. Errors thrown in controllers bubble up
+   to the global error handler automatically.
+{{#if hasValidation}}
+7. **Every request body needs validation** before it reaches a controller.
+{{/if}}
+8. **`config/env.ts` is the only file that reads `process.env`** directly.
+   Everywhere else imports `env` from there.
+{{#if useAuth}}
+9. **Protected routes** use `authenticate` from `shared/auth/auth.middleware`.
+   Injected `ctx.state.user` carries `{ sub, username }` after successful
+   validation.
+{{/if}}
+
+## When you are unsure
+
+Prefer asking over guessing. Generating a plausible-looking file in the wrong
+layer costs more to unpick than a clarifying question costs to answer.

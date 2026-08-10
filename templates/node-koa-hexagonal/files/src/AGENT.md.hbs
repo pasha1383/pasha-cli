@@ -1,0 +1,29 @@
+# AGENT.md — src/
+
+Application root.
+
+## What lives here
+
+- `main.ts` — starts the server{{#if hasOrm}} and initializes the ORM connection{{/if}}. Nothing else.
+- `app.ts` — builds the Koa app and mounts every router. Import this directly
+  in tests (via supertest + `app.callback()`) instead of starting a real server.
+- `config/` — environment loading{{#if useSwagger}} and Swagger setup{{/if}}.
+- `middlewares/` — cross-cutting request handling (errors, validation glue)
+  used by more than one route.
+- `shared/` — cross-cutting infrastructure (database, cache{{#if useAuth}}, auth{{/if}}{{#if useHealthCheck}}, health{{/if}}) used by more
+  than one module.
+- `routes/` — one directory per feature module.
+
+## Rules
+
+- Do not put business logic in `main.ts` or `app.ts`.
+- When you add a new module, mount its router in `app.ts` in the same
+  change — an unmounted router is unreachable and fails silently.
+- Koa handles error propagation differently from Express: the error middleware
+  at the top of the middleware stack catches all thrown/emitted errors
+  automatically. Controller methods should throw or let errors bubble up, not
+  manually catch-and-next them.
+{{#if useAuth}}
+- Auth middleware (`authenticate`) is imported from `shared/auth/auth.middleware`.
+  Apply it as a per-route middleware in the router that needs protection.
+{{/if}}

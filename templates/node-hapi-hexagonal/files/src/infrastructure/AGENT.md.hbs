@@ -1,0 +1,27 @@
+# AGENT.md — src/infrastructure/
+
+The outermost layer. Contains all framework and I/O details.
+
+## What lives here
+
+- `handlers/<module>/` — Hapi request handlers (request, h). Each method
+  wraps its body in try/catch and returns AppError-based responses.
+- `routes/<module>/` — factories that take a pre-wired handler and return
+  `ServerRoute[]`. The wiring happens in `server.ts`.
+- `persistence/<module>/` — concrete repository implementations that satisfy
+  the interfaces defined in `domain/`:
+  - `{{moduleName}}.prisma.repository.ts` — Prisma
+  - `{{moduleName}}.typeorm.repository.ts` — TypeORM
+  - `{{moduleName}}.mongoose.repository.ts` — Mongoose
+  - `{{moduleName}}.repository.ts` — in-memory (for `ormNone`)
+  - `{{moduleName}}.orm-entity.ts` — TypeORM entity (persistence-only)
+  - `{{moduleName}}.schema.ts` — Mongoose schema (persistence-only)
+
+## Rules
+
+- **May import from `application/` and `domain/`. Must NOT import from
+  another module's infrastructure internals.**
+- ORM entities and schemas are persistence details — they are NOT domain
+  entities. Map between them and the domain entity in the repository.
+- Handlers receive use-cases through their constructor. They never access
+  repositories directly.

@@ -1,0 +1,14 @@
+import { Middleware } from 'koa';
+import { ZodSchema } from 'zod';
+import { ValidationError } from '../errors/app-error';
+
+export function validateBody(schema: ZodSchema): Middleware {
+  return async (ctx, next) => {
+    const result = schema.safeParse(ctx.request.body);
+    if (!result.success) {
+      throw new ValidationError(result.error.issues.map((i) => i.message).join(', '));
+    }
+    ctx.request.body = result.data;
+    await next();
+  };
+}

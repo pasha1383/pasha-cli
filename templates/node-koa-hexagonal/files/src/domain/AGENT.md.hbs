@@ -1,0 +1,18 @@
+# AGENT.md — src/domain/
+
+The innermost layer. Pure business — depends on nothing.
+
+## What lives here
+
+- `entities/<module>/` — domain entities. Plain TypeScript classes with no
+  ORM decorators.
+- `repositories/<module>/` — repository interfaces. The domain declares what
+  it needs; infrastructure provides the implementation.
+
+## Rules
+
+- **Zero imports from `application/` or `infrastructure/`.**
+- **Zero framework imports.** No Koa, no ORM decorators.
+- Entities are plain classes with explicit constructors.
+- Repository interfaces are just TypeScript interfaces — no injection tokens
+  needed (Koa has no DI container).

@@ -1,0 +1,56 @@
+import { Request, ResponseToolkit } from '@hapi/hapi';
+{{#if useZod}}
+import { create{{pascalCase moduleName}}Schema } from '../../../application/{{moduleName}}/dto/create-{{moduleName}}.dto';
+{{/if}}
+import { AppError } from '../../../errors/app-error';
+import { Create{{pascalCase moduleName}}UseCase } from '../../../application/{{moduleName}}/use-cases/create-{{moduleName}}.use-case';
+import { Get{{pascalCase moduleName}}sUseCase } from '../../../application/{{moduleName}}/use-cases/get-{{moduleName}}s.use-case';
+
+export class {{pascalCase moduleName}}Handler {
+  constructor(
+    private readonly create{{pascalCase moduleName}}: Create{{pascalCase moduleName}}UseCase,
+    private readonly get{{pascalCase moduleName}}s: Get{{pascalCase moduleName}}sUseCase,
+  ) {}
+
+  create = async (request: Request, h: ResponseToolkit) => {
+    try {
+{{#if useZod}}
+      const payload = create{{pascalCase moduleName}}Schema.parse(request.payload);
+      const entity = await this.create{{pascalCase moduleName}}.execute(payload.name);
+{{else}}
+      const entity = await this.create{{pascalCase moduleName}}.execute(
+        (request.payload as { name: string }).name,
+      );
+{{/if}}
+      return h.response(entity).code(201);
+    } catch (err) {
+      if (err instanceof AppError) {
+        return h.response({ error: err.message }).code(err.statusCode);
+      }
+      throw err;
+    }
+  };
+
+  findAll = async (_request: Request, h: ResponseToolkit) => {
+    try {
+      const entities = await this.get{{pascalCase moduleName}}s.execute();
+      return h.response(entities).code(200);
+    } catch (err) {
+      if (err instanceof AppError) {
+        return h.response({ error: err.message }).code(err.statusCode);
+      }
+      throw err;
+    }
+  };
+
+  findOne = async (request: Request, h: ResponseToolkit) => {
+    try {
+      return h.response({ id: request.params.id }).code(200);
+    } catch (err) {
+      if (err instanceof AppError) {
+        return h.response({ error: err.message }).code(err.statusCode);
+      }
+      throw err;
+    }
+  };
+}

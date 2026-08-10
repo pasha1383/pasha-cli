@@ -1,0 +1,100 @@
+import Koa from 'koa';
+import cors from '@koa/cors';
+import helmet from 'koa-helmet';
+import bodyParser from 'koa-bodyparser';
+import { errorHandler, notFoundHandler } from './middlewares/error-handler.middleware';
+{{#if useRateLimit}}
+import { RateLimit } from 'koa2-ratelimit';
+import { env } from './config/env';
+{{/if}}
+{{#if useSwagger}}
+import { setupSwagger } from './config/swagger';
+{{/if}}
+{{#if useAuth}}
+import { authRouter } from './shared/auth/auth.middleware';
+{{/if}}
+{{#if useHealthCheck}}
+import { healthRouter } from './shared/health/health.routes';
+{{/if}}
+{{#each modules}}
+{{#if ../ormPrisma}}
+import { {{pascalCase this}}PrismaRepository } from './infrastructure/{{this}}/persistence/{{this}}.prisma.repository';
+{{/if}}
+{{#if ../ormTypeorm}}
+import { {{pascalCase this}}TypeormRepository } from './infrastructure/{{this}}/persistence/{{this}}.typeorm.repository';
+{{/if}}
+{{#if ../ormMongoose}}
+import { {{pascalCase this}}MongooseRepository } from './infrastructure/{{this}}/persistence/{{this}}.mongoose.repository';
+{{/if}}
+{{#if ../ormNone}}
+import { {{pascalCase this}}InMemoryRepository } from './infrastructure/{{this}}/persistence/{{this}}.repository';
+{{/if}}
+import { Create{{pascalCase this}}UseCase } from './application/{{this}}/use-cases/create-{{this}}.use-case';
+import { Get{{pascalCase this}}sUseCase } from './application/{{this}}/use-cases/get-{{this}}s.use-case';
+import { {{pascalCase this}}Controller } from './infrastructure/{{this}}/controllers/{{this}}.controller';
+import { {{camelCase this}}Routes } from './infrastructure/{{this}}/routes/{{this}}.routes';
+{{/each}}
+
+export function createApp(): Koa {
+  const app = new Koa();
+
+  app.use(errorHandler);
+  app.use(helmet());
+  app.use(cors());
+  app.use(bodyParser());
+
+{{#if useRateLimit}}
+  app.use(
+    RateLimit.middleware({
+      interval: { min: 1 },
+      max: env.rateLimitMax,
+      prefixKey: 'global',
+    }),
+  );
+{{/if}}
+
+{{#if useHealthCheck}}
+  app.use(healthRouter.routes());
+  app.use(healthRouter.allowedMethods());
+{{/if}}
+
+{{#if useAuth}}
+  app.use(authRouter.routes());
+  app.use(authRouter.allowedMethods());
+{{/if}}
+
+  // ------------------------------------------------------------------
+  // Module wiring — one block per feature. Repository → Use Cases →
+  // Controller → Routes. Every wire is manual and visible.
+  // ------------------------------------------------------------------
+{{#each modules}}
+  {{#if ../ormPrisma}}
+  const {{camelCase this}}Repo = new {{pascalCase this}}PrismaRepository();
+  {{/if}}
+  {{#if ../ormTypeorm}}
+  const {{camelCase this}}Repo = new {{pascalCase this}}TypeormRepository();
+  {{/if}}
+  {{#if ../ormMongoose}}
+  const {{camelCase this}}Repo = new {{pascalCase this}}MongooseRepository();
+  {{/if}}
+  {{#if ../ormNone}}
+  const {{camelCase this}}Repo = new {{pascalCase this}}InMemoryRepository();
+  {{/if}}
+  const create{{pascalCase this}}UseCase = new Create{{pascalCase this}}UseCase({{camelCase this}}Repo);
+  const get{{pascalCase this}}sUseCase = new Get{{pascalCase this}}sUseCase({{camelCase this}}Repo);
+  const {{camelCase this}}Controller = new {{pascalCase this}}Controller(
+    create{{pascalCase this}}UseCase,
+    get{{pascalCase this}}sUseCase,
+  );
+  app.use({{camelCase this}}Routes({{camelCase this}}Controller).routes());
+  app.use({{camelCase this}}Routes({{camelCase this}}Controller).allowedMethods());
+{{/each}}
+
+{{#if useSwagger}}
+  setupSwagger(app);
+{{/if}}
+
+  app.use(notFoundHandler);
+
+  return app;
+}

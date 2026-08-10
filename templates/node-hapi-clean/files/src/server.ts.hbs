@@ -1,0 +1,113 @@
+import Hapi from '@hapi/hapi';
+{{#if useRateLimit}}
+import HapiRateLimit from 'hapi-rate-limit';
+{{/if}}
+import { env } from './config/env';
+{{#if useSwagger}}
+import { inertPlugin, visionPlugin, swaggerPlugin } from './plugins/swagger';
+{{/if}}
+{{#if useAuth}}
+import { authPlugin } from './plugins/auth';
+{{/if}}
+{{#if useHealthCheck}}
+import { healthRoutes } from './shared/health/health.routes';
+{{/if}}
+{{#each modules}}
+{{#if ../ormPrisma}}
+import { {{pascalCase this}}PrismaRepository } from './adapters/{{this}}/persistence/{{this}}.prisma.repository';
+{{/if}}
+{{#if ../ormTypeorm}}
+import { {{pascalCase this}}TypeormRepository } from './adapters/{{this}}/persistence/{{this}}.typeorm.repository';
+{{/if}}
+{{#if ../ormMongoose}}
+import { {{pascalCase this}}MongooseRepository } from './adapters/{{this}}/persistence/{{this}}.mongoose.repository';
+{{/if}}
+{{#if ../ormNone}}
+import { {{pascalCase this}}InMemoryRepository } from './adapters/{{this}}/persistence/{{this}}.repository';
+{{/if}}
+import { Create{{pascalCase this}}UseCase } from './core/use-cases/{{this}}/create-{{this}}.use-case';
+import { Get{{pascalCase this}}sUseCase } from './core/use-cases/{{this}}/get-{{this}}s.use-case';
+import { {{pascalCase this}}Handler } from './adapters/{{this}}/handlers/{{this}}.handler';
+import { {{camelCase this}}Routes } from './adapters/{{this}}/routes/{{this}}.routes';
+{{/each}}
+
+export async function initServer(): Promise<Hapi.Server> {
+  const server = Hapi.server({
+    port: env.port,
+    host: 'localhost',
+    routes: {
+      cors: true,
+      validate: {
+        failAction: async (request, h, err) => {
+          throw err;
+        },
+      },
+    },
+  });
+
+{{#if useRateLimit}}
+  await server.register({
+    plugin: HapiRateLimit,
+    options: {
+      enabled: true,
+      userLimit: env.rateLimitMax,
+    },
+  });
+{{/if}}
+
+{{#if useSwagger}}
+  await server.register([inertPlugin, visionPlugin, swaggerPlugin]);
+{{/if}}
+
+{{#if useAuth}}
+  await server.register([authPlugin]);
+{{/if}}
+
+{{#if useHealthCheck}}
+  server.route(healthRoutes);
+{{/if}}
+
+  // ------------------------------------------------------------------
+  // Module wiring — one block per feature. Repository → Use Cases →
+  // Handler → Routes. Every wire is manual and visible.
+  // ------------------------------------------------------------------
+{{#each modules}}
+  {{#if ../ormPrisma}}
+  const {{camelCase this}}Repo = new {{pascalCase this}}PrismaRepository();
+  {{/if}}
+  {{#if ../ormTypeorm}}
+  const {{camelCase this}}Repo = new {{pascalCase this}}TypeormRepository();
+  {{/if}}
+  {{#if ../ormMongoose}}
+  const {{camelCase this}}Repo = new {{pascalCase this}}MongooseRepository();
+  {{/if}}
+  {{#if ../ormNone}}
+  const {{camelCase this}}Repo = new {{pascalCase this}}InMemoryRepository();
+  {{/if}}
+  const create{{pascalCase this}}UseCase = new Create{{pascalCase this}}UseCase({{camelCase this}}Repo);
+  const get{{pascalCase this}}sUseCase = new Get{{pascalCase this}}sUseCase({{camelCase this}}Repo);
+  const {{camelCase this}}Handler = new {{pascalCase this}}Handler(
+    create{{pascalCase this}}UseCase,
+    get{{pascalCase this}}sUseCase,
+  );
+  server.route({{camelCase this}}Routes({{camelCase this}}Handler));
+{{/each}}
+
+  server.ext('onPreResponse', (request, h) => {
+    const response = request.response;
+
+    if (response.isBoom) {
+      const statusCode = response.output.statusCode;
+      if (statusCode >= 500) {
+        console.error(response);
+        const message = env.nodeEnv === 'production' ? 'Internal server error' : response.message;
+        return h.response({ error: message }).code(statusCode);
+      }
+    }
+
+    return h.continue;
+  });
+
+  await server.initialize();
+  return server;
+}

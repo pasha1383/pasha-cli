@@ -1,0 +1,26 @@
+{{#if useZod}}
+import { z } from 'zod';
+
+export const create{{pascalCase moduleName}}Dto = z.object({
+  name: z.string().min(1).max(255),
+});
+
+export type Create{{pascalCase moduleName}}Dto = z.infer<typeof create{{pascalCase moduleName}}Dto>;
+{{/if}}
+{{#if useClassValidator}}
+import { IsString, IsNotEmpty, MaxLength } from 'class-validator';
+
+export class Create{{pascalCase moduleName}}Dto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(255)
+  name!: string;
+}
+{{/if}}
+{{#unless useZod}}
+{{#unless useClassValidator}}
+export interface Create{{pascalCase moduleName}}Dto {
+  name: string;
+}
+{{/unless}}
+{{/unless}}

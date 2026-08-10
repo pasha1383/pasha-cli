@@ -1,0 +1,28 @@
+import { randomUUID } from 'crypto';
+import { {{pascalCase moduleName}} } from '../../entities/{{moduleName}}.entity';
+import { I{{pascalCase moduleName}}Repository } from '../../ports/{{moduleName}}.repository.port';
+import { Create{{pascalCase moduleName}}UseCase } from './create-{{moduleName}}.use-case';
+
+describe('Create{{pascalCase moduleName}}UseCase', () => {
+  let useCase: Create{{pascalCase moduleName}}UseCase;
+  let repository: jest.Mocked<I{{pascalCase moduleName}}Repository>;
+
+  beforeEach(() => {
+    repository = {
+      save: jest.fn(),
+      findAll: jest.fn(),
+      findById: jest.fn(),
+    };
+    useCase = new Create{{pascalCase moduleName}}UseCase(repository);
+  });
+
+  it('should create a {{moduleName}} with a generated id', async () => {
+    repository.save.mockResolvedValue(undefined);
+
+    const entity = await useCase.execute('test-name');
+
+    expect(entity.name).toBe('test-name');
+    expect(entity.id).toBeDefined();
+    expect(repository.save).toHaveBeenCalledWith(entity);
+  });
+});

@@ -1,0 +1,17 @@
+# AGENT.md — src/application/
+
+Orchestrates domain objects. Depends on `domain/` only.
+
+## What lives here
+
+- `dto/<module>/` — input shapes and validation schemas.
+- `use-cases/<module>/` — one class per operation. Each use-case receives its
+  repository through the constructor (ported from `domain/`).
+
+## Rules
+
+- **May import from `domain/`. May NOT import from `infrastructure/`.**
+- **No Hapi imports.** No `Request`, `ResponseToolkit`, `ServerRoute`.
+- Use-cases receive repository interfaces (from `domain/`) at construction
+  time. They never decide which implementation to use.
+- Use-case tests go next to the use-case so they are easy to find.

@@ -1,0 +1,28 @@
+import Router from '@koa/router';
+{{#if useZod}}
+import { create{{pascalCase moduleName}}Schema } from '../../../application/{{moduleName}}/dto/create-{{moduleName}}.dto';
+import { validateBody } from '../../../middlewares/validate-body.middleware';
+{{/if}}
+{{#if useClassValidator}}
+import { Create{{pascalCase moduleName}}Dto } from '../../../application/{{moduleName}}/dto/create-{{moduleName}}.dto';
+import { validateBodyDto } from '../../../middlewares/handle-validation-errors.middleware';
+{{/if}}
+import { {{pascalCase moduleName}}Controller } from '../controllers/{{moduleName}}.controller';
+
+export function {{camelCase moduleName}}Routes(controller: {{pascalCase moduleName}}Controller): Router {
+  const router = new Router({ prefix: '/{{moduleName}}' });
+
+{{#if useZod}}
+  router.post('/', validateBody(create{{pascalCase moduleName}}Schema), controller.create);
+{{else}}
+{{#if useClassValidator}}
+  router.post('/', validateBodyDto(Create{{pascalCase moduleName}}Dto), controller.create);
+{{else}}
+  router.post('/', controller.create);
+{{/if}}
+{{/if}}
+  router.get('/', controller.findAll);
+  router.get('/:id', controller.findOne);
+
+  return router;
+}

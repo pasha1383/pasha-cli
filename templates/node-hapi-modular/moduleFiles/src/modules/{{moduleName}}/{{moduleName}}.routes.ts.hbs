@@ -1,0 +1,36 @@
+import { ServerRoute } from '@hapi/hapi';
+{{#if useJoi}}
+import { create{{pascalCase moduleName}}Schema } from './dto/create-{{moduleName}}.dto';
+{{/if}}
+import { {{pascalCase moduleName}}Repository } from './{{moduleName}}.repository';
+import { {{pascalCase moduleName}}Service } from './{{moduleName}}.service';
+import { {{pascalCase moduleName}}Handler } from './{{moduleName}}.handler';
+
+const repository = new {{pascalCase moduleName}}Repository();
+const service = new {{pascalCase moduleName}}Service(repository);
+const handler = new {{pascalCase moduleName}}Handler(service);
+
+export const {{camelCase moduleName}}Routes: ServerRoute[] = [
+  {
+    method: 'POST',
+    path: '/{{moduleName}}',
+    handler: handler.create,
+{{#if useJoi}}
+    options: {
+      validate: {
+        payload: create{{pascalCase moduleName}}Schema,
+      },
+    },
+{{/if}}
+  },
+  {
+    method: 'GET',
+    path: '/{{moduleName}}',
+    handler: handler.findAll,
+  },
+  {
+    method: 'GET',
+    path: '/{{moduleName}}/{id}',
+    handler: handler.findOne,
+  },
+];

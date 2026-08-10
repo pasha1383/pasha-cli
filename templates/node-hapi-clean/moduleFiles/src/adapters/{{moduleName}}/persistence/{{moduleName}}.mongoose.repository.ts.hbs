@@ -1,0 +1,23 @@
+import { {{pascalCase moduleName}} } from '../../../core/entities/{{moduleName}}.entity';
+import { I{{pascalCase moduleName}}Repository } from '../../../core/ports/{{moduleName}}.repository.port';
+import { {{pascalCase moduleName}}Model } from './{{moduleName}}.schema';
+
+export class {{pascalCase moduleName}}MongooseRepository implements I{{pascalCase moduleName}}Repository {
+  async save(entity: {{pascalCase moduleName}}): Promise<void> {
+    await {{pascalCase moduleName}}Model.updateOne(
+      { id: entity.id },
+      { $set: { id: entity.id, name: entity.name } },
+      { upsert: true },
+    );
+  }
+
+  async findAll(): Promise<{{pascalCase moduleName}}[]> {
+    const rows: { id: string; name: string }[] = await {{pascalCase moduleName}}Model.find().lean();
+    return rows.map((r) => new {{pascalCase moduleName}}(r.id, r.name));
+  }
+
+  async findById(id: string): Promise<{{pascalCase moduleName}} | null> {
+    const row: { id: string; name: string } | null = await {{pascalCase moduleName}}Model.findOne({ id }).lean();
+    return row ? new {{pascalCase moduleName}}(row.id, row.name) : null;
+  }
+}

@@ -1,0 +1,42 @@
+{{#if ormTypeorm}}
+import { Column, Entity, PrimaryColumn } from 'typeorm';
+
+@Entity('{{snakeCase moduleName}}')
+export class {{pascalCase moduleName}} {
+  @PrimaryColumn('varchar')
+  id!: string;
+
+  @Column('varchar')
+  name!: string;
+}
+{{/if}}
+{{#if ormMongoose}}
+import { Schema, model } from 'mongoose';
+
+export class {{pascalCase moduleName}} {
+  constructor(
+    public readonly id: string,
+    public name: string,
+  ) {}
+}
+
+const {{camelCase moduleName}}Schema = new Schema(
+  {
+    id: { type: String, required: true, unique: true },
+    name: { type: String, required: true },
+  },
+  { timestamps: true, collection: '{{snakeCase moduleName}}' },
+);
+
+export const {{pascalCase moduleName}}Model = model('{{pascalCase moduleName}}', {{camelCase moduleName}}Schema);
+{{/if}}
+{{#unless ormTypeorm}}
+{{#unless ormMongoose}}
+export class {{pascalCase moduleName}} {
+  constructor(
+    public readonly id: string,
+    public name: string,
+  ) {}
+}
+{{/unless}}
+{{/unless}}

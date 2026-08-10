@@ -1,0 +1,36 @@
+import Inert from '@hapi/inert';
+import Vision from '@hapi/vision';
+import HapiSwagger from 'hapi-swagger';
+
+/**
+ * Registers hapi-swagger which auto-generates OpenAPI 3.0 docs at /docs.
+ * Requires Inert and Vision plugins as pre-requisites.
+{{#if useAuth}}
+ * The "bearerAuth" security scheme lets you click "Authorize" and attach a
+ * JWT to every request made from the docs page.
+{{/if}}
+ */
+export const inertPlugin = Inert;
+export const visionPlugin = Vision;
+
+export const swaggerPlugin = {
+  plugin: HapiSwagger,
+  options: {
+    info: {
+      title: '{{projectName}}',
+      description: '{{description}}',
+      version: '0.1.0',
+    },
+    documentationPath: '/docs',
+    grouping: 'tags',
+{{#if useAuth}}
+    securityDefinitions: {
+      jwt: {
+        type: 'apiKey',
+        name: 'Authorization',
+        in: 'header',
+      },
+    },
+{{/if}}
+  },
+};

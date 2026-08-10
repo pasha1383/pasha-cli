@@ -1,0 +1,9 @@
+[package]
+name = "{{projectName}}"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+{{#each cargoDeps}}
+{{name}} = { version = "{{version}}"{{#if features}}, features = [{{#each features}}"{{this}}"{{#unless @last}}, {{/unless}}{{/each}}]{{/if}} }
+{{/each}}

@@ -1,0 +1,37 @@
+use diesel::prelude::*;
+use diesel::r2d2::{self, ConnectionManager};
+use crate::config::Config;
+
+{{#if dbPostgres}}
+pub type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
+
+pub fn establish_pool(config: &Config) -> DbPool {
+    let manager = ConnectionManager::<PgConnection>::new(&config.database_url);
+    r2d2::Pool::builder()
+        .max_size(10)
+        .build(manager)
+        .expect("Failed to create database pool")
+}
+{{/if}}
+{{#if dbMysql}}
+pub type DbPool = r2d2::Pool<ConnectionManager<MysqlConnection>>;
+
+pub fn establish_pool(config: &Config) -> DbPool {
+    let manager = ConnectionManager::<MysqlConnection>::new(&config.database_url);
+    r2d2::Pool::builder()
+        .max_size(10)
+        .build(manager)
+        .expect("Failed to create database pool")
+}
+{{/if}}
+{{#if dbSqlite}}
+pub type DbPool = r2d2::Pool<ConnectionManager<SqliteConnection>>;
+
+pub fn establish_pool(config: &Config) -> DbPool {
+    let manager = ConnectionManager::<SqliteConnection>::new(&config.database_url);
+    r2d2::Pool::builder()
+        .max_size(5)
+        .build(manager)
+        .expect("Failed to create database pool")
+}
+{{/if}}

@@ -1,0 +1,36 @@
+use std::sync::Arc;
+use crate::errors::AppError;
+use crate::{{moduleName}}::domain::model::{{pascalCase moduleName}};
+use crate::{{moduleName}}::domain::service::{{pascalCase moduleName}}Service;
+use crate::{{moduleName}}::domain::repository::{{pascalCase moduleName}}Repository;
+use super::dto::{Create{{pascalCase moduleName}}Input, {{pascalCase moduleName}}Output};
+
+pub struct {{pascalCase moduleName}}UseCase<R: {{pascalCase moduleName}}Repository> {
+    svc: Arc<{{pascalCase moduleName}}Service<R>>,
+}
+
+impl<R: {{pascalCase moduleName}}Repository> {{pascalCase moduleName}}UseCase<R> {
+    pub fn new(repo: Arc<R>) -> Self {
+        Self { svc: Arc::new({{pascalCase moduleName}}Service::new(repo)) }
+    }
+
+    pub async fn create(&self, input: Create{{pascalCase moduleName}}Input) -> Result<{{pascalCase moduleName}}Output, AppError> {
+        let entity = self.svc.create(input.name).await.map_err(|e| AppError::internal(e.to_string()))?;
+        Ok({{pascalCase moduleName}}Output::from(entity))
+    }
+
+    pub async fn list(&self) -> Result<Vec<{{pascalCase moduleName}}Output>, AppError> {
+        let items = self.svc.list().await.map_err(|e| AppError::internal(e.to_string()))?;
+        Ok(items.into_iter().map({{pascalCase moduleName}}Output::from).collect())
+    }
+
+    pub async fn get_by_id(&self, id: &str) -> Result<{{pascalCase moduleName}}Output, AppError> {
+        let entity = self.svc.get_by_id(id).await.map_err(|e| AppError::internal(e.to_string()))?;
+        Ok({{pascalCase moduleName}}Output::from(entity))
+    }
+
+    pub async fn delete(&self, id: &str) -> Result<(), AppError> {
+        self.svc.delete(id).await.map_err(|e| AppError::internal(e.to_string()))?;
+        Ok(())
+    }
+}

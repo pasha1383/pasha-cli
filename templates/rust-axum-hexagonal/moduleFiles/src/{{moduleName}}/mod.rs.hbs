@@ -1,0 +1,41 @@
+pub mod domain;
+pub mod application;
+pub mod infrastructure;
+
+use axum::{routing::get, Router};
+use std::sync::Arc;
+{{#if ormSqlx}}
+use sqlx::AnyPool;
+{{/if}}
+
+{{#if ormSqlx}}
+use self::infrastructure::persistence::Sqlx{{pascalCase moduleName}}Persistence;
+use self::domain::repository::{{pascalCase moduleName}}Repository;
+use self::application::use_case::{{pascalCase moduleName}}UseCase;
+use self::infrastructure::handler;
+
+pub fn router(pool: AnyPool) -> Router {
+    let repo: Arc<dyn {{pascalCase moduleName}}Repository> = Arc::new(Sqlx{{pascalCase moduleName}}Persistence::new(pool));
+    let use_case = Arc::new({{pascalCase moduleName}}UseCase::new(repo));
+    Router::new()
+        .route("/", get(handler::list).post(handler::create))
+        .route("/:id", get(handler::get_by_id).delete(handler::delete))
+        .with_state(use_case)
+}
+{{/if}}
+
+{{#if ormNone}}
+use self::infrastructure::persistence::InMemory{{pascalCase moduleName}}Persistence;
+use self::domain::repository::{{pascalCase moduleName}}Repository;
+use self::application::use_case::{{pascalCase moduleName}}UseCase;
+use self::infrastructure::handler;
+
+pub fn router() -> Router {
+    let repo: Arc<dyn {{pascalCase moduleName}}Repository> = Arc::new(InMemory{{pascalCase moduleName}}Persistence::new());
+    let use_case = Arc::new({{pascalCase moduleName}}UseCase::new(repo));
+    Router::new()
+        .route("/", get(handler::list).post(handler::create))
+        .route("/:id", get(handler::get_by_id).delete(handler::delete))
+        .with_state(use_case)
+}
+{{/if}}

@@ -1,0 +1,30 @@
+{
+  "name": "Rust + Axum + Hexagonal / DDD",
+  "prerequisites": ["rust", "cargo", "git"],
+  "shared": null,
+  "stackFeatures": "axum",
+  "modules": {
+    "enabled": true,
+    "message": "Module/entity name (e.g. product, user, order)",
+    "default": "product"
+  },
+  "fileConditions": {
+    "docker-compose.yml.hbs": "useDocker",
+    "src/shared": "hasSharedInfra",
+    "src/shared/database": "hasOrm",
+    "src/shared/database/sqlx.rs.hbs": "ormSqlx",
+    "src/shared/database/diesel.rs.hbs": "ormDiesel",
+    "src/shared/database/sea_orm.rs.hbs": "ormSeaOrm",
+    "src/shared/cache": "useRedis",
+    "src/middleware": "useAuth",
+    "src/shared/health": "useHealthCheck",
+    "src/shared/auth": "useAuth",
+    "AGENT.md.hbs": "useAgentDocs",
+    "src/shared/mod.rs.hbs": "hasSharedInfra",
+    "Dockerfile.hbs": "useAppDockerfile",
+    ".dockerignore.hbs": "useAppDockerfile",
+    ".github": "useCI"
+  },
+  "postInstall": [],
+  "gitInit": true
+}

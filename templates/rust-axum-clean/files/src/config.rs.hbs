@@ -1,0 +1,117 @@
+use dotenvy::dotenv;
+use std::env;
+
+#[derive(Clone)]
+pub struct Config {
+    pub port: u16,
+    pub app_env: String,
+{{#if hasDatabase}}
+{{#unless dbSqlite}}
+    pub db_host: String,
+    pub db_port: u16,
+    pub db_user: String,
+    pub db_password: String,
+    pub db_name: String,
+{{#if dbPostgres}}
+    pub database_url: String,
+{{/if}}
+{{#if dbMysql}}
+    pub database_url: String,
+{{/if}}
+{{/unless}}
+{{#if dbSqlite}}
+    pub database_url: String,
+{{/if}}
+{{/if}}
+{{#if useRedis}}
+    pub redis_url: String,
+{{/if}}
+{{#if useAuth}}
+    pub jwt_secret: String,
+    pub jwt_expires_in: String,
+{{/if}}
+{{#if useKafka}}
+    pub kafka_brokers: String,
+    pub kafka_group_id: String,
+{{/if}}
+}
+
+impl Config {
+    pub fn from_env() -> Self {
+        let _ = dotenv();
+
+        let port = env::var("PORT").unwrap_or_else(|_| "8080".into());
+        let app_env = env::var("APP_ENV").unwrap_or_else(|_| "development".into());
+
+{{#if hasDatabase}}
+{{#unless dbSqlite}}
+        let db_host = env::var("DB_HOST").unwrap_or_else(|_| "localhost".into());
+        let db_port: u16 = env::var("DB_PORT")
+            .unwrap_or_else(|_| "{{dbPort}}".into())
+            .parse()
+            .unwrap_or({{dbPort}});
+        let db_user = env::var("DB_USER").unwrap_or_else(|_| "{{#if dbPostgres}}postgres{{/if}}{{#if dbMysql}}root{{/if}}".into());
+        let db_password = env::var("DB_PASSWORD").unwrap_or_else(|_| "{{#if dbPostgres}}postgres{{/if}}{{#if dbMysql}}root{{/if}}".into());
+        let db_name = env::var("DB_NAME").unwrap_or_else(|_| "{{snakeCase projectName}}".into());
+{{/unless}}
+{{#if dbPostgres}}
+        let database_url = env::var("DATABASE_URL").unwrap_or_else(|_| {
+            format!(
+                "postgres://{}:{}@{}:{}/{}",
+                db_user, db_password, db_host, db_port, db_name
+            )
+        });
+{{/if}}
+{{#if dbMysql}}
+        let database_url = env::var("DATABASE_URL").unwrap_or_else(|_| {
+            format!(
+                "mysql://{}:{}@{}:{}/{}",
+                db_user, db_password, db_host, db_port, db_name
+            )
+        });
+{{/if}}
+{{#if dbSqlite}}
+        let database_url = env::var("DATABASE_URL")
+            .unwrap_or_else(|_| format!("sqlite:./data/{}.sqlite", env::var("DB_FILE").unwrap_or_else(|_| "{{snakeCase projectName}}.sqlite".into())));
+{{/if}}
+{{/if}}
+{{#if useRedis}}
+        let redis_url = env::var("REDIS_URL")
+            .unwrap_or_else(|_| "redis://127.0.0.1:6379".into());
+{{/if}}
+{{#if useAuth}}
+        let jwt_secret = env::var("JWT_SECRET").unwrap_or_else(|_| "change-me-to-a-long-random-string".into());
+        let jwt_expires_in = env::var("JWT_EXPIRES_IN").unwrap_or_else(|_| "1h".into());
+{{/if}}
+{{#if useKafka}}
+        let kafka_brokers = env::var("KAFKA_BROKERS").unwrap_or_else(|_| "localhost:9092".into());
+        let kafka_group_id = env::var("KAFKA_GROUP_ID").unwrap_or_else(|_| "{{projectName}}-consumer".into());
+{{/if}}
+
+        Config {
+            port: port.parse().unwrap_or(8080),
+            app_env,
+{{#if hasDatabase}}
+{{#unless dbSqlite}}
+            db_host,
+            db_port,
+            db_user,
+            db_password,
+            db_name,
+{{/unless}}
+            database_url,
+{{/if}}
+{{#if useRedis}}
+            redis_url,
+{{/if}}
+{{#if useAuth}}
+            jwt_secret,
+            jwt_expires_in,
+{{/if}}
+{{#if useKafka}}
+            kafka_brokers,
+            kafka_group_id,
+{{/if}}
+        }
+    }
+}

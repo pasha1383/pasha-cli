@@ -1,0 +1,6 @@
+use redis::Client;
+use crate::config::Config;
+
+pub fn connect(config: &Config) -> Result<Client, redis::RedisError> {
+    Client::open(config.redis_url.as_str())
+}

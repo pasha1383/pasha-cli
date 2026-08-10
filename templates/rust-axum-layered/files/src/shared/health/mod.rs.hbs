@@ -1,0 +1,53 @@
+use axum::{extract::State, http::StatusCode, response::IntoResponse, Json};
+use serde_json::{json, Value};
+
+{{#if healthChecksDb}}
+{{#if ormSqlx}}
+use sqlx::AnyPool;
+{{/if}}
+{{#if ormDiesel}}
+use diesel::r2d2::Pool;
+use diesel::pg::PgConnection;
+{{/if}}
+{{#if ormSeaOrm}}
+use sea_orm::DatabaseConnection;
+{{/if}}
+{{/if}}
+
+{{#if healthChecksDb}}
+{{#if ormSqlx}}
+pub async fn health_check(State(pool): State<AnyPool>) -> impl IntoResponse {
+    let db_ok = sqlx::query("SELECT 1")
+        .execute(&pool)
+        .await
+        .is_ok();
+    let status = if db_ok { StatusCode::OK } else { StatusCode::SERVICE_UNAVAILABLE };
+    (status, Json(json!({
+        "status": db_ok,
+        "checks": { "database": if db_ok { "ok" } else { "error" } }
+    })))
+}
+{{/if}}
+{{#if ormDiesel}}
+pub async fn health_check() -> impl IntoResponse {
+    Json(json!({
+        "status": true,
+        "checks": {}
+    }))
+}
+{{/if}}
+{{#if ormSeaOrm}}
+pub async fn health_check(State(db): State<DatabaseConnection>) -> impl IntoResponse {
+    let db_ok = db.ping().await.is_ok();
+    let status = if db_ok { StatusCode::OK } else { StatusCode::SERVICE_UNAVAILABLE };
+    (status, Json(json!({
+        "status": db_ok,
+        "checks": { "database": if db_ok { "ok" } else { "error" } }
+    })))
+}
+{{/if}}
+{{else}}
+pub async fn health_check() -> impl IntoResponse {
+    Json(json!({ "status": true }))
+}
+{{/if}}

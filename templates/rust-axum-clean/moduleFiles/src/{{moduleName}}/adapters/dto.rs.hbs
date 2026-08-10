@@ -1,0 +1,32 @@
+use serde::{Deserialize, Serialize};
+use crate::{{moduleName}}::domain::entity::{{pascalCase moduleName}};
+
+{{#if useValidator}}
+use validator::Validate;
+
+#[derive(Debug, Deserialize, Validate)]
+pub struct Create{{pascalCase moduleName}}Request {
+    #[validate(length(min = 1, max = 255))]
+    pub name: String,
+}
+{{else}}
+#[derive(Debug, Deserialize)]
+pub struct Create{{pascalCase moduleName}}Request {
+    pub name: String,
+}
+{{/if}}
+
+#[derive(Debug, Serialize)]
+pub struct {{pascalCase moduleName}}Response {
+    pub id: String,
+    pub name: String,
+}
+
+impl From<{{pascalCase moduleName}}> for {{pascalCase moduleName}}Response {
+    fn from(m: {{pascalCase moduleName}}) -> Self {
+        {{pascalCase moduleName}}Response {
+            id: m.id.to_string(),
+            name: m.name,
+        }
+    }
+}

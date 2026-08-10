@@ -1,0 +1,248 @@
+use async_trait::async_trait;
+use std::sync::Arc;
+use tokio::sync::Mutex;
+use uuid::Uuid;
+
+use super::model::{{pascalCase moduleName}};
+
+#[derive(Debug, thiserror::Error)]
+pub enum {{pascalCase moduleName}}RepositoryError {
+    #[error("not found")]
+    NotFound,
+    {{#if ormSqlx}}
+    #[error("database error: {0}")]
+    Database(#[from] sqlx::Error),
+    {{/if}}
+    {{#if ormSeaOrm}}
+    #[error("database error: {0}")]
+    Database(#[from] sea_orm::DbErr),
+    {{/if}}
+    {{#if ormDiesel}}
+    #[error("database error: {0}")]
+    Database(String),
+    {{/if}}
+    #[error("internal error: {0}")]
+    Internal(String),
+}
+
+#[async_trait]
+pub trait {{pascalCase moduleName}}Repository: Send + Sync + 'static {
+    async fn save(&self, entity: &{{pascalCase moduleName}}) -> Result<{{pascalCase moduleName}}, {{pascalCase moduleName}}RepositoryError>;
+    async fn find_all(&self) -> Result<Vec<{{pascalCase moduleName}}>, {{pascalCase moduleName}}RepositoryError>;
+    async fn find_by_id(&self, id: &str) -> Result<Option<{{pascalCase moduleName}}>, {{pascalCase moduleName}}RepositoryError>;
+    async fn delete(&self, id: &str) -> Result<(), {{pascalCase moduleName}}RepositoryError>;
+}
+
+{{#if ormNone}}
+#[derive(Clone)]
+pub struct InMemory{{pascalCase moduleName}}Repository {
+    items: Arc<Mutex<Vec<{{pascalCase moduleName}}>>>,
+}
+
+impl InMemory{{pascalCase moduleName}}Repository {
+    pub fn new() -> Self {
+        Self {
+            items: Arc::new(Mutex::new(Vec::new())),
+        }
+    }
+}
+
+#[async_trait]
+impl {{pascalCase moduleName}}Repository for InMemory{{pascalCase moduleName}}Repository {
+    async fn save(&self, entity: &{{pascalCase moduleName}}) -> Result<{{pascalCase moduleName}}, {{pascalCase moduleName}}RepositoryError> {
+        let mut items = self.items.lock().await;
+        let mut saved = entity.clone();
+        if entity.id.is_empty() {
+            saved.id = Uuid::new_v4().to_string();
+        }
+        items.retain(|i| i.id != saved.id);
+        items.push(saved.clone());
+        Ok(saved)
+    }
+
+    async fn find_all(&self) -> Result<Vec<{{pascalCase moduleName}}>, {{pascalCase moduleName}}RepositoryError> {
+        let items = self.items.lock().await;
+        Ok(items.clone())
+    }
+
+    async fn find_by_id(&self, id: &str) -> Result<Option<{{pascalCase moduleName}}>, {{pascalCase moduleName}}RepositoryError> {
+        let items = self.items.lock().await;
+        Ok(items.iter().find(|i| i.id == id).cloned())
+    }
+
+    async fn delete(&self, id: &str) -> Result<(), {{pascalCase moduleName}}RepositoryError> {
+        let mut items = self.items.lock().await;
+        items.retain(|i| i.id != id);
+        Ok(())
+    }
+}
+{{/if}}
+
+{{#if ormSqlx}}
+#[derive(Clone)]
+pub struct Sqlx{{pascalCase moduleName}}Repository {
+    pool: sqlx::AnyPool,
+}
+
+impl Sqlx{{pascalCase moduleName}}Repository {
+    pub fn new(pool: sqlx::AnyPool) -> Self {
+        Self { pool }
+    }
+}
+
+#[async_trait]
+impl {{pascalCase moduleName}}Repository for Sqlx{{pascalCase moduleName}}Repository {
+    async fn save(&self, entity: &{{pascalCase moduleName}}) -> Result<{{pascalCase moduleName}}, {{pascalCase moduleName}}RepositoryError> {
+        let saved = sqlx::query_as::<_, {{pascalCase moduleName}}>(
+            "INSERT INTO {{snakeCase moduleName}}s (name) VALUES ($1) RETURNING id, name, created_at, updated_at"
+        )
+        .bind(&entity.name)
+        .fetch_one(&self.pool)
+        .await?;
+        Ok(saved)
+    }
+
+    async fn find_all(&self) -> Result<Vec<{{pascalCase moduleName}}>, {{pascalCase moduleName}}RepositoryError> {
+        let items = sqlx::query_as::<_, {{pascalCase moduleName}}>(
+            "SELECT id, name, created_at, updated_at FROM {{snakeCase moduleName}}s ORDER BY created_at DESC"
+        )
+        .fetch_all(&self.pool)
+        .await?;
+        Ok(items)
+    }
+
+    async fn find_by_id(&self, id: &str) -> Result<Option<{{pascalCase moduleName}}>, {{pascalCase moduleName}}RepositoryError> {
+        let uuid = uuid::Uuid::parse_str(id).map_err(|_| {{pascalCase moduleName}}RepositoryError::NotFound)?;
+        let item = sqlx::query_as::<_, {{pascalCase moduleName}}>(
+            "SELECT id, name, created_at, updated_at FROM {{snakeCase moduleName}}s WHERE id = $1"
+        )
+        .bind(uuid)
+        .fetch_optional(&self.pool)
+        .await?;
+        Ok(item)
+    }
+
+    async fn delete(&self, id: &str) -> Result<(), {{pascalCase moduleName}}RepositoryError> {
+        let uuid = uuid::Uuid::parse_str(id).map_err(|_| {{pascalCase moduleName}}RepositoryError::NotFound)?;
+        let result = sqlx::query("DELETE FROM {{snakeCase moduleName}}s WHERE id = $1")
+            .bind(uuid)
+            .execute(&self.pool)
+            .await?;
+        if result.rows_affected() == 0 {
+            return Err({{pascalCase moduleName}}RepositoryError::NotFound);
+        }
+        Ok(())
+    }
+}
+{{/if}}
+
+{{#if ormDiesel}}
+#[derive(Clone)]
+pub struct Diesel{{pascalCase moduleName}}Repository {
+    pool: DbPool,
+}
+
+impl Diesel{{pascalCase moduleName}}Repository {
+    pub fn new(pool: DbPool) -> Self {
+        Self { pool }
+    }
+}
+
+#[async_trait]
+impl {{pascalCase moduleName}}Repository for Diesel{{pascalCase moduleName}}Repository {
+    async fn save(&self, entity: &{{pascalCase moduleName}}) -> Result<{{pascalCase moduleName}}, {{pascalCase moduleName}}RepositoryError> {
+        use diesel::insert_into;
+        use crate::schema::{{snakeCase moduleName}}s::dsl::*;
+        let mut conn = self.pool.get().map_err(|e| {{pascalCase moduleName}}RepositoryError::Database(e.to_string()))?;
+        let saved = insert_into({{snakeCase moduleName}}s)
+            .values((name.eq(&entity.name),))
+            .get_result(&mut conn)
+            .map_err(|e| {{pascalCase moduleName}}RepositoryError::Database(e.to_string()))?;
+        Ok(saved)
+    }
+
+    async fn find_all(&self) -> Result<Vec<{{pascalCase moduleName}}>, {{pascalCase moduleName}}RepositoryError> {
+        use diesel::prelude::*;
+        use crate::schema::{{snakeCase moduleName}}s::dsl::*;
+        let mut conn = self.pool.get().map_err(|e| {{pascalCase moduleName}}RepositoryError::Database(e.to_string()))?;
+        let items = {{snakeCase moduleName}}s
+            .order(created_at.desc())
+            .load(&mut conn)
+            .map_err(|e| {{pascalCase moduleName}}RepositoryError::Database(e.to_string()))?;
+        Ok(items)
+    }
+
+    async fn find_by_id(&self, entity_id: &str) -> Result<Option<{{pascalCase moduleName}}>, {{pascalCase moduleName}}RepositoryError> {
+        use diesel::prelude::*;
+        use crate::schema::{{snakeCase moduleName}}s::dsl::*;
+        let id_val: i32 = entity_id.parse().map_err(|_| {{pascalCase moduleName}}RepositoryError::NotFound)?;
+        let mut conn = self.pool.get().map_err(|e| {{pascalCase moduleName}}RepositoryError::Database(e.to_string()))?;
+        let item = {{snakeCase moduleName}}s
+            .find(id_val)
+            .first(&mut conn)
+            .optional()
+            .map_err(|e| {{pascalCase moduleName}}RepositoryError::Database(e.to_string()))?;
+        Ok(item)
+    }
+
+    async fn delete(&self, entity_id: &str) -> Result<(), {{pascalCase moduleName}}RepositoryError> {
+        use diesel::prelude::*;
+        use crate::schema::{{snakeCase moduleName}}s::dsl::*;
+        let id_val: i32 = entity_id.parse().map_err(|_| {{pascalCase moduleName}}RepositoryError::NotFound)?;
+        let mut conn = self.pool.get().map_err(|e| {{pascalCase moduleName}}RepositoryError::Database(e.to_string()))?;
+        diesel::delete({{snakeCase moduleName}}s.find(id_val))
+            .execute(&mut conn)
+            .map_err(|e| {{pascalCase moduleName}}RepositoryError::Database(e.to_string()))?;
+        Ok(())
+    }
+}
+{{/if}}
+
+{{#if ormSeaOrm}}
+#[derive(Clone)]
+pub struct SeaOrm{{pascalCase moduleName}}Repository {
+    db: sea_orm::DatabaseConnection,
+}
+
+impl SeaOrm{{pascalCase moduleName}}Repository {
+    pub fn new(db: sea_orm::DatabaseConnection) -> Self {
+        Self { db }
+    }
+}
+
+#[async_trait]
+impl {{pascalCase moduleName}}Repository for SeaOrm{{pascalCase moduleName}}Repository {
+    async fn save(&self, entity: &{{pascalCase moduleName}}) -> Result<{{pascalCase moduleName}}, {{pascalCase moduleName}}RepositoryError> {
+        use super::model::ActiveModel;
+        let active = ActiveModel {
+            name: sea_orm::Set(entity.name.clone()),
+            ..Default::default()
+        };
+        let saved = active.insert(&self.db).await?;
+        Ok(saved)
+    }
+
+    async fn find_all(&self) -> Result<Vec<{{pascalCase moduleName}}>, {{pascalCase moduleName}}RepositoryError> {
+        use super::model::Entity;
+        let items = Entity::find()
+            .order_by_desc(super::model::Column::CreatedAt)
+            .all(&self.db)
+            .await?;
+        Ok(items)
+    }
+
+    async fn find_by_id(&self, entity_id: &str) -> Result<Option<{{pascalCase moduleName}}>, {{pascalCase moduleName}}RepositoryError> {
+        use super::model::Entity;
+        let id_val: i32 = entity_id.parse().map_err(|_| {{pascalCase moduleName}}RepositoryError::NotFound)?;
+        let item = Entity::find_by_id(id_val).one(&self.db).await?;
+        Ok(item)
+    }
+
+    async fn delete(&self, entity_id: &str) -> Result<(), {{pascalCase moduleName}}RepositoryError> {
+        use super::model::{Entity, Column};
+        let id_val: i32 = entity_id.parse().map_err(|_| {{pascalCase moduleName}}RepositoryError::NotFound)?;
+        Entity::delete_by_id(id_val).exec(&self.db).await?;
+        Ok(())
+    }
+}
+{{/if}}

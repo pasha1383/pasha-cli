@@ -1,0 +1,28 @@
+use serde::{Deserialize, Serialize};
+{{#if ormSqlx}}
+use sqlx::FromRow;
+{{/if}}
+
+{{#if ormSqlx}}
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct {{pascalCase moduleName}} {
+    pub id: uuid::Uuid,
+    pub name: String,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
+}
+{{else}}
+{{#if ormNone}}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct {{pascalCase moduleName}} {
+    pub id: String,
+    pub name: String,
+}
+{{else}}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct {{pascalCase moduleName}} {
+    pub id: i32,
+    pub name: String,
+}
+{{/if}}
+{{/if}}

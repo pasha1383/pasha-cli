@@ -1,0 +1,57 @@
+use axum::{
+    extract::Request,
+    http::{header, StatusCode},
+    middleware::Next,
+    response::{IntoResponse, Response},
+    Json,
+};
+use crate::shared::auth::{verify_token, Claims};
+use crate::config::Config;
+use serde_json::json;
+
+#[derive(Clone)]
+pub struct AuthState {
+    pub jwt_secret: String,
+}
+
+impl AuthState {
+    pub fn new(config: &Config) -> Self {
+        Self {
+            jwt_secret: config.jwt_secret.clone(),
+        }
+    }
+}
+
+pub async fn auth_middleware(
+    axum::extract::State(state): axum::extract::State<AuthState>,
+    mut req: Request,
+    next: Next,
+) -> Response {
+    let auth_header = req
+        .headers()
+        .get(header::AUTHORIZATION)
+        .and_then(|v| v.to_str().ok());
+
+    let token = match auth_header {
+        Some(header) if header.starts_with("Bearer ") => header.trim_start_matches("Bearer ").trim(),
+        _ => {
+            return (
+                StatusCode::UNAUTHORIZED,
+                Json(json!({"error": "missing or invalid authorization header"})),
+            )
+                .into_response();
+        }
+    };
+
+    match verify_token(token, &state.jwt_secret) {
+        Ok(claims) => {
+            req.extensions_mut().insert(claims);
+            next.run(req).await
+        }
+        Err(_) => (
+            StatusCode::UNAUTHORIZED,
+            Json(json!({"error": "invalid or expired token"})),
+        )
+            .into_response(),
+    }
+}

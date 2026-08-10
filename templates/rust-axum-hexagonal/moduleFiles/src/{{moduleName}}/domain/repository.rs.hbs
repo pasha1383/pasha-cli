@@ -1,0 +1,18 @@
+use async_trait::async_trait;
+use super::model::{{pascalCase moduleName}};
+
+#[derive(Debug, thiserror::Error)]
+pub enum DomainError {
+    #[error("not found")]
+    NotFound,
+    #[error("invalid data: {0}")]
+    InvalidData(String),
+}
+
+#[async_trait]
+pub trait {{pascalCase moduleName}}Repository: Send + Sync + 'static {
+    async fn save(&self, entity: &{{pascalCase moduleName}}) -> Result<{{pascalCase moduleName}}, DomainError>;
+    async fn find_all(&self) -> Result<Vec<{{pascalCase moduleName}}>, DomainError>;
+    async fn find_by_id(&self, id: &str) -> Result<Option<{{pascalCase moduleName}}>, DomainError>;
+    async fn delete(&self, id: &str) -> Result<(), DomainError>;
+}

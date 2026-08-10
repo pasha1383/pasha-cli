@@ -1,0 +1,25 @@
+use std::sync::Arc;
+use crate::errors::AppError;
+use crate::{{moduleName}}::domain::entity::{{pascalCase moduleName}};
+use crate::{{moduleName}}::domain::repository::{{pascalCase moduleName}}Repository;
+use crate::{{moduleName}}::adapters::dto::Create{{pascalCase moduleName}}Request;
+use crate::{{moduleName}}::adapters::dto::{{pascalCase moduleName}}Response;
+
+pub async fn execute<R: {{pascalCase moduleName}}Repository>(
+    repo: Arc<R>,
+    input: Create{{pascalCase moduleName}}Request,
+) -> Result<{{pascalCase moduleName}}Response, AppError> {
+    let entity = {{pascalCase moduleName}} {
+        {{#if ormSqlx}}
+        id: uuid::Uuid::new_v4(),
+        name: input.name,
+        created_at: chrono::Utc::now(),
+        updated_at: chrono::Utc::now(),
+        {{else}}
+        id: String::new(),
+        name: input.name,
+        {{/if}}
+    };
+    let saved = repo.save(entity).await.map_err(|e| AppError::internal(e.to_string()))?;
+    Ok({{pascalCase moduleName}}Response::from(saved))
+}

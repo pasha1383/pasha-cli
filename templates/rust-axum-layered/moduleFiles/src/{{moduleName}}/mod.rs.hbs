@@ -1,0 +1,73 @@
+pub mod model;
+pub mod repository;
+pub mod service;
+pub mod handler;
+pub mod dto;
+
+use std::sync::Arc;
+use axum::{routing::get, Router};
+{{#if ormSqlx}}
+use sqlx::AnyPool;
+{{/if}}
+{{#if ormDiesel}}
+use diesel::r2d2::Pool;
+use diesel::PgConnection;
+use diesel::ConnectionManager;
+pub type DbPool = Pool<ConnectionManager<PgConnection>>;
+{{/if}}
+{{#if ormSeaOrm}}
+use sea_orm::DatabaseConnection;
+{{/if}}
+
+use self::handler::*;
+use self::repository::*;
+use self::service::*;
+
+{{#if ormNone}}
+pub fn router() -> Router {
+    let repo = Arc::new(InMemory{{pascalCase moduleName}}Repository::new());
+    let svc = {{pascalCase moduleName}}Service::new(repo);
+    let state = {{pascalCase moduleName}}State { svc };
+
+    Router::new()
+        .route("/", get(list_{{moduleName}}).post(create_{{moduleName}}))
+        .route("/:id", get(get_{{moduleName}}).delete(delete_{{moduleName}}))
+        .with_state(state)
+}
+{{/if}}
+{{#if ormSqlx}}
+pub fn router(pool: AnyPool) -> Router {
+    let repo = Sqlx{{pascalCase moduleName}}Repository::new(pool);
+    let svc = {{pascalCase moduleName}}Service::new(repo);
+    let state = {{pascalCase moduleName}}State { svc };
+
+    Router::new()
+        .route("/", get(list_{{moduleName}}).post(create_{{moduleName}}))
+        .route("/:id", get(get_{{moduleName}}).delete(delete_{{moduleName}}))
+        .with_state(state)
+}
+{{/if}}
+{{#if ormDiesel}}
+pub fn router(pool: DbPool) -> Router {
+    let repo = Diesel{{pascalCase moduleName}}Repository::new(pool);
+    let svc = {{pascalCase moduleName}}Service::new(repo);
+    let state = {{pascalCase moduleName}}State { svc };
+
+    Router::new()
+        .route("/", get(list_{{moduleName}}).post(create_{{moduleName}}))
+        .route("/:id", get(get_{{moduleName}}).delete(delete_{{moduleName}}))
+        .with_state(state)
+}
+{{/if}}
+{{#if ormSeaOrm}}
+pub fn router(db: DatabaseConnection) -> Router {
+    let repo = SeaOrm{{pascalCase moduleName}}Repository::new(db);
+    let svc = {{pascalCase moduleName}}Service::new(repo);
+    let state = {{pascalCase moduleName}}State { svc };
+
+    Router::new()
+        .route("/", get(list_{{moduleName}}).post(create_{{moduleName}}))
+        .route("/:id", get(get_{{moduleName}}).delete(delete_{{moduleName}}))
+        .with_state(state)
+}
+{{/if}}

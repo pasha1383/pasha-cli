@@ -1,0 +1,43 @@
+pub mod domain;
+pub mod application;
+pub mod infrastructure;
+
+use axum::{routing::get, Router};
+use std::sync::Arc;
+{{#if ormSqlx}}
+use sqlx::AnyPool;
+{{/if}}
+
+{{#if ormNone}}
+use self::domain::model::{{pascalCase moduleName}};
+use self::domain::repository::Repository;
+use self::infrastructure::persistence::InMemory{{pascalCase moduleName}}Persistence;
+use self::application::service::{{pascalCase moduleName}}Service;
+use self::infrastructure::handler;
+
+pub fn router() -> Router {
+    let repo: Arc<dyn Repository> = Arc::new(InMemory{{pascalCase moduleName}}Persistence::new());
+    let svc = Arc::new({{pascalCase moduleName}}Service::new(repo));
+    let state = handler::AppState { svc };
+    Router::new()
+        .route("/", get(handler::list).post(handler::create))
+        .route("/:id", get(handler::get_by_id).delete(handler::delete))
+        .with_state(state)
+}
+{{/if}}
+
+{{#if ormSqlx}}
+use self::infrastructure::persistence::Sqlx{{pascalCase moduleName}}Persistence;
+use self::application::service::{{pascalCase moduleName}}Service;
+use self::infrastructure::handler;
+
+pub fn router(pool: AnyPool) -> Router {
+    let repo: Arc<dyn Repository> = Arc::new(Sqlx{{pascalCase moduleName}}Persistence::new(pool));
+    let svc = Arc::new({{pascalCase moduleName}}Service::new(repo));
+    let state = handler::AppState { svc };
+    Router::new()
+        .route("/", get(handler::list).post(handler::create))
+        .route("/:id", get(handler::get_by_id).delete(handler::delete))
+        .with_state(state)
+}
+{{/if}}

@@ -1,0 +1,10 @@
+pub mod database;
+{{#if useRedis}}
+pub mod cache;
+{{/if}}
+{{#if useAuth}}
+pub mod auth;
+{{/if}}
+{{#if useHealthCheck}}
+pub mod health;
+{{/if}}

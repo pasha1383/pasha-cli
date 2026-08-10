@@ -1,0 +1,270 @@
+use axum::{
+    extract::{Path, State},
+    http::StatusCode,
+    response::IntoResponse,
+    routing::get,
+    Json, Router,
+};
+use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
+use std::sync::Arc;
+use tokio::sync::Mutex;
+use uuid::Uuid;
+
+use crate::errors::AppError;
+
+// ── Model ───────────────────────────────────────────────────────────
+
+{{#if ormSqlx}}
+use sqlx::FromRow;
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct {{pascalCase moduleName}} {
+    pub id: uuid::Uuid,
+    pub name: String,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
+}
+{{else}}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct {{pascalCase moduleName}} {
+    pub id: String,
+    pub name: String,
+}
+{{/if}}
+
+// ── DTO ─────────────────────────────────────────────────────────────
+
+{{#if useValidator}}
+use validator::Validate;
+
+#[derive(Debug, Deserialize, Validate)]
+pub struct Create{{pascalCase moduleName}}Request {
+    #[validate(length(min = 1, max = 255))]
+    pub name: String,
+}
+{{else}}
+#[derive(Debug, Deserialize)]
+pub struct Create{{pascalCase moduleName}}Request {
+    pub name: String,
+}
+{{/if}}
+
+#[derive(Debug, Serialize)]
+pub struct {{pascalCase moduleName}}Response {
+    pub id: String,
+    pub name: String,
+}
+
+impl From<{{pascalCase moduleName}}> for {{pascalCase moduleName}}Response {
+    fn from(m: {{pascalCase moduleName}}) -> Self {
+        Self { id: m.id.to_string(), name: m.name }
+    }
+}
+
+// ── Repository trait ────────────────────────────────────────────────
+
+#[derive(Debug, thiserror::Error)]
+pub enum RepoError {
+    #[error("not found")]
+    NotFound,
+    #[error("internal: {0}")]
+    Internal(String),
+}
+
+#[async_trait]
+pub trait Repository: Send + Sync + 'static {
+    async fn save(&self, entity: &{{pascalCase moduleName}}) -> Result<{{pascalCase moduleName}}, RepoError>;
+    async fn find_all(&self) -> Result<Vec<{{pascalCase moduleName}}>, RepoError>;
+    async fn find_by_id(&self, id: &str) -> Result<Option<{{pascalCase moduleName}}>, RepoError>;
+    async fn delete(&self, id: &str) -> Result<(), RepoError>;
+}
+
+{{#if ormNone}}
+pub struct InMemoryRepo {
+    items: Mutex<Vec<{{pascalCase moduleName}}>>,
+}
+
+impl InMemoryRepo {
+    pub fn new() -> Self { Self { items: Mutex::new(Vec::new()) } }
+}
+
+#[async_trait]
+impl Repository for InMemoryRepo {
+    async fn save(&self, entity: &{{pascalCase moduleName}}) -> Result<{{pascalCase moduleName}}, RepoError> {
+        let mut items = self.items.lock().await;
+        let mut saved = entity.clone();
+        if saved.id.is_empty() { saved.id = Uuid::new_v4().to_string(); }
+        items.retain(|i| i.id != saved.id);
+        items.push(saved.clone());
+        Ok(saved)
+    }
+    async fn find_all(&self) -> Result<Vec<{{pascalCase moduleName}}>, RepoError> {
+        Ok(self.items.lock().await.clone())
+    }
+    async fn find_by_id(&self, id: &str) -> Result<Option<{{pascalCase moduleName}}>, RepoError> {
+        Ok(self.items.lock().await.iter().find(|i| i.id == id).cloned())
+    }
+    async fn delete(&self, id: &str) -> Result<(), RepoError> {
+        self.items.lock().await.retain(|i| i.id != id);
+        Ok(())
+    }
+}
+{{/if}}
+
+{{#if ormSqlx}}
+pub struct SqlxRepo {
+    pool: sqlx::AnyPool,
+}
+
+impl SqlxRepo {
+    pub fn new(pool: sqlx::AnyPool) -> Self { Self { pool } }
+}
+
+#[async_trait]
+impl Repository for SqlxRepo {
+    async fn save(&self, entity: &{{pascalCase moduleName}}) -> Result<{{pascalCase moduleName}}, RepoError> {
+        let saved = sqlx::query_as::<_, {{pascalCase moduleName}}>(
+            "INSERT INTO {{snakeCase moduleName}}s (id, name) VALUES ($1, $2) RETURNING id, name, created_at, updated_at"
+        ).bind(entity.id).bind(&entity.name).fetch_one(&self.pool).await
+            .map_err(|e| RepoError::Internal(e.to_string()))?;
+        Ok(saved)
+    }
+    async fn find_all(&self) -> Result<Vec<{{pascalCase moduleName}}>, RepoError> {
+        let items = sqlx::query_as::<_, {{pascalCase moduleName}}>(
+            "SELECT id, name, created_at, updated_at FROM {{snakeCase moduleName}}s ORDER BY created_at DESC"
+        ).fetch_all(&self.pool).await
+            .map_err(|e| RepoError::Internal(e.to_string()))?;
+        Ok(items)
+    }
+    async fn find_by_id(&self, id: &str) -> Result<Option<{{pascalCase moduleName}}>, RepoError> {
+        let uuid_val = uuid::Uuid::parse_str(id).map_err(|_| RepoError::NotFound)?;
+        sqlx::query_as::<_, {{pascalCase moduleName}}>(
+            "SELECT id, name, created_at, updated_at FROM {{snakeCase moduleName}}s WHERE id = $1"
+        ).bind(uuid_val).fetch_optional(&self.pool).await
+            .map_err(|e| RepoError::Internal(e.to_string()))
+    }
+    async fn delete(&self, id: &str) -> Result<(), RepoError> {
+        let uuid_val = uuid::Uuid::parse_str(id).map_err(|_| RepoError::NotFound)?;
+        let result = sqlx::query("DELETE FROM {{snakeCase moduleName}}s WHERE id = $1")
+            .bind(uuid_val).execute(&self.pool).await
+            .map_err(|e| RepoError::Internal(e.to_string()))?;
+        if result.rows_affected() == 0 { Err(RepoError::NotFound) } else { Ok(()) }
+    }
+}
+{{/if}}
+
+// ── Service ─────────────────────────────────────────────────────────
+
+pub struct Service {
+    repo: Arc<dyn Repository>,
+}
+
+impl Service {
+    pub fn new(repo: Arc<dyn Repository>) -> Self { Self { repo } }
+
+    pub async fn create(&self, input: Create{{pascalCase moduleName}}Request) -> Result<{{pascalCase moduleName}}Response, AppError> {
+        let entity = {{pascalCase moduleName}} {
+            {{#if ormSqlx}}id: uuid::Uuid::new_v4(),{{else}}id: String::new(),{{/if}}
+            name: input.name,
+        };
+        let saved = self.repo.save(&entity).await.map_err(|e| AppError::internal(e.to_string()))?;
+        Ok({{pascalCase moduleName}}Response::from(saved))
+    }
+
+    pub async fn list(&self) -> Result<Vec<{{pascalCase moduleName}}Response>, AppError> {
+        let items = self.repo.find_all().await.map_err(|e| AppError::internal(e.to_string()))?;
+        Ok(items.into_iter().map({{pascalCase moduleName}}Response::from).collect())
+    }
+
+    pub async fn get_by_id(&self, id: &str) -> Result<{{pascalCase moduleName}}Response, AppError> {
+        let entity = self.repo.find_by_id(id).await
+            .map_err(|e| AppError::internal(e.to_string()))?
+            .ok_or_else(|| AppError::not_found("{{moduleName}} not found"))?;
+        Ok({{pascalCase moduleName}}Response::from(entity))
+    }
+
+    pub async fn delete(&self, id: &str) -> Result<(), AppError> {
+        self.repo.delete(id).await.map_err(|e| AppError::internal(e.to_string()))?;
+        Ok(())
+    }
+}
+
+// ── Handler state ───────────────────────────────────────────────────
+
+#[derive(Clone)]
+pub struct AppState {
+    pub svc: Arc<Service>,
+}
+
+// ── Handlers ────────────────────────────────────────────────────────
+
+pub async fn list_handler(State(state): State<AppState>) -> impl IntoResponse {
+    match state.svc.list().await {
+        Ok(items) => (StatusCode::OK, Json(items)).into_response(),
+        Err(err) => err.into_response(),
+    }
+}
+
+pub async fn create_handler(
+    State(state): State<AppState>,
+    Json(input): Json<Create{{pascalCase moduleName}}Request>,
+) -> impl IntoResponse {
+{{#if useValidator}}
+    if let Err(errors) = input.validate() {
+        return (StatusCode::BAD_REQUEST, Json(serde_json::json!({"errors": errors}))).into_response();
+    }
+{{/if}}
+    match state.svc.create(input).await {
+        Ok(item) => (StatusCode::CREATED, Json(item)).into_response(),
+        Err(err) => err.into_response(),
+    }
+}
+
+pub async fn get_handler(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+) -> impl IntoResponse {
+    match state.svc.get_by_id(&id).await {
+        Ok(item) => (StatusCode::OK, Json(item)).into_response(),
+        Err(err) => err.into_response(),
+    }
+}
+
+pub async fn delete_handler(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+) -> impl IntoResponse {
+    match state.svc.delete(&id).await {
+        Ok(()) => StatusCode::NO_CONTENT.into_response(),
+        Err(err) => err.into_response(),
+    }
+}
+
+// ── Router ──────────────────────────────────────────────────────────
+
+{{#if ormNone}}
+pub fn router() -> Router {
+    let repo: Arc<dyn Repository> = Arc::new(InMemoryRepo::new());
+    let svc = Arc::new(Service::new(repo));
+    let state = AppState { svc };
+
+    Router::new()
+        .route("/", get(list_handler).post(create_handler))
+        .route("/:id", get(get_handler).delete(delete_handler))
+        .with_state(state)
+}
+{{/if}}
+
+{{#if ormSqlx}}
+pub fn router(pool: sqlx::AnyPool) -> Router {
+    let repo: Arc<dyn Repository> = Arc::new(SqlxRepo::new(pool));
+    let svc = Arc::new(Service::new(repo));
+    let state = AppState { svc };
+
+    Router::new()
+        .route("/", get(list_handler).post(create_handler))
+        .route("/:id", get(get_handler).delete(delete_handler))
+        .with_state(state)
+}
+{{/if}}

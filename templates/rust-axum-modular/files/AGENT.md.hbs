@@ -1,0 +1,111 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository. Read this before
+generating or editing code.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Language:** Rust (edition 2021)
+- **Framework:** Axum — ergonomic and modular web framework built with Tokio, Tower, and Hyper.
+  Uses Axum State for dependency injection. No DI container — wiring is manual.
+- **Architecture:** {{architectureLabel}}
+{{#if ormNone}}
+- **Data layer:** in-memory repositories (no ORM)
+{{else}}
+- **ORM/DB driver:** {{orm}}
+{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+{{#if hasValidation}}
+- **Validation:** validator crate with derive macros
+{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis (`redis` crate with tokio-comp)
+{{/if}}
+{{#if hasBroker}}
+- **Message broker:** Kafka (rdkafka)
+{{/if}}
+{{#if useOpenApi}}
+- **API docs:** OpenAPI / Swagger UI at `/swagger` (utoipa)
+{{/if}}
+{{#if useAuth}}
+- **Auth:** JWT (jsonwebtoken crate, HMAC-SHA256, argon2 for password hashing)
+{{/if}}
+{{#if useHealthCheck}}
+- **Health:** `GET /health` reports liveness/readiness
+{{/if}}
+
+## Modules
+
+{{#each modules}}
+- `{{this}}`
+{{/each}}
+
+## Commands
+
+```bash
+make run                 # cargo run
+make build               # cargo build --release
+make dev                 # cargo watch -x run
+{{#if useTests}}
+make test                # cargo test
+make test-cover          # cargo tarpaulin
+{{/if}}
+{{#if useDocker}}
+make infra-up            # start databases/brokers via docker compose
+make infra-down
+{{/if}}
+{{#if useLint}}
+make lint                # cargo clippy
+make fmt                 # cargo fmt --check
+make fmt-fix             # cargo fmt
+{{/if}}
+```
+
+## Hard rules
+
+1. **No DI container.** Each module manually constructs its dependencies in `mod.rs` or
+   `router()` function. That's the one place wiring happens, and that's deliberate.
+2. **`src/` is the single source root.** Domain modules go under `src/{{moduleName}}/`.
+   Shared infrastructure goes under `src/shared/`. Middleware goes under `src/middleware/`.
+3. **Adding a module means adding every file.** model, repository, service,
+   handler, dto, module definition — a new feature gets its full slice.
+4. **Register new routes** in `src/main.rs` — otherwise they will not be reachable.
+5. **Handlers never touch the database directly.** Always go through the
+   service layer, which uses the repository trait.
+6. **`config.rs` is the only file that reads environment variables directly.**
+   Everywhere else accepts a `Config` reference or clone.
+7. **Axum handlers** use extractors (`State`, `Path`, `Query`, `Json`). Return types
+   implement `IntoResponse`. Use `AppError` for structured error responses.
+8. **Modules use snake_case for files.** `pub mod module_name` maps to
+   `module_name.rs` or `module_name/mod.rs`.
+9. **Code is organized per Rust module conventions.** `mod.rs` re-exports public
+   types and functions. Use `pub(crate)` for internal visibility.
+{{#if ormSqlx}}
+10. **SQLx** queries are checked at compile time. Use `query!` and `query_as!`
+    macros for type-safe SQL. Database migrations live in `./migrations/`.
+{{/if}}
+{{#if ormDiesel}}
+11. **Diesel** uses compile-time checked queries. Schema is generated via
+    `diesel print-schema`. Migrations live in `./migrations/`.
+{{/if}}
+{{#if ormSeaOrm}}
+12. **SeaORM** entities are defined via `DeriveEntityModel` derive macro.
+    Use `Entity::find()` for queries. Run migrations via CLI.
+{{/if}}
+{{#if useAuth}}
+13. **Protected routes** use the auth middleware. User claims are stored in
+    request extensions via `req.extensions().get::<Claims>()`.
+{{/if}}
+{{#if useOpenApi}}
+14. **OpenAPI annotations** use `#[utoipa::path(...)]` attribute macros on
+    handler functions. ApiDoc is built in `src/main.rs`.
+{{/if}}
+
+## When you are unsure
+
+Prefer asking over guessing. Generating a plausible-looking file in the wrong
+layer costs more to unpick than a clarifying question costs to answer.

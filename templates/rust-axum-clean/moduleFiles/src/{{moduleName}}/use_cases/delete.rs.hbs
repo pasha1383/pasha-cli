@@ -1,0 +1,11 @@
+use std::sync::Arc;
+use crate::errors::AppError;
+use crate::{{moduleName}}::domain::repository::{{pascalCase moduleName}}Repository;
+
+pub async fn execute<R: {{pascalCase moduleName}}Repository>(
+    repo: Arc<R>,
+    id: String,
+) -> Result<(), AppError> {
+    repo.delete(&id).await.map_err(|e| AppError::internal(e.to_string()))?;
+    Ok(())
+}

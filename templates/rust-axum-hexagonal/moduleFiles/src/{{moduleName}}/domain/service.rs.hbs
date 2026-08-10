@@ -1,0 +1,42 @@
+use std::sync::Arc;
+use super::model::{{pascalCase moduleName}};
+use super::repository::{{pascalCase moduleName}}Repository;
+use super::repository::DomainError;
+
+pub struct {{pascalCase moduleName}}Service<R: {{pascalCase moduleName}}Repository> {
+    repo: Arc<R>,
+}
+
+impl<R: {{pascalCase moduleName}}Repository> {{pascalCase moduleName}}Service<R> {
+    pub fn new(repo: Arc<R>) -> Self {
+        Self { repo }
+    }
+
+    pub async fn create(&self, name: String) -> Result<{{pascalCase moduleName}}, DomainError> {
+        let entity = {{pascalCase moduleName}} {
+            {{#if ormSqlx}}
+            id: uuid::Uuid::new_v4(),
+            name,
+            created_at: chrono::Utc::now(),
+            updated_at: chrono::Utc::now(),
+            {{else}}
+            id: String::new(),
+            name,
+            {{/if}}
+        };
+        self.repo.save(&entity).await
+    }
+
+    pub async fn list(&self) -> Result<Vec<{{pascalCase moduleName}}>, DomainError> {
+        self.repo.find_all().await
+    }
+
+    pub async fn get_by_id(&self, id: &str) -> Result<{{pascalCase moduleName}}, DomainError> {
+        self.repo.find_by_id(id).await?
+            .ok_or(DomainError::NotFound)
+    }
+
+    pub async fn delete(&self, id: &str) -> Result<(), DomainError> {
+        self.repo.delete(id).await
+    }
+}

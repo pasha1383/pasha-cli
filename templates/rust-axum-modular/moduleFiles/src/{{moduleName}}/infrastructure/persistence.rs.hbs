@@ -1,0 +1,105 @@
+use async_trait::async_trait;
+use std::sync::Arc;
+use tokio::sync::Mutex;
+use uuid::Uuid;
+
+use crate::{{moduleName}}::domain::model::{{pascalCase moduleName}};
+use crate::{{moduleName}}::domain::repository::Repository;
+use crate::{{moduleName}}::domain::repository::RepoError;
+
+{{#if ormNone}}
+pub struct InMemory{{pascalCase moduleName}}Persistence {
+    items: Mutex<Vec<{{pascalCase moduleName}}>>,
+}
+
+impl InMemory{{pascalCase moduleName}}Persistence {
+    pub fn new() -> Self {
+        Self { items: Mutex::new(Vec::new()) }
+    }
+}
+
+#[async_trait]
+impl Repository for InMemory{{pascalCase moduleName}}Persistence {
+    async fn save(&self, entity: &{{pascalCase moduleName}}) -> Result<{{pascalCase moduleName}}, RepoError> {
+        let mut items = self.items.lock().await;
+        let mut saved = entity.clone();
+        if saved.id.is_empty() {
+            saved.id = Uuid::new_v4().to_string();
+        }
+        items.retain(|i| i.id != saved.id);
+        items.push(saved.clone());
+        Ok(saved)
+    }
+
+    async fn find_all(&self) -> Result<Vec<{{pascalCase moduleName}}>, RepoError> {
+        Ok(self.items.lock().await.clone())
+    }
+
+    async fn find_by_id(&self, id: &str) -> Result<Option<{{pascalCase moduleName}}>, RepoError> {
+        Ok(self.items.lock().await.iter().find(|i| i.id == id).cloned())
+    }
+
+    async fn delete(&self, id: &str) -> Result<(), RepoError> {
+        self.items.lock().await.retain(|i| i.id != id);
+        Ok(())
+    }
+}
+{{/if}}
+
+{{#if ormSqlx}}
+pub struct Sqlx{{pascalCase moduleName}}Persistence {
+    pool: sqlx::AnyPool,
+}
+
+impl Sqlx{{pascalCase moduleName}}Persistence {
+    pub fn new(pool: sqlx::AnyPool) -> Self {
+        Self { pool }
+    }
+}
+
+#[async_trait]
+impl Repository for Sqlx{{pascalCase moduleName}}Persistence {
+    async fn save(&self, entity: &{{pascalCase moduleName}}) -> Result<{{pascalCase moduleName}}, RepoError> {
+        let saved = sqlx::query_as::<_, {{pascalCase moduleName}}>(
+            "INSERT INTO {{snakeCase moduleName}}s (id, name) VALUES ($1, $2) RETURNING id, name, created_at, updated_at"
+        )
+        .bind(entity.id)
+        .bind(&entity.name)
+        .fetch_one(&self.pool)
+        .await
+        .map_err(|e| RepoError::Internal(e.to_string()))?;
+        Ok(saved)
+    }
+
+    async fn find_all(&self) -> Result<Vec<{{pascalCase moduleName}}>, RepoError> {
+        let items = sqlx::query_as::<_, {{pascalCase moduleName}}>(
+            "SELECT id, name, created_at, updated_at FROM {{snakeCase moduleName}}s ORDER BY created_at DESC"
+        )
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|e| RepoError::Internal(e.to_string()))?;
+        Ok(items)
+    }
+
+    async fn find_by_id(&self, id: &str) -> Result<Option<{{pascalCase moduleName}}>, RepoError> {
+        let uuid_val = uuid::Uuid::parse_str(id).map_err(|_| RepoError::NotFound)?;
+        sqlx::query_as::<_, {{pascalCase moduleName}}>(
+            "SELECT id, name, created_at, updated_at FROM {{snakeCase moduleName}}s WHERE id = $1"
+        )
+        .bind(uuid_val)
+        .fetch_optional(&self.pool)
+        .await
+        .map_err(|e| RepoError::Internal(e.to_string()))
+    }
+
+    async fn delete(&self, id: &str) -> Result<(), RepoError> {
+        let uuid_val = uuid::Uuid::parse_str(id).map_err(|_| RepoError::NotFound)?;
+        let result = sqlx::query("DELETE FROM {{snakeCase moduleName}}s WHERE id = $1")
+            .bind(uuid_val)
+            .execute(&self.pool)
+            .await
+            .map_err(|e| RepoError::Internal(e.to_string()))?;
+        if result.rows_affected() == 0 { Err(RepoError::NotFound) } else { Ok(()) }
+    }
+}
+{{/if}}

@@ -1,0 +1,13 @@
+use std::sync::Arc;
+use crate::errors::AppError;
+use crate::{{moduleName}}::domain::repository::{{pascalCase moduleName}}Repository;
+use crate::{{moduleName}}::adapters::dto::{{pascalCase moduleName}}Response;
+
+pub async fn execute<R: {{pascalCase moduleName}}Repository>(
+    repo: Arc<R>,
+    id: String,
+) -> Result<{{pascalCase moduleName}}Response, AppError> {
+    let entity = repo.find_by_id(&id).await.map_err(|e| AppError::internal(e.to_string()))?
+        .ok_or_else(|| AppError::not_found("{{moduleName}} not found"))?;
+    Ok({{pascalCase moduleName}}Response::from(entity))
+}

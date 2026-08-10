@@ -1,0 +1,30 @@
+use axum::{routing::get, Router};
+use std::sync::Arc;
+{{#if ormSqlx}}
+use sqlx::AnyPool;
+use self::adapter::Sqlx{{pascalCase moduleName}}RepositoryAdapter;
+{{/if}}
+{{#if ormNone}}
+use self::adapter::InMemory{{pascalCase moduleName}}RepositoryAdapter;
+{{/if}}
+
+use self::handler;
+
+{{#if ormSqlx}}
+pub fn router(pool: AnyPool) -> Router {
+    let repo: Arc<dyn {{pascalCase moduleName}}Repository> = Arc::new(Sqlx{{pascalCase moduleName}}RepositoryAdapter::new(pool));
+    Router::new()
+        .route("/", get(handler::list).post(handler::create))
+        .route("/:id", get(handler::get_by_id).delete(handler::delete))
+        .with_state(repo)
+}
+{{/if}}
+{{#if ormNone}}
+pub fn router() -> Router {
+    let repo: Arc<dyn {{pascalCase moduleName}}Repository> = Arc::new(InMemory{{pascalCase moduleName}}RepositoryAdapter::new());
+    Router::new()
+        .route("/", get(handler::list).post(handler::create))
+        .route("/:id", get(handler::get_by_id).delete(handler::delete))
+        .with_state(repo)
+}
+{{/if}}

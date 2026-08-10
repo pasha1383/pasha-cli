@@ -1,0 +1,56 @@
+{{#if ormSqlx}}
+use sqlx::FromRow;
+{{/if}}
+{{#if ormDiesel}}
+use diesel::prelude::*;
+{{/if}}
+{{#if ormSeaOrm}}
+use sea_orm::entity::prelude::*;
+{{/if}}
+use serde::{Deserialize, Serialize};
+
+{{#if ormSqlx}}
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct {{pascalCase moduleName}} {
+    pub id: uuid::Uuid,
+    pub name: String,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
+}
+{{/if}}
+
+{{#if ormDiesel}}
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Identifiable)]
+#[diesel(table_name = {{snakeCase moduleName}}s)]
+pub struct {{pascalCase moduleName}} {
+    pub id: i32,
+    pub name: String,
+    pub created_at: chrono::NaiveDateTime,
+    pub updated_at: chrono::NaiveDateTime,
+}
+{{/if}}
+
+{{#if ormSeaOrm}}
+#[derive(Debug, Clone, Serialize, Deserialize, DeriveEntityModel)]
+#[sea_orm(table_name = "{{snakeCase moduleName}}s")]
+pub struct Model {
+    #[sea_orm(primary_key)]
+    pub id: i32,
+    pub name: String,
+    pub created_at: chrono::DateTimeUtc,
+    pub updated_at: chrono::DateTimeUtc,
+}
+
+#[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
+pub enum Relation {}
+
+impl ActiveModelBehavior for ActiveModel {}
+{{/if}}
+
+{{#if ormNone}}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct {{pascalCase moduleName}} {
+    pub id: String,
+    pub name: String,
+}
+{{/if}}

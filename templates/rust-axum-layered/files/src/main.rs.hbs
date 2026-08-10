@@ -1,0 +1,120 @@
+mod config;
+mod errors;
+
+{{#if hasSharedInfra}}
+mod shared;
+{{/if}}
+{{#if useAuth}}
+mod middleware;
+{{/if}}
+{{#each modules}}
+mod {{this}};
+{{/each}}
+
+use axum::{routing::get, Router};
+use tower_http::cors::CorsLayer;
+use tower_http::trace::TraceLayer;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
+#[tokio::main]
+async fn main() {
+    tracing_subscriber::registry()
+        .with(tracing_subscriber::EnvFilter::new(
+            std::env::var("RUST_LOG").unwrap_or_else(|_| "{{projectName}}=debug,tower_http=debug".into()),
+        ))
+        .with(tracing_subscriber::fmt::layer())
+        .init();
+
+    let config = config::Config::from_env();
+    tracing::info!("starting server on port {}", config.port);
+
+{{#if ormSqlx}}
+    let pool = shared::database::connect(&config)
+        .await
+        .expect("failed to connect to database");
+    shared::database::run_migrations(&pool)
+        .await
+        .expect("failed to run migrations");
+{{/if}}
+{{#if ormDiesel}}
+    let pool = shared::database::establish_pool(&config);
+{{/if}}
+{{#if ormSeaOrm}}
+    let db = shared::database::connect(&config)
+        .await
+        .expect("failed to connect to database");
+{{/if}}
+{{#if useRedis}}
+    let _redis_client = shared::cache::connect(&config)
+        .expect("failed to connect to redis");
+{{/if}}
+
+    let mut app = Router::new()
+        .layer(TraceLayer::new_for_http())
+        .layer(CorsLayer::permissive());
+
+{{#if useHealthCheck}}
+    app = app.route("/health", get(shared::health::health_check));
+{{/if}}
+
+{{#if useOpenApi}}
+    use utoipa::OpenApi;
+    use utoipa_swagger_ui::SwaggerUi;
+    {{#each modules}}
+    use crate::{{this}}::handler::*;
+    {{/each}}
+
+    #[derive(OpenApi)]
+    #[openapi(
+        {{#each modules}}
+        paths(
+            {{this}}::handler::list_{{this}},
+            {{this}}::handler::get_{{this}},
+            {{this}}::handler::create_{{this}},
+            {{this}}::handler::delete_{{this}},
+        ),
+        {{/each}}
+        components(schemas(
+            {{#each modules}}
+            {{this}}::dto::Create{{pascalCase this}}Request,
+            {{this}}::dto::{{pascalCase this}}Response,
+            {{/each}}
+        )),
+        tags(
+            {{#each modules}}
+            (name = "{{this}}", description = "{{pascalCase this}} endpoints"),
+            {{/each}}
+        )
+    )]
+    struct ApiDoc;
+
+    app = app.merge(SwaggerUi::new("/swagger").url("/api-docs/openapi.json", ApiDoc::openapi()));
+{{/if}}
+
+{{#if useAuth}}
+    use axum::middleware;
+    use crate::middleware::auth::AuthState;
+    let auth_state = AuthState::new(&config);
+{{/if}}
+
+{{#each modules}}
+    app = {
+        let router = crate::{{this}}::router(
+            {{#if ../ormSqlx}}pool.clone(){{/if}}
+            {{#if ../ormDiesel}}pool.clone(){{/if}}
+            {{#if ../ormSeaOrm}}db.clone(){{/if}}
+        );
+        {{#if ../useAuth}}
+        let auth = auth_state.clone();
+        let router = router.layer(middleware::from_fn_with_state(auth, crate::middleware::auth::auth_middleware));
+        {{/if}}
+        app.nest(&format!("/api/{}", "{{this}}"), router)
+    };
+{{/each}}
+
+    let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", config.port))
+        .await
+        .unwrap();
+    tracing::info!("listening on {}", listener.local_addr().unwrap());
+    axum::serve(listener, app).await.unwrap();
+}

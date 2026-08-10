@@ -1,0 +1,37 @@
+use sqlx::postgres::PgPoolOptions;
+use sqlx::mysql::MySqlPoolOptions;
+use sqlx::sqlite::SqlitePoolOptions;
+use sqlx::AnyPool;
+use crate::config::Config;
+
+{{#if dbPostgres}}
+pub async fn connect(config: &Config) -> Result<AnyPool, sqlx::Error> {
+    let pool = PgPoolOptions::new()
+        .max_connections(10)
+        .connect(&config.database_url)
+        .await?;
+    Ok(AnyPool::from(pool))
+}
+{{/if}}
+{{#if dbMysql}}
+pub async fn connect(config: &Config) -> Result<AnyPool, sqlx::Error> {
+    let pool = MySqlPoolOptions::new()
+        .max_connections(10)
+        .connect(&config.database_url)
+        .await?;
+    Ok(AnyPool::from(pool))
+}
+{{/if}}
+{{#if dbSqlite}}
+pub async fn connect(config: &Config) -> Result<AnyPool, sqlx::Error> {
+    let pool = SqlitePoolOptions::new()
+        .max_connections(5)
+        .connect(&config.database_url)
+        .await?;
+    Ok(AnyPool::from(pool))
+}
+{{/if}}
+
+pub async fn run_migrations(pool: &AnyPool) -> Result<(), sqlx::Error> {
+    sqlx::migrate!("./migrations").run(pool).await
+}

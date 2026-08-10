@@ -1,0 +1,26 @@
+use async_trait::async_trait;
+use super::entity::{{pascalCase moduleName}};
+
+#[derive(Debug, thiserror::Error)]
+pub enum RepositoryError {
+    #[error("not found")]
+    NotFound,
+    #[error("database error: {0}")]
+    Database(String),
+    #[error("internal error: {0}")]
+    Internal(String),
+}
+
+#[async_trait]
+pub trait {{pascalCase moduleName}}Repository: Send + Sync + 'static {
+    async fn save(&self, entity: {{pascalCase moduleName}}) -> Result<{{pascalCase moduleName}}, RepositoryError>;
+    async fn find_all(&self) -> Result<Vec<{{pascalCase moduleName}}>, RepositoryError>;
+    async fn find_by_id(&self, id: &str) -> Result<Option<{{pascalCase moduleName}}>, RepositoryError>;
+    async fn delete(&self, id: &str) -> Result<(), RepositoryError>;
+}
+
+#[async_trait]
+pub trait {{pascalCase moduleName}}RepositoryFactory {
+    type Repository: {{pascalCase moduleName}}Repository;
+    fn create(&self) -> Self::Repository;
+}

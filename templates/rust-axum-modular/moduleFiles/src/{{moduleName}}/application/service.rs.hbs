@@ -1,0 +1,47 @@
+use std::sync::Arc;
+use crate::errors::AppError;
+use crate::{{moduleName}}::domain::model::{{pascalCase moduleName}};
+use crate::{{moduleName}}::domain::repository::Repository;
+use crate::{{moduleName}}::infrastructure::dto::{Create{{pascalCase moduleName}}Request, {{pascalCase moduleName}}Response};
+
+pub struct {{pascalCase moduleName}}Service {
+    repo: Arc<dyn Repository>,
+}
+
+impl {{pascalCase moduleName}}Service {
+    pub fn new(repo: Arc<dyn Repository>) -> Self {
+        Self { repo }
+    }
+
+    pub async fn create(&self, input: Create{{pascalCase moduleName}}Request) -> Result<{{pascalCase moduleName}}Response, AppError> {
+        let entity = {{pascalCase moduleName}} {
+            {{#if ormSqlx}}
+            id: uuid::Uuid::new_v4(),
+            name: input.name,
+            created_at: chrono::Utc::now(),
+            updated_at: chrono::Utc::now(),
+            {{else}}
+            id: String::new(),
+            name: input.name,
+            {{/if}}
+        };
+        let saved = self.repo.save(&entity).await.map_err(|e| AppError::internal(e.to_string()))?;
+        Ok({{pascalCase moduleName}}Response::from(saved))
+    }
+
+    pub async fn list(&self) -> Result<Vec<{{pascalCase moduleName}}Response>, AppError> {
+        let items = self.repo.find_all().await.map_err(|e| AppError::internal(e.to_string()))?;
+        Ok(items.into_iter().map({{pascalCase moduleName}}Response::from).collect())
+    }
+
+    pub async fn get_by_id(&self, id: &str) -> Result<{{pascalCase moduleName}}Response, AppError> {
+        let entity = self.repo.find_by_id(id).await.map_err(|e| AppError::internal(e.to_string()))?
+            .ok_or_else(|| AppError::not_found("{{moduleName}} not found"))?;
+        Ok({{pascalCase moduleName}}Response::from(entity))
+    }
+
+    pub async fn delete(&self, id: &str) -> Result<(), AppError> {
+        self.repo.delete(id).await.map_err(|e| AppError::internal(e.to_string()))?;
+        Ok(())
+    }
+}

@@ -2,9 +2,10 @@
 const { W, VERSION, COLORS } = require('../theme');
 const { bar, padC, row, BOX } = require('../layout');
 const chalk = require('chalk');
+const io = require('../io');
 
 function done(outPath, ctx) {
-  if (!process.stdout.isTTY || process.env.CI || process.env.NO_COLOR) {
+  if (!io.isTTY() || process.env.CI || process.env.NO_COLOR) {
     console.log(`\nProject ready at ${outPath}`);
     console.log(`\nNext: cd ${ctx.projectName}`);
     return;

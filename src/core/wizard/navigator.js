@@ -160,14 +160,16 @@ class Navigator {
   }
 
   async _askRetrySkip() {
-    console.log('\n[enter] Skip  [r] Retry  (default: skip):');
+    const io = require('../../ui/io');
+    io.writeLine('\n[enter] Skip  [r] Retry  (default: skip):');
     return new Promise((resolve) => {
-      const { stdin, stdout } = process;
-      stdin.setRawMode(true);
+      const stdin = io.getIO().input;
+      const stdout = io.getIO().output;
+      if (stdin.isTTY) stdin.setRawMode(true);
       stdin.resume();
       stdin.setEncoding('utf8');
       const handler = (key) => {
-        stdin.setRawMode(false);
+        if (stdin.isTTY) stdin.setRawMode(false);
         stdin.pause();
         stdin.removeListener('data', handler);
         stdout.write('\n');

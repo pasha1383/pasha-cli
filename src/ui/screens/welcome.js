@@ -2,9 +2,10 @@
 const { W, VERSION, COLORS } = require('../theme');
 const { bar, padC, row, BOX } = require('../layout');
 const chalk = require('chalk');
+const io = require('../io');
 
 function welcome() {
-  if (!process.stdout.isTTY || process.env.CI || process.env.NO_COLOR) return;
+  if (!io.isTTY() || process.env.CI || process.env.NO_COLOR) return;
 
   const logo = [
     '  ____             __         ',

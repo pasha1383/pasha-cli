@@ -1,6 +1,6 @@
 'use strict';
 
-const { isTTY } = require('../theme');
+const io = require('../io');
 
 const SPINNER_FRAMES = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
 
@@ -14,11 +14,11 @@ class Spinner {
   start(text) {
     if (text) this.text = text;
     if (!this._shouldAnimate()) {
-      console.log(`  … ${this.text}`);
+      io.writeLine(`  … ${this.text}`);
       return this;
     }
     this._interval = setInterval(() => {
-      process.stdout.write(`\r  ${SPINNER_FRAMES[this._frame]} ${this.text}`);
+      io.write(`\r  ${SPINNER_FRAMES[this._frame]} ${this.text}`);
       this._frame = (this._frame + 1) % SPINNER_FRAMES.length;
     }, 80);
     return this;
@@ -27,9 +27,9 @@ class Spinner {
   succeed(text) {
     this.stop();
     if (this._shouldAnimate()) {
-      process.stdout.write(`\r  ✓ ${text || this.text}\n`);
+      io.write(`\r  ✓ ${text || this.text}\n`);
     } else {
-      console.log(`  ✓ ${text || this.text}`);
+      io.writeLine(`  ✓ ${text || this.text}`);
     }
     return this;
   }
@@ -37,9 +37,9 @@ class Spinner {
   fail(text) {
     this.stop();
     if (this._shouldAnimate()) {
-      process.stdout.write(`\r  ✗ ${text || this.text}\n`);
+      io.write(`\r  ✗ ${text || this.text}\n`);
     } else {
-      console.log(`  ✗ ${text || this.text}`);
+      io.writeLine(`  ✗ ${text || this.text}`);
     }
     return this;
   }
@@ -48,12 +48,12 @@ class Spinner {
     if (this._interval) {
       clearInterval(this._interval);
       this._interval = null;
-      if (this._shouldAnimate()) process.stdout.write('\r');
+      if (this._shouldAnimate()) io.write('\r');
     }
   }
 
   _shouldAnimate() {
-    return process.stdout.isTTY && !process.env.CI && !process.env.NO_COLOR;
+    return io.isTTY() && !process.env.CI && !process.env.NO_COLOR;
   }
 }
 

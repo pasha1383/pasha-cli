@@ -24,16 +24,10 @@ const COLORS = {
   white: chalk.white,
 };
 
+const io = require('./io');
+
 function isColorSupported() {
-  return process.stdout.isTTY && !process.env.NO_COLOR && !process.env.CI;
+  return io.isTTY() && !process.env.NO_COLOR && !process.env.CI;
 }
 
-function shouldUseColors() {
-  return isColorSupported();
-}
-
-const isTTY = process.stdout.isTTY;
-const isCI = !!process.env.CI;
-const noColor = !!process.env.NO_COLOR;
-
-module.exports = { W, H, V, TL, TR, BL, BR, T_, _T, VERSION, COLORS, isColorSupported: () => isTTY && !isCI && !noColor, isTTY, isCI, noColor };
+module.exports = { W, H, V, TL, TR, BL, BR, T_, _T, VERSION, COLORS, isColorSupported };

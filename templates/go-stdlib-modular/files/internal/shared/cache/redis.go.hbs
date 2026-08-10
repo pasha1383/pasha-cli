@@ -1,0 +1,21 @@
+package cache
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/redis/go-redis/v9"
+	"{{github}}/{{projectName}}/internal/config"
+)
+
+func NewRedisClient(cfg *config.Config) (*redis.Client, error) {
+	client := redis.NewClient(&redis.Options{
+		Addr: fmt.Sprintf("%s:%s", cfg.RedisHost, cfg.RedisPort),
+	})
+
+	if err := client.Ping(context.Background()).Err(); err != nil {
+		return nil, fmt.Errorf("redis ping: %w", err)
+	}
+
+	return client, nil
+}

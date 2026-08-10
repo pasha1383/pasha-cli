@@ -1,0 +1,9 @@
+module {{github}}/{{projectName}}
+
+go 1.22
+
+require (
+{{#each goModules}}
+	{{module}} {{version}}
+{{/each}}
+)

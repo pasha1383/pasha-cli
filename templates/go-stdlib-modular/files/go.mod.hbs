@@ -1,0 +1,12 @@
+module {{github}}/{{projectName}}
+
+go 1.22
+
+require (
+{{#each goModules}}
+	{{module}} {{version}}
+{{/each}}
+{{#if useSwagger}}
+	github.com/swaggo/http-swagger/v2 v2.0.2
+{{/if}}
+)

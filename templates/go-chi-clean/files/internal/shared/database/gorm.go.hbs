@@ -1,0 +1,52 @@
+package database
+
+import (
+	"fmt"
+
+{{#if dbPostgres}}
+	"gorm.io/driver/postgres"
+{{/if}}
+{{#if dbMysql}}
+	"gorm.io/driver/mysql"
+{{/if}}
+{{#if dbSqlite}}
+	"gorm.io/driver/sqlite"
+{{/if}}
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+	"{{github}}/{{projectName}}/internal/config"
+)
+
+func Connect(cfg *config.Config) (*gorm.DB, error) {
+	var dsn string
+	var dialector gorm.Dialector
+
+{{#if dbPostgres}}
+	dsn = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable TimeZone=UTC",
+		cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DBName)
+	dialector = postgres.Open(dsn)
+{{/if}}
+{{#if dbMysql}}
+	dsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName)
+	dialector = mysql.Open(dsn)
+{{/if}}
+{{#if dbSqlite}}
+	dsn = cfg.DBFile
+	dialector = sqlite.Open(dsn)
+{{/if}}
+
+	logLevel := logger.Info
+	if cfg.AppEnv == "production" {
+		logLevel = logger.Warn
+	}
+
+	db, err := gorm.Open(dialector, &gorm.Config{
+		Logger: logger.Default.LogMode(logLevel),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("gorm open: %w", err)
+	}
+
+	return db, nil
+}

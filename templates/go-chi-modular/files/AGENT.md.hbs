@@ -1,0 +1,124 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository. Read this before
+generating or editing code.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Language:** Go 1.22+
+- **Framework:** Chi — lightweight, idiomatic Go HTTP router building on `net/http`.
+  No DI container. Wiring is manual (see `cmd/main.go`).
+- **Architecture:** {{architectureLabel}}
+- **Module:** `{{github}}/{{projectName}}`
+{{#if ormNone}}
+- **Data layer:** in-memory repositories (no ORM)
+{{else}}
+- **ORM:** GORM (`gorm.io/gorm`)
+{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+{{#if hasValidation}}
+- **Validation:** go-playground/validator
+{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis (go-redis/v9)
+{{/if}}
+{{#if hasBroker}}
+- **Message broker:** {{broker}}
+{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/swagger/index.html` (swaggo/swag, swaggo/http-swagger)
+{{/if}}
+{{#if useAuth}}
+- **Auth:** JWT (golang-jwt/jwt/v5, HMAC-SHA256)
+{{/if}}
+{{#if useHealthCheck}}
+- **Health:** `GET /health` reports liveness/readiness
+{{/if}}
+{{#if useRateLimit}}
+- **Rate limiting:** Token bucket via `golang.org/x/time/rate`
+{{/if}}
+
+## Modules
+
+{{#each modules}}
+- `{{this}}`
+{{/each}}
+
+## Commands
+
+```bash
+make run                 # build and run
+make build               # compile to bin/
+{{#if useTests}}
+make test                # run all tests
+make test-cover          # with coverage report
+{{/if}}
+{{#if useDocker}}
+make infra-up            # start databases/brokers via docker compose
+make infra-down
+{{/if}}
+{{#if useLint}}
+make lint                # golangci-lint
+{{/if}}
+{{#if useSwagger}}
+make swagger             # generate OpenAPI spec from annotations
+{{/if}}
+```
+
+## Directory structure
+
+```
+cmd/main.go              # Entry point — wires everything
+internal/
+  modules/
+    {{moduleName}}/      # Self-contained module
+      module.go          # Module struct — wires handler/service/repo, registers routes
+      handler.go         # HTTP handlers
+      service.go         # Business logic
+      repository.go      # Data access
+      model.go           # Domain model
+      dto.go             # Request/Response DTOs
+  config/                # App configuration
+  errors/                # Error types and HTTP error helpers
+  middleware/            # Chi-compatible middleware
+  shared/                # Shared infrastructure (DB, cache, health)
+  docs/                  # Generated Swagger docs
+```
+
+## Hard rules
+
+1. **No DI container.** Each module is a self-contained Go package that exposes
+   a `Module` struct with its own wiring. `cmd/main.go` creates and registers
+   each module.
+2. **Each module is self-contained.** A module directory contains everything
+   the module needs: model, repository, service, handler, DTOs, and a
+   `module.go` that acts as the public API.
+3. **`cmd/` is for entry points**, `internal/modules/` is for module code,
+   `internal/shared/` is for cross-cutting infrastructure.
+4. **Adding a module means creating one directory** with all files, then
+   registering it in `cmd/main.go`.
+5. **`module.go` is the public API** — it exports the `Module` struct and a
+   `NewModule()` constructor. Don't import internal files from other modules.
+6. **Handlers never touch the repository directly.** Always go through the
+   service layer.
+7. **`config/config.go` is the only file that reads `os.Getenv` directly.**
+8. **Chi handlers** use standard `http.ResponseWriter` and `*http.Request`.
+{{#if ormGorm}}
+9. **GORM models** use pointer receivers for `Save`/`Delete`.
+{{/if}}
+{{#if useAuth}}
+10. **Protected routes** use the auth middleware. User claims are stored in
+    request context via `middleware.UserContextKey`.
+{{/if}}
+{{#if useSwagger}}
+11. **Swagger annotations** go on handler methods.
+{{/if}}
+
+## When you are unsure
+
+Prefer asking over guessing. Generating a plausible-looking file in the wrong
+layer costs more to unpick than a clarifying question costs to answer.

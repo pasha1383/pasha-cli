@@ -1,0 +1,110 @@
+package main
+
+import (
+	"log"
+	"net/http"
+
+	"github.com/go-chi/chi/v5"
+	chimiddleware "github.com/go-chi/chi/v5/middleware"
+	"{{github}}/{{projectName}}/internal/config"
+	"{{github}}/{{projectName}}/internal/errors"
+{{#if hasSharedInfra}}
+	"{{github}}/{{projectName}}/internal/shared"
+{{/if}}
+{{#if ormGorm}}
+	"{{github}}/{{projectName}}/internal/shared/database"
+{{/if}}
+{{#if useRedis}}
+	"{{github}}/{{projectName}}/internal/shared/cache"
+{{/if}}
+{{#if useAuth}}
+	"{{github}}/{{projectName}}/internal/middleware"
+{{/if}}
+{{#if useRateLimit}}
+	"{{github}}/{{projectName}}/internal/middleware"
+{{/if}}
+{{#if useHealthCheck}}
+	"{{github}}/{{projectName}}/internal/shared/health"
+{{/if}}
+{{#if useSwagger}}
+	_ "{{github}}/{{projectName}}/internal/docs"
+	httpSwagger "github.com/swaggo/http-swagger"
+{{/if}}
+{{#each modules}}
+	"{{../github}}/{{../projectName}}/internal/modules/{{this}}"
+{{/each}}
+)
+
+func main() {
+	cfg := config.Load()
+
+	r := chi.NewRouter()
+
+	r.Use(chimiddleware.Logger)
+	r.Use(chimiddleware.Recoverer)
+	r.Use(chimiddleware.RequestID)
+	r.Use(chimiddleware.RealIP)
+
+{{#if ormGorm}}
+	db, err := database.Connect(cfg)
+	if err != nil {
+		log.Fatalf("failed to connect to database: %v", err)
+	}
+{{/if}}
+
+{{#if useRedis}}
+	redisClient, err := cache.NewRedisClient(cfg)
+	if err != nil {
+		log.Fatalf("failed to connect to redis: %v", err)
+	}
+	_ = redisClient
+{{/if}}
+
+{{#if useAuth}}
+	authMiddleware := middleware.NewAuthMiddleware(cfg.JWTSecret)
+{{/if}}
+
+{{#if useRateLimit}}
+	rateLimitMiddleware := middleware.NewRateLimiter(cfg.RateLimitRPS, cfg.RateLimitBurst)
+	r.Use(rateLimitMiddleware)
+{{/if}}
+
+{{#if useHealthCheck}}
+{{#if ormGorm}}
+	healthHandler := health.NewHandler(db)
+{{else}}
+	healthHandler := health.NewHandler(nil)
+{{/if}}
+	r.Get("/health", healthHandler.Check)
+{{/if}}
+
+{{#if useSwagger}}
+	r.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("/swagger/doc.json"),
+	))
+{{/if}}
+
+{{#each modules}}
+	{{snakeCase this}}Mod := {{snakeCase this}}.NewModule({{#if ../ormGorm}}db{{/if}})
+{{/each}}
+
+	r.Route("/api", func(r chi.Router) {
+{{#if useAuth}}
+		r.Use(authMiddleware.Handler)
+{{/if}}
+
+{{#each modules}}
+		r.Route("/{{this}}", {{snakeCase this}}Mod.RegisterRoutes)
+{{/each}}
+	})
+
+	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		errors.NotFound(w, "route not found")
+	})
+
+	addr := ":" + cfg.Port
+	log.Printf("server starting on %s", addr)
+	if err := http.ListenAndServe(addr, r); err != nil {
+		log.Fatalf("server failed: %v", err)
+	}
+}

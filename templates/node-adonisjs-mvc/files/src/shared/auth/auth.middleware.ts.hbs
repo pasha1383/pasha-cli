@@ -1,0 +1,12 @@
+import type { HttpContext } from '@adonisjs/core/http';
+import type { NextFn } from '@adonisjs/core/types/http';
+
+export default class AuthMiddleware {
+  async handle(ctx: HttpContext, next: NextFn) {
+    const token = ctx.request.header('Authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return ctx.response.status(401).json({ message: 'Unauthorized' });
+    }
+    await next();
+  }
+}

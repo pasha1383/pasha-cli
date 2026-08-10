@@ -1,5 +1,1 @@
-from flask import Blueprint
-
-{{camelCase moduleName}}_bp = Blueprint("{{snakeCase moduleName}}", __name__)
-
-from . import {{moduleName}}_views
+from .{{moduleName}}_views import {{camelCase moduleName}}_bp

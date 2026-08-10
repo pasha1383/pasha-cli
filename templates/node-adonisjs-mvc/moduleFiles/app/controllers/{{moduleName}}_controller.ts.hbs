@@ -1,0 +1,26 @@
+import { HttpContext } from '@adonisjs/core/http';
+import { inject } from '@adonisjs/core';
+
+export class {{pascalCase moduleName}}Controller {
+  async index({ response }: HttpContext) {
+    return response.json({ message: '{{pascalCase moduleName}} list' });
+  }
+
+  async show({ params, response }: HttpContext) {
+    return response.json({ id: params.id, message: '{{pascalCase moduleName}} detail' });
+  }
+
+  async store({ request, response }: HttpContext) {
+    const body = request.body();
+    return response.status(201).json(body);
+  }
+
+  async update({ params, request, response }: HttpContext) {
+    const body = request.body();
+    return response.json({ id: params.id, ...body });
+  }
+
+  async destroy({ params, response }: HttpContext) {
+    return response.status(204);
+  }
+}

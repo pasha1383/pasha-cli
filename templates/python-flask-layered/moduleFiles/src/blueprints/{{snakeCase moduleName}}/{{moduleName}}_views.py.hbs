@@ -1,8 +1,9 @@
-from flask import jsonify, request
+from flask import Blueprint, jsonify, request
 
-from . import {{camelCase moduleName}}_bp
 from .{{moduleName}}_repository import {{pascalCase moduleName}}Repository
 from .{{moduleName}}_service import {{pascalCase moduleName}}Service
+
+{{camelCase moduleName}}_bp = Blueprint("{{snakeCase moduleName}}", __name__)
 
 _repo = {{pascalCase moduleName}}Repository()
 

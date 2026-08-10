@@ -9,6 +9,14 @@
             "layered": {
               "label": "Layered (Handler-Service-Repository)",
               "template": "go-gin-layered"
+            },
+            "clean": {
+              "label": "Clean Architecture",
+              "template": "go-gin-clean"
+            },
+            "hexagonal": {
+              "label": "Hexagonal (Ports & Adapters)",
+              "template": "go-gin-hexagonal"
             }
           }
         },
@@ -18,6 +26,14 @@
             "layered": {
               "label": "Layered (Handler-Service-Repository)",
               "template": "go-echo-layered"
+            },
+            "clean": {
+              "label": "Clean Architecture",
+              "template": "go-echo-clean"
+            },
+            "hexagonal": {
+              "label": "Hexagonal (Ports & Adapters)",
+              "template": "go-echo-hexagonal"
             }
           }
         },
@@ -27,6 +43,14 @@
             "layered": {
               "label": "Layered (Handler-Service-Repository)",
               "template": "go-fiber-layered"
+            },
+            "clean": {
+              "label": "Clean Architecture",
+              "template": "go-fiber-clean"
+            },
+            "hexagonal": {
+              "label": "Hexagonal (Ports & Adapters)",
+              "template": "go-fiber-hexagonal"
             }
           }
         },
@@ -80,13 +104,9 @@
               "label": "Vertical Slice",
               "template": "node-nestjs-vertical"
             },
-            "onion": {
-              "label": "Onion Architecture",
-              "template": "node-nestjs-onion"
-            },
-            "event-driven": {
-              "label": "Event-Driven / Event Sourcing",
-              "template": "node-nestjs-event-driven"
+            "modular": {
+              "label": "Modular Monolith",
+              "template": "node-express-modular"
             }
           }
         },
@@ -108,10 +128,6 @@
             "modular": {
               "label": "Modular Monolith",
               "template": "node-express-modular"
-            },
-            "onion": {
-              "label": "Onion Architecture",
-              "template": "node-nestjs-onion"
             }
           }
         },
@@ -178,6 +194,10 @@
             "mvc": {
               "label": "MVC",
               "template": "python-django-mvc"
+            },
+            "layered": {
+              "label": "Layered (N-Tier)",
+              "template": "python-django-layered"
             }
           }
         },
@@ -195,6 +215,14 @@
             "hexagonal": {
               "label": "Hexagonal / DDD",
               "template": "python-fastapi-hexagonal"
+            },
+            "clean": {
+              "label": "Clean Architecture",
+              "template": "python-fastapi-clean"
+            },
+            "vertical": {
+              "label": "Vertical Slice",
+              "template": "python-fastapi-vertical"
             }
           }
         },
@@ -204,6 +232,10 @@
             "layered": {
               "label": "Layered (Blueprint-Service-Repository)",
               "template": "python-flask-layered"
+            },
+            "modular": {
+              "label": "Modular Monolith",
+              "template": "python-flask-modular"
             }
           }
         }

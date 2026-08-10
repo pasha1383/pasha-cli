@@ -1,8 +1,8 @@
 {{#if ormPrisma}}
 import { Injectable } from '@nestjs/common';
-import { {{pascalCase moduleName}} } from '../../../domain/entities/{{moduleName}}.entity';
-import { I{{pascalCase moduleName}}Repository } from '../../../domain/repositories/{{moduleName}}.repository.interface';
-import { PrismaService } from '../../../shared/database/prisma.service';
+import { {{pascalCase moduleName}} } from '../../domain/entities/{{moduleName}}.entity';
+import { I{{pascalCase moduleName}}Repository } from '../../domain/repositories/{{moduleName}}.repository.interface';
+import { PrismaService } from '../../shared/database/prisma.service';
 
 @Injectable()
 export class {{pascalCase moduleName}}Repository implements I{{pascalCase moduleName}}Repository {
@@ -31,8 +31,8 @@ export class {{pascalCase moduleName}}Repository implements I{{pascalCase module
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { {{pascalCase moduleName}} } from '../../../domain/entities/{{moduleName}}.entity';
-import { I{{pascalCase moduleName}}Repository } from '../../../domain/repositories/{{moduleName}}.repository.interface';
+import { {{pascalCase moduleName}} } from '../../domain/entities/{{moduleName}}.entity';
+import { I{{pascalCase moduleName}}Repository } from '../../domain/repositories/{{moduleName}}.repository.interface';
 import { {{pascalCase moduleName}}OrmEntity } from './{{moduleName}}.orm-entity';
 
 @Injectable()
@@ -61,8 +61,8 @@ export class {{pascalCase moduleName}}Repository implements I{{pascalCase module
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { {{pascalCase moduleName}} } from '../../../domain/entities/{{moduleName}}.entity';
-import { I{{pascalCase moduleName}}Repository } from '../../../domain/repositories/{{moduleName}}.repository.interface';
+import { {{pascalCase moduleName}} } from '../../domain/entities/{{moduleName}}.entity';
+import { I{{pascalCase moduleName}}Repository } from '../../domain/repositories/{{moduleName}}.repository.interface';
 import { {{pascalCase moduleName}}Model } from './{{moduleName}}.schema';
 
 @Injectable()
@@ -93,8 +93,8 @@ export class {{pascalCase moduleName}}Repository implements I{{pascalCase module
 {{/if}}
 {{#if ormNone}}
 import { Injectable } from '@nestjs/common';
-import { {{pascalCase moduleName}} } from '../../../domain/entities/{{moduleName}}.entity';
-import { I{{pascalCase moduleName}}Repository } from '../../../domain/repositories/{{moduleName}}.repository.interface';
+import { {{pascalCase moduleName}} } from '../../domain/entities/{{moduleName}}.entity';
+import { I{{pascalCase moduleName}}Repository } from '../../domain/repositories/{{moduleName}}.repository.interface';
 
 @Injectable()
 export class {{pascalCase moduleName}}Repository implements I{{pascalCase moduleName}}Repository {

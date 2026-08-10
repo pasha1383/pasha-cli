@@ -19,6 +19,8 @@
     "AGENT.md.hbs": "useAgentDocs",
     "src/middlewares/validate-body.middleware.ts.hbs": "useZod",
     "src/middlewares/handle-validation-errors.middleware.ts.hbs": "useExpressValidator",
+    "src/modules/{{moduleName}}/{{moduleName}}.service.spec.ts.hbs": "useTests",
+    "src/modules/{{moduleName}}/dto/create-{{moduleName}}.dto.ts.hbs": "hasValidation",
     "src/config/swagger.ts.hbs": "useSwagger",
     ".eslintrc.js": "useLint",
     ".prettierrc": "useLint",

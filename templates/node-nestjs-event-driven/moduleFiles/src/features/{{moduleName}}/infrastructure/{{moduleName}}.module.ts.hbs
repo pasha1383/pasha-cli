@@ -1,9 +1,9 @@
 import { Module, OnModuleInit } from '@nestjs/common';
-import { {{pascalCase moduleName}}Controller } from './infrastructure/{{moduleName}}.controller';
-import { Create{{pascalCase moduleName}}Handler } from './commands/create-{{moduleName}}.command-handler';
-import { {{pascalCase moduleName}}Projection } from './projections/{{moduleName}}.projection';
-import { EventStore } from './event-store/event-store';
-import { OutboxService } from './infrastructure/outbox/outbox.service';
+import { {{pascalCase moduleName}}Controller } from './{{moduleName}}.controller';
+import { Create{{pascalCase moduleName}}Handler } from '../commands/create-{{moduleName}}.command-handler';
+import { {{pascalCase moduleName}}Projection } from '../projections/{{moduleName}}.projection';
+import { EventStore } from '../event-store/event-store';
+import { OutboxService } from './outbox/outbox.service';
 
 @Module({
   controllers: [{{pascalCase moduleName}}Controller],

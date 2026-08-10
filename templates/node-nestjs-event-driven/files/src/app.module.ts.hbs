@@ -33,7 +33,7 @@ import { LoggingInterceptor } from './shared/auth/interceptors/logging.intercept
 import { HealthModule } from './shared/health/health.module';
 {{/if}}
 {{#each modules}}
-import { {{pascalCase this}}Module } from './features/{{this}}/{{this}}.module';
+import { {{pascalCase this}}Module } from './features/{{this}}/infrastructure/{{this}}.module';
 {{/each}}
 
 @Module({

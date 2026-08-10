@@ -1,7 +1,7 @@
 {{#if ormPrisma}}
 import { prisma } from '../../../shared/database/prisma.client';
-import { {{pascalCase moduleName}} } from '../../core/use-cases/{{moduleName}}/{{moduleName}}.entity';
-import { {{pascalCase moduleName}}Repository } from '../../core/use-cases/{{moduleName}}/{{moduleName}}.repository.interface';
+import { {{pascalCase moduleName}} } from '../../../core/use-cases/{{moduleName}}/{{moduleName}}.entity';
+import { {{pascalCase moduleName}}Repository } from '../../../core/use-cases/{{moduleName}}/{{moduleName}}.repository.interface';
 
 export class Prisma{{pascalCase moduleName}}Repository implements {{pascalCase moduleName}}Repository {
   async save(entity: {{pascalCase moduleName}}): Promise<void> {
@@ -26,8 +26,8 @@ export class Prisma{{pascalCase moduleName}}Repository implements {{pascalCase m
 {{#if ormTypeorm}}
 import { Repository } from 'typeorm';
 import { AppDataSource } from '../../../shared/database/typeorm.datasource';
-import { {{pascalCase moduleName}} } from '../../core/use-cases/{{moduleName}}/{{moduleName}}.entity';
-import { {{pascalCase moduleName}}Repository } from '../../core/use-cases/{{moduleName}}/{{moduleName}}.repository.interface';
+import { {{pascalCase moduleName}} } from '../../../core/use-cases/{{moduleName}}/{{moduleName}}.entity';
+import { {{pascalCase moduleName}}Repository } from '../../../core/use-cases/{{moduleName}}/{{moduleName}}.repository.interface';
 import { {{pascalCase moduleName}}OrmEntity } from './{{moduleName}}.orm-entity';
 
 export class Typeorm{{pascalCase moduleName}}Repository implements {{pascalCase moduleName}}Repository {
@@ -51,8 +51,8 @@ export class Typeorm{{pascalCase moduleName}}Repository implements {{pascalCase 
 {{/if}}
 {{#if ormMongoose}}
 import { {{pascalCase moduleName}}Model } from './{{moduleName}}.schema';
-import { {{pascalCase moduleName}} } from '../../core/use-cases/{{moduleName}}/{{moduleName}}.entity';
-import { {{pascalCase moduleName}}Repository } from '../../core/use-cases/{{moduleName}}/{{moduleName}}.repository.interface';
+import { {{pascalCase moduleName}} } from '../../../core/use-cases/{{moduleName}}/{{moduleName}}.entity';
+import { {{pascalCase moduleName}}Repository } from '../../../core/use-cases/{{moduleName}}/{{moduleName}}.repository.interface';
 
 export class Mongoose{{pascalCase moduleName}}Repository implements {{pascalCase moduleName}}Repository {
   async save(entity: {{pascalCase moduleName}}): Promise<void> {
@@ -75,8 +75,8 @@ export class Mongoose{{pascalCase moduleName}}Repository implements {{pascalCase
 }
 {{/if}}
 {{#if ormNone}}
-import { {{pascalCase moduleName}} } from '../../core/use-cases/{{moduleName}}/{{moduleName}}.entity';
-import { {{pascalCase moduleName}}Repository } from '../../core/use-cases/{{moduleName}}/{{moduleName}}.repository.interface';
+import { {{pascalCase moduleName}} } from '../../../core/use-cases/{{moduleName}}/{{moduleName}}.entity';
+import { {{pascalCase moduleName}}Repository } from '../../../core/use-cases/{{moduleName}}/{{moduleName}}.repository.interface';
 
 export class InMemory{{pascalCase moduleName}}Repository implements {{pascalCase moduleName}}Repository {
   private readonly items = new Map<string, {{pascalCase moduleName}}>();

@@ -1,6 +1,6 @@
 {{#if ormPrisma}}
-import { prisma } from '../../lib/database/prisma.client';
-import { Create{{pascalCase moduleName}}Input, {{pascalCase moduleName}}Data } from '../../types/{{moduleName}}';
+import { prisma } from '../lib/database/prisma.client';
+import { Create{{pascalCase moduleName}}Input, {{pascalCase moduleName}}Data } from '../types/{{moduleName}}';
 
 export class {{pascalCase moduleName}}Repository {
   async create(input: Create{{pascalCase moduleName}}Input): Promise<{{pascalCase moduleName}}Data> {
@@ -23,7 +23,7 @@ export class {{pascalCase moduleName}}Repository {
 {{/if}}
 {{#if ormMongoose}}
 import { Schema, model } from 'mongoose';
-import { Create{{pascalCase moduleName}}Input, {{pascalCase moduleName}}Data } from '../../types/{{moduleName}}';
+import { Create{{pascalCase moduleName}}Input, {{pascalCase moduleName}}Data } from '../types/{{moduleName}}';
 
 const {{camelCase moduleName}}Schema = new Schema(
   {
@@ -53,7 +53,7 @@ export class {{pascalCase moduleName}}Repository {
 {{/if}}
 {{#if ormNone}}
 import { randomUUID } from 'crypto';
-import { Create{{pascalCase moduleName}}Input, {{pascalCase moduleName}}Data } from '../../types/{{moduleName}}';
+import { Create{{pascalCase moduleName}}Input, {{pascalCase moduleName}}Data } from '../types/{{moduleName}}';
 
 export class {{pascalCase moduleName}}Repository {
   private readonly items = new Map<string, {{pascalCase moduleName}}Data>();

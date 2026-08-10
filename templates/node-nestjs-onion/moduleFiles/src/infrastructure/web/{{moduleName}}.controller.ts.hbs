@@ -4,11 +4,11 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 {{/if}}
 {{#if useAuth}}
 import { UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '../../../shared/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../shared/auth/guards/jwt-auth.guard';
 {{/if}}
-import { {{pascalCase moduleName}}Service } from '../../../application/services/{{moduleName}}.service';
-import { Create{{pascalCase moduleName}}Dto } from '../../../application/dto/create-{{moduleName}}.dto';
-import { {{pascalCase moduleName}} } from '../../../domain/entities/{{moduleName}}.entity';
+import { {{pascalCase moduleName}}Service } from '../../application/services/{{moduleName}}.service';
+import { Create{{pascalCase moduleName}}Dto } from '../../application/dto/create-{{moduleName}}.dto';
+import { {{pascalCase moduleName}} } from '../../domain/entities/{{moduleName}}.entity';
 
 {{#if useSwagger}}
 @ApiTags('{{moduleName}}')

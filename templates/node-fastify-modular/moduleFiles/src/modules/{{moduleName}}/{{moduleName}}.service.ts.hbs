@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto';
 import { {{pascalCase moduleName}} } from './{{moduleName}}.entity';
 import { {{pascalCase moduleName}}Repository } from './{{moduleName}}.repository';
 import { Create{{pascalCase moduleName}}Dto } from './dto/create-{{moduleName}}.dto';
-import { NotFoundError } from '../../../errors/app-error';
+import { NotFoundError } from '../../errors/app-error';
 
 export class {{pascalCase moduleName}}Service {
   constructor(private readonly repository: {{pascalCase moduleName}}Repository) {}

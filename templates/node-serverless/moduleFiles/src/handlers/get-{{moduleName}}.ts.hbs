@@ -2,15 +2,15 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { {{pascalCase moduleName}}Repository } from './{{moduleName}}.entity';
 
 {{#if useAuth}}
-import { verifyToken, withErrorHandler, AuthError } from '../../lib/middleware';
+import { verifyToken, withErrorHandler, AuthError } from '../lib/middleware';
 {{else}}
-import { withErrorHandler } from '../../lib/middleware';
+import { withErrorHandler } from '../lib/middleware';
 {{/if}}
-import { success, error } from '../../lib/response';
-import { NotFoundError } from '../../lib/middleware';
+import { success, error } from '../lib/response';
+import { NotFoundError } from '../lib/middleware';
 
 {{#if ormMongoose}}
-import { connectMongoose } from '../../lib/database/mongoose.connection';
+import { connectMongoose } from '../lib/database/mongoose.connection';
 connectMongoose();
 {{/if}}
 

@@ -1,6 +1,6 @@
 {{#if ormPrisma}}
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../../shared/database/prisma.service';
+import { PrismaService } from '../../shared/database/prisma.service';
 import { {{pascalCase moduleName}} } from './entities/{{moduleName}}.entity';
 import { Create{{pascalCase moduleName}}Dto } from './dto/create-{{moduleName}}.dto';
 

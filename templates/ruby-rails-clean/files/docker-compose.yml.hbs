@@ -29,7 +29,7 @@ services:
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: ${DB_USER:-{{snakeCase projectName}}}
+      POSTGRES_USER: {{{shellDefault "DB_USER" (snakeCase projectName)}}}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
       POSTGRES_DB: ${DB_NAME:-{{snakeCase projectName}}_development}
     ports:
@@ -37,7 +37,7 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-{{snakeCase projectName}}}"]
+      test: ["CMD-SHELL", "pg_isready -U {{{shellDefault "POSTGRES_USER" (snakeCase projectName)}}}"]
       interval: 5s
       timeout: 5s
       retries: 5

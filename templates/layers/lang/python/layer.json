@@ -1,0 +1,14 @@
+{
+  "name": "lang/python",
+  "label": "Python",
+  "description": "pyproject.toml, requirements skeleton, Dockerfile",
+  "kind": "lang",
+  "composable": true,
+  "prerequisites": ["python3", "pip3", "git"],
+  "gitInit": true,
+  "fileConditions": {
+    "Dockerfile.hbs": "useAppDockerfile",
+    ".dockerignore.hbs": "useAppDockerfile",
+    ".github": "useCI"
+  }
+}

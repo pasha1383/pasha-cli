@@ -1,0 +1,8 @@
+{
+  "name": "feature/redis",
+  "label": "Redis",
+  "description": "Redis module, config, health indicator",
+  "kind": "feature",
+  "composable": true,
+  "fileConditions": {}
+}

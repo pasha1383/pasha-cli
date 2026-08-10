@@ -1,0 +1,25 @@
+{
+  "name": "framework/gin",
+  "label": "Gin",
+  "description": "Router setup, middleware, error handling",
+  "kind": "framework",
+  "composable": true,
+  "stackFeatures": "go",
+  "modules": {
+    "enabled": true,
+    "message": "Module/entity name (e.g. product, user, order)",
+    "default": "product"
+  },
+  "fileConditions": {
+    "docker-compose.yml.hbs": "useDocker",
+    "internal/shared": "hasSharedInfra",
+    "internal/shared/database": "hasOrm",
+    "internal/shared/database/gorm.go.hbs": "ormGorm",
+    "internal/shared/cache": "useRedis",
+    "internal/shared/health": "useHealthCheck",
+    "internal/docs": "useSwagger",
+    "internal/middleware/auth.go.hbs": "useAuth",
+    "internal/middleware/ratelimit.go.hbs": "useRateLimit",
+    "AGENT.md.hbs": "useAgentDocs"
+  }
+}

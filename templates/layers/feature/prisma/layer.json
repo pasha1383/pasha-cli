@@ -1,0 +1,8 @@
+{
+  "name": "feature/prisma",
+  "label": "Prisma ORM",
+  "description": "Prisma schema, module, service bindings",
+  "kind": "feature",
+  "composable": true,
+  "fileConditions": {}
+}

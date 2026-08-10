@@ -1,0 +1,17 @@
+{
+  "name": "node-fastify-layered",
+  "label": "Fastify + Layered",
+  "language": "node",
+  "framework": "fastify",
+  "architecture": "layered",
+  "layers": [
+    "base",
+    "lang/node",
+    "framework/fastify",
+    "architecture/layered"
+  ],
+  "fileConditions": {},
+  "prerequisites": ["node", "npm", "git"],
+  "postInstall": ["npm install"],
+  "gitInit": true
+}

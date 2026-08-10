@@ -1,0 +1,18 @@
+{
+  "name": "lang/node",
+  "label": "Node.js / TypeScript",
+  "description": "tsconfig, package.json skeleton, Dockerfile, CI, jest config",
+  "kind": "lang",
+  "composable": true,
+  "prerequisites": ["node", "npm", "git"],
+  "postInstall": ["npm install"],
+  "gitInit": true,
+  "fileConditions": {
+    "Dockerfile.hbs": "useAppDockerfile",
+    ".dockerignore.hbs": "useAppDockerfile",
+    ".github": "useCI",
+    "jest.config.ts.hbs": "useTests",
+    "jest.e2e.config.ts.hbs": "useTests",
+    "test": "useTests"
+  }
+}

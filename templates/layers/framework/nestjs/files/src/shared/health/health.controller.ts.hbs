@@ -1,0 +1,61 @@
+import { Controller, Get } from '@nestjs/common';
+{{#if useSwagger}}
+import { ApiTags } from '@nestjs/swagger';
+{{/if}}
+import { HealthCheck, HealthCheckService, MemoryHealthIndicator } from '@nestjs/terminus';
+{{#if ormPrisma}}
+import { PrismaHealthIndicator } from './indicators/prisma.health-indicator';
+{{/if}}
+{{#if ormTypeorm}}
+import { TypeormHealthIndicator } from './indicators/typeorm.health-indicator';
+{{/if}}
+{{#if ormMongoose}}
+import { MongooseHealthIndicatorService } from './indicators/mongoose.health-indicator';
+{{/if}}
+{{#if healthChecksRedis}}
+import { RedisHealthIndicator } from './indicators/redis.health-indicator';
+{{/if}}
+
+{{#if useSwagger}}
+@ApiTags('health')
+{{/if}}
+@Controller('health')
+export class HealthController {
+  constructor(
+    private readonly health: HealthCheckService,
+    private readonly memory: MemoryHealthIndicator,
+{{#if ormPrisma}}
+    private readonly prismaIndicator: PrismaHealthIndicator,
+{{/if}}
+{{#if ormTypeorm}}
+    private readonly typeormIndicator: TypeormHealthIndicator,
+{{/if}}
+{{#if ormMongoose}}
+    private readonly mongooseIndicator: MongooseHealthIndicatorService,
+{{/if}}
+{{#if healthChecksRedis}}
+    private readonly redisIndicator: RedisHealthIndicator,
+{{/if}}
+  ) {}
+
+  @Get()
+  @HealthCheck()
+  check() {
+    return this.health.check([
+      // Always available: fails only if the process itself is critically low on memory.
+      () => this.memory.checkHeap('memory_heap', 300 * 1024 * 1024),
+{{#if ormPrisma}}
+      () => this.prismaIndicator.isHealthy('database'),
+{{/if}}
+{{#if ormTypeorm}}
+      () => this.typeormIndicator.isHealthy('database'),
+{{/if}}
+{{#if ormMongoose}}
+      () => this.mongooseIndicator.isHealthy('database'),
+{{/if}}
+{{#if healthChecksRedis}}
+      () => this.redisIndicator.isHealthy('redis'),
+{{/if}}
+    ]);
+  }
+}

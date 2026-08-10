@@ -1,0 +1,60 @@
+# {{projectName}}
+
+{{description}}
+
+Built with pasha CLI — **Layered (N-Tier)** architecture on NestJS.
+
+## Stack
+
+- **Data layer:** {{#if ormNone}}in-memory repositories{{else}}{{orm}}{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+- **Validation:** {{#if hasValidation}}{{validation}}{{else}}none{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis
+{{/if}}
+{{#if hasBroker}}
+- **Messaging:** {{broker}}
+{{/if}}
+
+## Run
+
+```bash
+cp .env.example .env
+{{#if useDocker}}
+npm run infra:up          # start docker services
+{{/if}}
+npm install
+{{#if ormPrisma}}
+npm run prisma:migrate    # create the database schema
+{{/if}}
+npm run start:dev
+```
+
+## Modules
+
+{{#each modules}}
+- `{{this}}` → `http://localhost:3000/{{this}}`
+{{/each}}
+
+## Structure (layers)
+
+Each module is self-contained and stacks three layers top to bottom:
+
+```
+src/modules/<module>/
+├── <module>.controller.ts   ← HTTP layer: routing, request/response
+├── <module>.service.ts      ← business logic
+├── <module>.repository.ts   ← data access
+├── dto/                     ← request shapes
+├── entities/                ← the model
+└── <module>.module.ts       ← NestJS wiring
+```
+
+Call direction: `controller` → `service` → `repository`. A layer only ever talks to the one directly below it.
+
+The repository is currently in-memory. To move to a real database, change the repository implementation only — the service and controller stay untouched.
+
+---
+Made with ❤️ by {{author}}

@@ -1,0 +1,8 @@
+{
+  "name": "architecture/clean",
+  "label": "Clean Architecture",
+  "description": "Core/adapters — use cases, entities, gateways",
+  "kind": "architecture",
+  "composable": true,
+  "fileConditions": {}
+}

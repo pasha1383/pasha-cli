@@ -1,0 +1,8 @@
+{
+  "name": "feature/kafka",
+  "label": "Kafka",
+  "description": "Kafka module, config",
+  "kind": "feature",
+  "composable": true,
+  "fileConditions": {}
+}

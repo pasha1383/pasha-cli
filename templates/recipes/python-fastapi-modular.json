@@ -1,0 +1,16 @@
+{
+  "name": "python-fastapi-modular",
+  "label": "Python + FastAPI + Modular Monolith",
+  "language": "python",
+  "framework": "fastapi",
+  "architecture": "modular",
+  "layers": [
+    "base",
+    "lang/python",
+    "framework/fastapi",
+    "architecture/modular"
+  ],
+  "fileConditions": {},
+  "prerequisites": ["python3", "pip3", "git"],
+  "gitInit": true
+}

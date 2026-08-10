@@ -1,0 +1,17 @@
+{
+  "name": "node-express-layered",
+  "label": "Express + Layered",
+  "language": "node",
+  "framework": "express",
+  "architecture": "layered",
+  "layers": [
+    "base",
+    "lang/node",
+    "framework/express",
+    "architecture/layered"
+  ],
+  "fileConditions": {},
+  "prerequisites": ["node", "npm", "git"],
+  "postInstall": ["npm install"],
+  "gitInit": true
+}

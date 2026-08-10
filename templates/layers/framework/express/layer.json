@@ -1,0 +1,33 @@
+{
+  "name": "framework/express",
+  "label": "Express",
+  "description": "App bootstrap, middleware, error handling",
+  "kind": "framework",
+  "composable": true,
+  "stackFeatures": "express",
+  "modules": {
+    "enabled": true,
+    "message": "Module/entity name (e.g. product, user, order)",
+    "default": "product"
+  },
+  "fileConditions": {
+    "docker-compose.yml.hbs": "useDocker",
+    "src/shared": "hasSharedInfra",
+    "src/shared/database": "hasOrm",
+    "src/shared/database/prisma.client.ts.hbs": "ormPrisma",
+    "src/shared/database/typeorm.datasource.ts.hbs": "ormTypeorm",
+    "src/shared/database/mongoose.connection.ts.hbs": "ormMongoose",
+    "src/shared/cache": "useRedis",
+    "AGENT.md.hbs": "useAgentDocs",
+    "src/AGENT.md.hbs": "useAgentDocs",
+    "src/routes/AGENT.md.hbs": "useAgentDocs",
+    "src/middlewares/validate-body.middleware.ts.hbs": "useZod",
+    "src/middlewares/handle-validation-errors.middleware.ts.hbs": "useExpressValidator",
+    "src/routes/{{moduleName}}/{{moduleName}}.validation.ts.hbs": "hasValidation",
+    "src/config/swagger.ts.hbs": "useSwagger",
+    ".eslintrc.js": "useLint",
+    ".prettierrc": "useLint",
+    "src/shared/auth": "useAuth",
+    "src/shared/health": "useHealthCheck"
+  }
+}

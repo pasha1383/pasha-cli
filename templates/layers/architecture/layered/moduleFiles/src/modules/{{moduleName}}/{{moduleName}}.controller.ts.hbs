@@ -1,0 +1,41 @@
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+{{#if useSwagger}}
+import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+{{/if}}
+import { {{pascalCase moduleName}}Service } from './{{moduleName}}.service';
+import { Create{{pascalCase moduleName}}Dto } from './dto/create-{{moduleName}}.dto';
+
+{{#if useSwagger}}
+@ApiTags('{{moduleName}}')
+{{/if}}
+@Controller('{{moduleName}}')
+export class {{pascalCase moduleName}}Controller {
+  constructor(private readonly service: {{pascalCase moduleName}}Service) {}
+
+  @Post()
+{{#if useSwagger}}
+  @ApiOperation({ summary: 'Create a {{moduleName}}' })
+  @ApiResponse({ status: 201, description: 'Created.' })
+{{/if}}
+  create(@Body() dto: Create{{pascalCase moduleName}}Dto) {
+    return this.service.create(dto);
+  }
+
+  @Get()
+{{#if useSwagger}}
+  @ApiOperation({ summary: 'List all {{moduleName}} records' })
+{{/if}}
+  findAll() {
+    return this.service.findAll();
+  }
+
+  @Get(':id')
+{{#if useSwagger}}
+  @ApiOperation({ summary: 'Get one {{moduleName}} by id' })
+  @ApiParam({ name: 'id' })
+  @ApiResponse({ status: 404, description: 'Not found.' })
+{{/if}}
+  findOne(@Param('id') id: string) {
+    return this.service.findOne(id);
+  }
+}

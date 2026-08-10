@@ -1,0 +1,17 @@
+{
+  "name": "node-serverless",
+  "label": "Serverless (AWS Lambda)",
+  "language": "node",
+  "framework": "serverless",
+  "architecture": "function",
+  "layers": [
+    "base",
+    "lang/node",
+    "framework/serverless",
+    "architecture/function"
+  ],
+  "fileConditions": {},
+  "prerequisites": ["node", "npm", "git"],
+  "postInstall": ["npm install"],
+  "gitInit": true
+}

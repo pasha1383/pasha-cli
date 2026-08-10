@@ -1,0 +1,17 @@
+{
+  "name": "node-koa-clean",
+  "label": "Koa + Clean Architecture",
+  "language": "node",
+  "framework": "koa",
+  "architecture": "clean",
+  "layers": [
+    "base",
+    "lang/node",
+    "framework/koa",
+    "architecture/clean"
+  ],
+  "fileConditions": {},
+  "prerequisites": ["node", "npm", "git"],
+  "postInstall": ["npm install"],
+  "gitInit": true
+}

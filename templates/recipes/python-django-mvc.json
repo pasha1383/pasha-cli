@@ -1,0 +1,16 @@
+{
+  "name": "python-django-mvc",
+  "label": "Python + Django + MVC",
+  "language": "python",
+  "framework": "django",
+  "architecture": "mvc",
+  "layers": [
+    "base",
+    "lang/python",
+    "framework/django",
+    "architecture/mvc"
+  ],
+  "fileConditions": {},
+  "prerequisites": ["python3", "pip3", "git"],
+  "gitInit": true
+}

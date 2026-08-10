@@ -1,0 +1,90 @@
+import { Module } from '@nestjs/common';
+{{#if needsCoreTokens}}
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+{{/if}}
+import { AppConfigModule } from './config/app.config';
+{{#if useRateLimit}}
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+{{/if}}
+{{#if ormPrisma}}
+import { PrismaModule } from './shared/database/prisma.module';
+{{/if}}
+{{#if ormTypeorm}}
+import { DatabaseModule } from './shared/database/typeorm.module';
+{{/if}}
+{{#if ormMongoose}}
+import { DatabaseModule } from './shared/database/mongoose.module';
+{{/if}}
+{{#if useRedis}}
+import { RedisModule } from './shared/cache/redis.module';
+{{/if}}
+{{#if useKafka}}
+import { MessagingModule } from './shared/messaging/kafka.module';
+{{/if}}
+{{#if useRabbitmq}}
+import { MessagingModule } from './shared/messaging/rabbitmq.module';
+{{/if}}
+{{#if useAuth}}
+import { AuthModule } from './shared/auth/auth.module';
+import { LoggingInterceptor } from './shared/auth/interceptors/logging.interceptor';
+{{/if}}
+{{#if useHealthCheck}}
+import { HealthModule } from './shared/health/health.module';
+{{/if}}
+{{#each modules}}
+import { {{pascalCase this}}Module } from './modules/{{this}}/{{this}}.module';
+{{/each}}
+
+@Module({
+  imports: [
+    AppConfigModule,
+{{#if useRateLimit}}
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => [
+        {
+          ttl: config.get<number>('THROTTLE_TTL', 60000),
+          limit: config.get<number>('THROTTLE_LIMIT', 100),
+        },
+      ],
+    }),
+{{/if}}
+{{#if ormPrisma}}
+    PrismaModule,
+{{/if}}
+{{#if ormTypeorm}}
+    DatabaseModule,
+{{/if}}
+{{#if ormMongoose}}
+    DatabaseModule,
+{{/if}}
+{{#if useRedis}}
+    RedisModule,
+{{/if}}
+{{#if hasBroker}}
+    MessagingModule,
+{{/if}}
+{{#if useAuth}}
+    AuthModule,
+{{/if}}
+{{#if useHealthCheck}}
+    HealthModule,
+{{/if}}
+{{#each modules}}
+    {{pascalCase this}}Module,
+{{/each}}
+  ],
+{{#if needsCoreTokens}}
+  providers: [
+{{#if useRateLimit}}
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+{{/if}}
+{{#if useAuth}}
+    { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
+{{/if}}
+  ],
+{{/if}}
+})
+export class AppModule {}

@@ -1,0 +1,16 @@
+{
+  "name": "python-fastapi-hexagonal",
+  "label": "Python + FastAPI + Hexagonal / DDD",
+  "language": "python",
+  "framework": "fastapi",
+  "architecture": "hexagonal",
+  "layers": [
+    "base",
+    "lang/python",
+    "framework/fastapi",
+    "architecture/hexagonal"
+  ],
+  "fileConditions": {},
+  "prerequisites": ["python3", "pip3", "git"],
+  "gitInit": true
+}

@@ -1,0 +1,16 @@
+{
+  "name": "go-fiber-layered",
+  "label": "Go + Fiber + Layered",
+  "language": "go",
+  "framework": "fiber",
+  "architecture": "layered",
+  "layers": [
+    "base",
+    "lang/go",
+    "framework/fiber",
+    "architecture/layered"
+  ],
+  "fileConditions": {},
+  "prerequisites": ["go", "git"],
+  "gitInit": true
+}

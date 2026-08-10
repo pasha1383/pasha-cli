@@ -1,0 +1,17 @@
+{
+  "name": "node-express-hexagonal",
+  "label": "Express + Hexagonal / DDD",
+  "language": "node",
+  "framework": "express",
+  "architecture": "hexagonal",
+  "layers": [
+    "base",
+    "lang/node",
+    "framework/express",
+    "architecture/hexagonal"
+  ],
+  "fileConditions": {},
+  "prerequisites": ["node", "npm", "git"],
+  "postInstall": ["npm install"],
+  "gitInit": true
+}

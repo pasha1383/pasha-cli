@@ -1,0 +1,17 @@
+{
+  "name": "node-express-modular",
+  "label": "Express + Modular Monolith",
+  "language": "node",
+  "framework": "express",
+  "architecture": "modular",
+  "layers": [
+    "base",
+    "lang/node",
+    "framework/express",
+    "architecture/modular"
+  ],
+  "fileConditions": {},
+  "prerequisites": ["node", "npm", "git"],
+  "postInstall": ["npm install"],
+  "gitInit": true
+}

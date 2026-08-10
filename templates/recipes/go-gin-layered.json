@@ -1,0 +1,16 @@
+{
+  "name": "go-gin-layered",
+  "label": "Go + Gin + Layered",
+  "language": "go",
+  "framework": "gin",
+  "architecture": "layered",
+  "layers": [
+    "base",
+    "lang/go",
+    "framework/gin",
+    "architecture/layered"
+  ],
+  "fileConditions": {},
+  "prerequisites": ["go", "git"],
+  "gitInit": true
+}

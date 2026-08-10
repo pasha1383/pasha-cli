@@ -1,0 +1,16 @@
+{
+  "name": "python-fastapi-layered",
+  "label": "Python + FastAPI + Layered",
+  "language": "python",
+  "framework": "fastapi",
+  "architecture": "layered",
+  "layers": [
+    "base",
+    "lang/python",
+    "framework/fastapi",
+    "architecture/layered"
+  ],
+  "fileConditions": {},
+  "prerequisites": ["python3", "pip3", "git"],
+  "gitInit": true
+}

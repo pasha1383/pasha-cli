@@ -1,0 +1,17 @@
+{
+  "name": "node-hapi-layered",
+  "label": "Hapi + Layered",
+  "language": "node",
+  "framework": "hapi",
+  "architecture": "layered",
+  "layers": [
+    "base",
+    "lang/node",
+    "framework/hapi",
+    "architecture/layered"
+  ],
+  "fileConditions": {},
+  "prerequisites": ["node", "npm", "git"],
+  "postInstall": ["npm install"],
+  "gitInit": true
+}

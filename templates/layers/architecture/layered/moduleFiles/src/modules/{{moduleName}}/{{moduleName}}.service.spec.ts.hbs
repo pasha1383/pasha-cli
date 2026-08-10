@@ -1,0 +1,40 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { {{pascalCase moduleName}}Service } from './{{moduleName}}.service';
+import { {{pascalCase moduleName}}Repository } from './{{moduleName}}.repository';
+
+describe('{{pascalCase moduleName}}Service', () => {
+  let service: {{pascalCase moduleName}}Service;
+  let repository: { save: jest.Mock; findAll: jest.Mock; findById: jest.Mock };
+
+  beforeEach(async () => {
+    repository = {
+      save: jest.fn().mockResolvedValue(undefined),
+      findAll: jest.fn().mockResolvedValue([]),
+      findById: jest.fn().mockResolvedValue(null),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        {{pascalCase moduleName}}Service,
+        { provide: {{pascalCase moduleName}}Repository, useValue: repository },
+      ],
+    }).compile();
+
+    service = module.get({{pascalCase moduleName}}Service);
+  });
+
+  it('creates an entity and persists it', async () => {
+    const result = await service.create({ name: 'test' } as any);
+    expect(repository.save).toHaveBeenCalled();
+    expect(result.name).toBe('test');
+  });
+
+  it('returns all entities', async () => {
+    await service.findAll();
+    expect(repository.findAll).toHaveBeenCalled();
+  });
+
+  it('throws NotFoundException when the entity does not exist', async () => {
+    await expect(service.findOne('missing-id')).rejects.toThrow();
+  });
+});

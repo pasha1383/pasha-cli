@@ -1,0 +1,17 @@
+{
+  "name": "node-fastify-hexagonal",
+  "label": "Fastify + Hexagonal / DDD",
+  "language": "node",
+  "framework": "fastify",
+  "architecture": "hexagonal",
+  "layers": [
+    "base",
+    "lang/node",
+    "framework/fastify",
+    "architecture/hexagonal"
+  ],
+  "fileConditions": {},
+  "prerequisites": ["node", "npm", "git"],
+  "postInstall": ["npm install"],
+  "gitInit": true
+}

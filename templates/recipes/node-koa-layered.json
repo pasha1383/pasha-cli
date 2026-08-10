@@ -1,0 +1,17 @@
+{
+  "name": "node-koa-layered",
+  "label": "Koa + Layered",
+  "language": "node",
+  "framework": "koa",
+  "architecture": "layered",
+  "layers": [
+    "base",
+    "lang/node",
+    "framework/koa",
+    "architecture/layered"
+  ],
+  "fileConditions": {},
+  "prerequisites": ["node", "npm", "git"],
+  "postInstall": ["npm install"],
+  "gitInit": true
+}

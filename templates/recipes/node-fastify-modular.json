@@ -1,0 +1,17 @@
+{
+  "name": "node-fastify-modular",
+  "label": "Fastify + Modular Monolith",
+  "language": "node",
+  "framework": "fastify",
+  "architecture": "modular",
+  "layers": [
+    "base",
+    "lang/node",
+    "framework/fastify",
+    "architecture/modular"
+  ],
+  "fileConditions": {},
+  "prerequisites": ["node", "npm", "git"],
+  "postInstall": ["npm install"],
+  "gitInit": true
+}

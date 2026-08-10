@@ -1,0 +1,16 @@
+{
+  "name": "python-flask-layered",
+  "label": "Python + Flask + Layered",
+  "language": "python",
+  "framework": "flask",
+  "architecture": "layered",
+  "layers": [
+    "base",
+    "lang/python",
+    "framework/flask",
+    "architecture/layered"
+  ],
+  "fileConditions": {},
+  "prerequisites": ["python3", "pip3", "git"],
+  "gitInit": true
+}

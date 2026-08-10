@@ -1,0 +1,10 @@
+import { ConfigModule } from '@nestjs/config';
+
+/**
+ * Loads .env once, globally, so every module can inject ConfigService
+ * without importing ConfigModule again.
+ */
+export const AppConfigModule = ConfigModule.forRoot({
+  isGlobal: true,
+  envFilePath: ['.env.local', '.env'],
+});

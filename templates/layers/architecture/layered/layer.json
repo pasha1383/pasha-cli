@@ -1,0 +1,8 @@
+{
+  "name": "architecture/layered",
+  "label": "Layered (N-Tier)",
+  "description": "Handler/Controller → Service → Repository layered shape",
+  "kind": "architecture",
+  "composable": true,
+  "fileConditions": {}
+}

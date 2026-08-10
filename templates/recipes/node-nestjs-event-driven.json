@@ -1,0 +1,17 @@
+{
+  "name": "node-nestjs-event-driven",
+  "label": "NestJS + Event-Driven",
+  "language": "node",
+  "framework": "nestjs",
+  "architecture": "event-driven",
+  "layers": [
+    "base",
+    "lang/node",
+    "framework/nestjs",
+    "architecture/event-driven"
+  ],
+  "fileConditions": {},
+  "prerequisites": ["node", "npm", "git"],
+  "postInstall": ["npm install"],
+  "gitInit": true
+}

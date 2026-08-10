@@ -1,0 +1,25 @@
+# AGENT.md — src/shared/
+
+Cross-cutting infrastructure. Code here is used by more than one feature
+module and knows nothing about any specific business domain.
+
+## What lives here
+
+{{#if hasOrm}}
+- `database/` — connection setup for {{orm}}.
+{{/if}}
+{{#if useRedis}}
+- `cache/` — Redis client and a small typed wrapper.
+{{/if}}
+{{#if hasBroker}}
+- `messaging/` — {{broker}} client registration.
+{{/if}}
+
+## Rules
+
+- **Nothing here may import from a feature module.** The dependency runs one
+  way: features depend on shared, never the reverse. If you find yourself
+  needing a domain type here, the code belongs in the feature instead.
+- Modules here are `@Global()` where it avoids repetitive imports — that is
+  deliberate, do not "fix" it by importing them per-module.
+- If only one feature uses something, it does not belong in `shared/`.

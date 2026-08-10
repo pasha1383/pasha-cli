@@ -1,0 +1,16 @@
+{
+  "name": "go-stdlib-layered",
+  "label": "Go + net/http + Layered",
+  "language": "go",
+  "framework": "stdlib",
+  "architecture": "layered",
+  "layers": [
+    "base",
+    "lang/go",
+    "framework/stdlib",
+    "architecture/layered"
+  ],
+  "fileConditions": {},
+  "prerequisites": ["go", "git"],
+  "gitInit": true
+}

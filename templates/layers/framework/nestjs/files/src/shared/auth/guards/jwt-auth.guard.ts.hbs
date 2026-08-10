@@ -1,0 +1,8 @@
+import { Injectable } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+
+/**
+ * Usage: @UseGuards(JwtAuthGuard) on a controller or a single route.
+ */
+@Injectable()
+export class JwtAuthGuard extends AuthGuard('jwt') {}

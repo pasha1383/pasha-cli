@@ -1,0 +1,16 @@
+{
+  "name": "go-chi-layered",
+  "label": "Go + Chi + Layered",
+  "language": "go",
+  "framework": "chi",
+  "architecture": "layered",
+  "layers": [
+    "base",
+    "lang/go",
+    "framework/chi",
+    "architecture/layered"
+  ],
+  "fileConditions": {},
+  "prerequisites": ["go", "git"],
+  "gitInit": true
+}

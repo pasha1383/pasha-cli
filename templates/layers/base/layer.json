@@ -1,0 +1,8 @@
+{
+  "name": "base",
+  "label": "Base layer",
+  "description": "LICENSE, .editorconfig, .gitignore, and README skeleton shared across all stacks",
+  "kind": "base",
+  "composable": true,
+  "fileConditions": {}
+}

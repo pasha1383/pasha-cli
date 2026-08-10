@@ -1,0 +1,27 @@
+# AGENT.md — src/shared/auth/
+
+JWT authentication. Self-contained: login endpoint, strategy, guard,
+decorator, and a request logging interceptor.
+
+## What lives here
+
+- `jwt.strategy.ts` — validates the bearer token, attaches the payload to
+  `request.user`.
+- `guards/jwt-auth.guard.ts` — apply with `@UseGuards(JwtAuthGuard)` on any
+  controller or route that should require a valid token.
+- `decorators/current-user.decorator.ts` — `@CurrentUser()` reads
+  `request.user` inside a guarded route. Never re-decode the token by hand.
+- `interceptors/logging.interceptor.ts` — registered globally in
+  `app.module.ts` via `APP_INTERCEPTOR`. Logs every request; not auth-specific,
+  it just lives here because it was added alongside auth.
+- `auth.service.ts` — **starter-only**. It checks credentials against
+  `ADMIN_USER`/`ADMIN_PASSWORD` env vars. Replace `validateUser` with a real
+  user lookup and hashed passwords before this is exposed anywhere real.
+
+## Rules
+
+- Feature modules stay public unless you explicitly add
+  `@UseGuards(JwtAuthGuard)` to them — this module does not protect anything
+  on its own.
+- Do not put business-domain logic here. This directory is about proving
+  identity, not about what an authenticated user is allowed to do.

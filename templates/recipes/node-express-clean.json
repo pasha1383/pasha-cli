@@ -1,0 +1,17 @@
+{
+  "name": "node-express-clean",
+  "label": "Express + Clean Architecture",
+  "language": "node",
+  "framework": "express",
+  "architecture": "clean",
+  "layers": [
+    "base",
+    "lang/node",
+    "framework/express",
+    "architecture/clean"
+  ],
+  "fileConditions": {},
+  "prerequisites": ["node", "npm", "git"],
+  "postInstall": ["npm install"],
+  "gitInit": true
+}

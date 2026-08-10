@@ -1,0 +1,16 @@
+{
+  "name": "go-echo-layered",
+  "label": "Go + Echo + Layered",
+  "language": "go",
+  "framework": "echo",
+  "architecture": "layered",
+  "layers": [
+    "base",
+    "lang/go",
+    "framework/echo",
+    "architecture/layered"
+  ],
+  "fileConditions": {},
+  "prerequisites": ["go", "git"],
+  "gitInit": true
+}

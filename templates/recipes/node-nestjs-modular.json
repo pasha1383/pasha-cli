@@ -1,0 +1,19 @@
+{
+  "name": "node-nestjs-modular",
+  "label": "NestJS + Modular Monolith",
+  "language": "node",
+  "framework": "nestjs",
+  "architecture": "modular",
+  "layers": [
+    "base",
+    "lang/node",
+    "framework/nestjs",
+    "architecture/modular"
+  ],
+  "fileConditions": {
+    "prisma": "ormPrisma"
+  },
+  "prerequisites": ["node", "npm", "git"],
+  "postInstall": ["npm install"],
+  "gitInit": true
+}

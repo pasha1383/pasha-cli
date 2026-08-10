@@ -1,0 +1,17 @@
+{
+  "name": "node-fastify-clean",
+  "label": "Fastify + Clean Architecture",
+  "language": "node",
+  "framework": "fastify",
+  "architecture": "clean",
+  "layers": [
+    "base",
+    "lang/node",
+    "framework/fastify",
+    "architecture/clean"
+  ],
+  "fileConditions": {},
+  "prerequisites": ["node", "npm", "git"],
+  "postInstall": ["npm install"],
+  "gitInit": true
+}

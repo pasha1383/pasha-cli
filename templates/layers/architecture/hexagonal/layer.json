@@ -1,0 +1,8 @@
+{
+  "name": "architecture/hexagonal",
+  "label": "Hexagonal / DDD",
+  "description": "Ports & adapters — domain/application/infrastructure shape",
+  "kind": "architecture",
+  "composable": true,
+  "fileConditions": {}
+}

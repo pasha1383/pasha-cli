@@ -1,0 +1,20 @@
+# AGENT.md — src/
+
+Application root. Architecture: **{{architectureLabel}}**.
+
+## What lives here
+
+- `main.ts` — bootstrap only. Global pipes, prefixes, and `listen()`.
+- `app.module.ts` — the module registry. Every feature module must be
+  imported here.
+- `config/` — environment loading and global pipes.
+- `shared/` — cross-cutting infrastructure (database, cache, messaging)
+  used by more than one module.
+
+## Rules
+
+- Do not put business logic in `main.ts` or `app.module.ts`.
+- Anything specific to one feature belongs in that feature's directories,
+  not in `shared/`.
+- When you add a new feature module, add its import to `app.module.ts` in
+  the same change — a module that isn't registered silently does nothing.

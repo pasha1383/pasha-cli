@@ -1,0 +1,20 @@
+import { Injectable } from '@nestjs/common';
+import { HealthCheckError, HealthIndicator, HealthIndicatorResult } from '@nestjs/terminus';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+
+@Injectable()
+export class TypeormHealthIndicator extends HealthIndicator {
+  constructor(@InjectDataSource() private readonly dataSource: DataSource) {
+    super();
+  }
+
+  async isHealthy(key: string): Promise<HealthIndicatorResult> {
+    try {
+      await this.dataSource.query('SELECT 1');
+      return this.getStatus(key, true);
+    } catch (error) {
+      throw new HealthCheckError('TypeORM check failed', this.getStatus(key, false, { error: String(error) }));
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "name": "node-nestjs-clean",
+  "label": "NestJS + Clean Architecture",
+  "language": "node",
+  "framework": "nestjs",
+  "architecture": "clean",
+  "layers": [
+    "base",
+    "lang/node",
+    "framework/nestjs",
+    "architecture/clean",
+    "feature/prisma",
+    "feature/redis",
+    "feature/kafka"
+  ],
+  "fileConditions": {
+    "feature/prisma": "ormPrisma",
+    "feature/redis": "useRedis",
+    "feature/kafka": "useKafka"
+  },
+  "prerequisites": ["node", "npm", "git"],
+  "postInstall": ["npm install"],
+  "gitInit": true
+}

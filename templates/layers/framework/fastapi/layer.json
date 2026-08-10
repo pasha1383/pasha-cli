@@ -1,0 +1,27 @@
+{
+  "name": "framework/fastapi",
+  "label": "FastAPI",
+  "description": "App bootstrap, middleware, error handling",
+  "kind": "framework",
+  "composable": true,
+  "stackFeatures": "python",
+  "modules": {
+    "enabled": true,
+    "message": "Module/entity name (e.g. product, user, order)",
+    "default": "product"
+  },
+  "fileConditions": {
+    "docker-compose.yml.hbs": "useDocker",
+    "src/shared": "hasSharedInfra",
+    "src/shared/database": "hasOrm",
+    "src/shared/database/sqlalchemy.py.hbs": "ormSqlalchemy",
+    "src/shared/database/tortoise.py.hbs": "ormTortoise",
+    "src/shared/database/none.py.hbs": "ormNone",
+    "src/shared/cache": "useRedis",
+    "src/shared/auth": "useAuth",
+    "src/shared/health": "useHealthCheck",
+    "AGENT.md.hbs": "useAgentDocs",
+    "src/routes/{{snakeCase moduleName}}/{{moduleName}}_test.py.hbs": "useTests",
+    "src/routes/{{snakeCase moduleName}}/{{moduleName}}_schema.py.hbs": "hasValidation"
+  }
+}

@@ -1,0 +1,97 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository. Read this before
+generating or editing code. Each significant directory has its own `AGENT.md`
+with rules specific to that layer — always read the one closest to the file
+you are editing.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Framework:** NestJS (TypeScript, strict mode)
+- **Architecture:** {{architectureLabel}}
+- **Data layer:** {{#if ormNone}}in-memory repositories (no ORM){{else}}{{orm}}{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+- **Validation:** {{#if hasValidation}}{{validation}}{{else}}none{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis (via `ioredis`)
+{{/if}}
+{{#if hasBroker}}
+- **Message broker:** {{broker}}
+{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger at `/api/docs`
+{{/if}}
+{{#if useAuth}}
+- **Auth:** JWT (starter credentials in `.env` — replace before production)
+{{/if}}
+{{#if useHealthCheck}}
+- **Health check:** `GET /health`
+{{/if}}
+{{#if useRateLimit}}
+- **Rate limiting:** enabled globally (see `THROTTLE_TTL`/`THROTTLE_LIMIT` in `.env`)
+{{/if}}
+
+## Modules
+
+{{#each modules}}
+- `{{this}}`
+{{/each}}
+
+## Commands
+
+```bash
+npm run start:dev      # watch mode
+npm run build
+{{#if useDocker}}
+npm run infra:up       # start databases/brokers via docker compose
+npm run infra:down
+{{/if}}
+{{#if ormPrisma}}
+npm run prisma:migrate # create and apply a migration
+npm run prisma:generate
+{{/if}}
+{{#if useLint}}
+npm run lint
+npm run format
+{{/if}}
+{{#if useTests}}
+npm run test           # unit tests
+npm run test:e2e       # end-to-end tests
+{{/if}}
+```
+
+## Hard rules
+
+1. **Respect the architecture.** The dependency direction described in the
+   per-directory `AGENT.md` files is not a suggestion. Do not add an import
+   that points the wrong way to "make it work".
+2. **TypeScript is strict.** No `any`, no non-null assertions to silence the
+   compiler. DTO fields use `!:` because the framework populates them — that
+   is the one sanctioned exception.
+3. **Adding a module means adding every layer.** A new feature gets its
+   full slice; do not put a new entity's logic inside an existing module.
+4. **Register new modules** in `src/app.module.ts` or they will not load.
+{{#if hasValidation}}
+5. **Every request body needs validation.** Never accept an unvalidated DTO.
+{{/if}}
+6. **Secrets come from `ConfigService`**, never from hardcoded literals or
+   direct `process.env` reads outside the config layer.
+{{#if useAuth}}
+7. **A route is public unless explicitly guarded.** Add
+   `@UseGuards(JwtAuthGuard)` deliberately — do not assume auth is enforced
+   somewhere else.
+{{/if}}
+{{#if useTests}}
+8. **New use-cases/services get a spec file.** Follow the pattern already in
+   each module — mock the repository, do not hit a real database in unit
+   tests.
+{{/if}}
+
+## When you are unsure
+
+Prefer asking over guessing. Generating a plausible-looking file in the wrong
+layer costs more to unpick than a clarifying question costs to answer.

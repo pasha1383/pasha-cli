@@ -360,7 +360,7 @@ function buildContext(flags, modules, baseAnswers, ctx) {
   if (flavor === 'go' || flavor === 'chi' || flavor === 'go-stdlib') {
     const deps = fm.resolveDependencies(flags);
     fullCtx.goModules = deps.goModules;
-  } else if (flavor === 'python' || flavor === 'flask') {
+  } else if (flavor === 'python' || flavor === 'flask' || flavor === 'litestar' || flavor === 'tornado') {
     const deps = fm.resolveDependencies(flags);
     fullCtx.requirementsTxt = deps.requirements.join('\n') + '\n';
     if (deps.devRequirements && deps.devRequirements.length > 0)

@@ -6,9 +6,13 @@ const ORM_DATABASE_SUPPORT = {
   mongoose: ['mongo'],
   gorm: ['postgres', 'mysql', 'sqlite'],
   lucid: ['postgres', 'mysql', 'sqlite'],
+  eloquent: ['postgres', 'mysql', 'sqlite'],
   django: ['postgres', 'mysql', 'sqlite'],
   sqlalchemy: ['postgres', 'mysql', 'sqlite'],
   tortoise: ['postgres', 'mysql', 'sqlite'],
+  sqlx: ['postgres', 'mysql', 'sqlite'],
+  diesel: ['postgres', 'mysql', 'sqlite'],
+  'sea-orm': ['postgres', 'mysql', 'sqlite'],
   none: [],
 };
 

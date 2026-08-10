@@ -137,6 +137,18 @@
             "clean": {
               "label": "Clean Architecture",
               "template": "node-koa-clean"
+            },
+            "modular": {
+              "label": "Modular Monolith",
+              "template": "node-koa-modular"
+            },
+            "hexagonal": {
+              "label": "Hexagonal / DDD",
+              "template": "node-koa-hexagonal"
+            },
+            "vertical": {
+              "label": "Vertical Slice",
+              "template": "node-koa-vertical"
             }
           }
         },
@@ -167,6 +179,22 @@
             "layered": {
               "label": "Layered (Handler-Service-Repository)",
               "template": "node-hapi-layered"
+            },
+            "clean": {
+              "label": "Clean Architecture",
+              "template": "node-hapi-clean"
+            },
+            "hexagonal": {
+              "label": "Hexagonal / DDD",
+              "template": "node-hapi-hexagonal"
+            },
+            "vertical": {
+              "label": "Vertical Slice",
+              "template": "node-hapi-vertical"
+            },
+            "modular": {
+              "label": "Modular Monolith",
+              "template": "node-hapi-modular"
             }
           }
         },
@@ -201,6 +229,10 @@
             "hexagonal": {
               "label": "Hexagonal / DDD",
               "template": "node-adonisjs-hexagonal"
+            },
+            "vertical": {
+              "label": "Vertical Slice",
+              "template": "node-adonisjs-vertical"
             }
           }
         }
@@ -299,6 +331,66 @@
             "hexagonal": {
               "label": "Hexagonal / DDD",
               "template": "python-tornado-hexagonal"
+            }
+          }
+        }
+      }
+    },
+    "ruby": {
+      "label": "Ruby",
+      "frameworks": {
+        "rails": {
+          "label": "Ruby on Rails",
+          "architectures": {
+            "mvc": {
+              "label": "MVC (Model-View-Controller)",
+              "template": "ruby-rails-mvc"
+            },
+            "layered": {
+              "label": "Layered (Service-Repository)",
+              "template": "ruby-rails-layered"
+            },
+            "clean": {
+              "label": "Clean Architecture",
+              "template": "ruby-rails-clean"
+            },
+            "modular": {
+              "label": "Modular Monolith (Engines)",
+              "template": "ruby-rails-modular"
+            },
+            "vertical": {
+              "label": "Vertical Slice",
+              "template": "ruby-rails-vertical"
+            }
+          }
+        }
+      }
+    },
+    "rust": {
+      "label": "Rust",
+      "frameworks": {
+        "axum": {
+          "label": "Axum",
+          "architectures": {
+            "layered": {
+              "label": "Layered (Handler-Service-Repository)",
+              "template": "rust-axum-layered"
+            },
+            "clean": {
+              "label": "Clean Architecture",
+              "template": "rust-axum-clean"
+            },
+            "hexagonal": {
+              "label": "Hexagonal / DDD",
+              "template": "rust-axum-hexagonal"
+            },
+            "vertical": {
+              "label": "Vertical Slice",
+              "template": "rust-axum-vertical"
+            },
+            "modular": {
+              "label": "Modular Monolith",
+              "template": "rust-axum-modular"
             }
           }
         }

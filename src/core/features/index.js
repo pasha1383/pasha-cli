@@ -16,6 +16,9 @@ const aspnet = require('./aspnet');
 const adonis = require('./adonis');
 const litestar = require('./litestar');
 const tornado = require('./tornado');
+const laravel = require('./laravel');
+const axum = require('./axum');
+const rails = require('./rails');
 
 const REGISTRY = {
   nestjs,
@@ -34,6 +37,9 @@ const REGISTRY = {
   adonis,
   litestar,
   tornado,
+  laravel,
+  axum,
+  rails,
 };
 
 // Validates at load time that every module exports the required interface

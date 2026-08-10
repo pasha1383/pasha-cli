@@ -10,7 +10,7 @@ The innermost layer. Pure business concepts.
 - **Zero imports from `application/`, `infrastructure/`, or `shared/`.**
   The dependency arrow points inwards only.
 - Entities hold state and the invariants that protect it. A rule that is
-  always true of a `{{#if modules.0}}{{pascalCase modules.0}}{{else}}Thing{{/if}}` belongs here, not in a use-case.
+  always true of a `{{#if modules.[0]}}{{pascalCase modules.[0]}}{{else}}Thing{{/if}}` belongs here, not in a use-case.
 
 ## What goes where
 

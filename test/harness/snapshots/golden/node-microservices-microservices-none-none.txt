@@ -1,0 +1,1 @@
+❌ Unknown stack flavor "false" — available: nestjs, express, fastify, koa, serverless, python, flask, go, go-stdlib, chi, hapi, spring-boot, aspnet, adonis, litestar, tornado, laravel, axum, rails

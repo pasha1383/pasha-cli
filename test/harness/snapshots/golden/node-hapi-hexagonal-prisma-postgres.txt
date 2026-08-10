@@ -1,0 +1,6 @@
+  … Generating files...
+  ✓ Files generated (1 module)
+
+Project ready at <OUT_DIR>/<PROJ_NAME>
+
+Next: cd <PROJ_NAME>

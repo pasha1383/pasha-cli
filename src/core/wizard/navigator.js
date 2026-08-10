@@ -161,6 +161,16 @@ class Navigator {
 
   async _askRetrySkip() {
     const io = require('../../ui/io');
+    let isTui = false;
+    try {
+      const { isTuiMode } = require('../../ui/prompts');
+      isTui = isTuiMode();
+    } catch (_) { /* prompts module not loaded */ }
+
+    if (isTui) {
+      return 'skip';
+    }
+
     io.writeLine('\n[enter] Skip  [r] Retry  (default: skip):');
     return new Promise((resolve) => {
       const stdin = io.getIO().input;

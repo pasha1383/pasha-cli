@@ -273,7 +273,9 @@ function App() {
   }
 
   var ctx;
-  if (state.view === 'summary') ctx = 'summary';
+  if (state.view === 'done') ctx = 'done';
+  else if (state.view === 'progress') ctx = 'progress';
+  else if (state.view === 'summary') ctx = 'summary';
   else if (state.questionType === 'checkbox') ctx = 'multi-select';
   else if (state.questionType === 'list' || state.questionType === 'select') ctx = 'select';
   else ctx = 'wizard';

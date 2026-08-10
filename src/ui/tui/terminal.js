@@ -65,25 +65,32 @@ function registerExitHandlers(restoreFn) {
     (restoreFn || restore)();
   };
 
-  const sigHandler = () => {
-    cleanup();
-    process.exit(128 + 2);
-  };
-
-  process.on('SIGINT', sigHandler);
-  process.on('SIGTERM', sigHandler);
-  process.on('SIGHUP', sigHandler);
-
-  process.on('uncaughtException', (err) => {
+  const uncaughtHandler = (err) => {
     cleanup();
     console.error(err);
     process.exit(1);
-  });
+  };
+
+  const sigHandler = (sig) => {
+    cleanup();
+    const codes = { SIGINT: 130, SIGTERM: 143, SIGHUP: 129 };
+    process.exit(codes[sig] || 128);
+  };
+
+  const onSigint = () => sigHandler('SIGINT');
+  const onSigterm = () => sigHandler('SIGTERM');
+  const onSighup = () => sigHandler('SIGHUP');
+
+  process.on('SIGINT', onSigint);
+  process.on('SIGTERM', onSigterm);
+  process.on('SIGHUP', onSighup);
+  process.on('uncaughtException', uncaughtHandler);
 
   return () => {
-    process.removeListener('SIGINT', sigHandler);
-    process.removeListener('SIGTERM', sigHandler);
-    process.removeListener('SIGHUP', sigHandler);
+    process.removeListener('SIGINT', onSigint);
+    process.removeListener('SIGTERM', onSigterm);
+    process.removeListener('SIGHUP', onSighup);
+    process.removeListener('uncaughtException', uncaughtHandler);
   };
 }
 

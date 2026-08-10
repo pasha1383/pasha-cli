@@ -71,6 +71,19 @@ function mapKey(input, info) {
 }
 
 function hintsForContext(context) {
+  if (context === 'done') {
+    return [
+      { key: '\u23CE', label: 'exit' },
+      { key: '^C', label: 'quit' },
+    ];
+  }
+
+  if (context === 'progress') {
+    return [
+      { key: '^C', label: 'quit' },
+    ];
+  }
+
   const base = [
     { key: '\u2191\u2193', label: 'move' },
     { key: '\u23CE', label: 'confirm' },

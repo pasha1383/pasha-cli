@@ -31,6 +31,7 @@ const TEMPLATES_ROOT = path.join(__dirname, '../../../templates');
 let _manifest = null;
 
 function progressHeader(current, total, label) {
+  if (isTuiMode()) return;
   const barWidth = 20;
   const filled = Math.round((current / total) * barWidth);
   const empty = barWidth - filled;
@@ -397,7 +398,9 @@ async function renderProject(ctx, renderOpts = {}) {
   const shouldInclude = makeIncludeCheck(tc.fileConditions, ctx);
   const modules = ctx.modules || [];
 
-  const sp = new Spinner('Generating files...').start();
+  const tui = isTuiMode();
+  const silentSpinner = { start() { return this; }, succeed() { return this; }, fail() { return this; }, stop() {}, warn() {} };
+  const sp = tui ? silentSpinner : new Spinner('Generating files...').start();
   try {
     await fs.ensureDir(outDir);
 
@@ -420,7 +423,7 @@ async function renderProject(ctx, renderOpts = {}) {
   }
 
   if (!renderOpts.skipInstall && tc.postInstall && tc.postInstall.includes('npm install')) {
-    section('Installing dependencies');
+    if (!tui) section('Installing dependencies');
     const npmPath = resolveCommandPath('npm');
     if (!npmPath) {
       log.fail('Could not resolve npm on PATH.');
@@ -441,7 +444,7 @@ async function renderProject(ctx, renderOpts = {}) {
       { type: 'confirm', name: 'doGit', message: 'Run git init and first commit?', default: true },
     ]);
     if (doGit) {
-      const sg = new Spinner('Setting up git...').start();
+      const sg = tui ? silentSpinner : new Spinner('Setting up git...').start();
       try {
         await run('git', ['init'], { cwd: outDir, stdio: 'ignore' });
         await run('git', ['add', '.'], { cwd: outDir, stdio: 'ignore' });
@@ -974,26 +977,39 @@ async function createInteractive(opts) {
 async function createTui(options) {
   const tuiTerminal = require('../../ui/tui/terminal');
   const { initInk, getInk } = require('../../ui/tui/ink-proxy');
+
+  if (!process.stdout.isTTY || !process.stdin.isTTY) {
+    log.warn('TUI mode requires a real terminal. Falling back to non-interactive.');
+    return await create(Object.assign({}, options, { tui: false }));
+  }
+
   _tuiTerminal = tuiTerminal;
 
-  await initInk();
-  const ink = getInk();
-
-  const { App } = require('../../ui/tui/app');
-  const { showProgress, showSummary, showDone } = App;
-
-  setTuiMode(true);
-  setTuiApp(App);
-
-  tuiTerminal.setup();
-  tuiTerminal.registerExitHandlers(() => {
-    tuiTerminal.restore();
-  });
-
-  const React = require('react');
-  const { waitUntilExit } = ink.render(React.createElement(App));
-
+  let _cleanupExitHandlers = null;
   try {
+    await initInk();
+    const ink = getInk();
+
+    const tuiApp = require('../../ui/tui/app');
+    const { showProgress, showSummary, showDone } = tuiApp;
+
+    setTuiMode(true);
+    setTuiApp(tuiApp);
+
+    tuiTerminal.setup();
+    _cleanupExitHandlers = tuiTerminal.registerExitHandlers(() => {
+      tuiTerminal.restore();
+    });
+
+    const React = require('react');
+    const { waitUntilExit } = ink.render(React.createElement(tuiApp.App));
+
+    const _log = console.log;
+    const _error = console.error;
+    console.log = function () {};
+    console.error = function () {
+      _error.apply(console, arguments);
+    };
     let manifest;
     try { manifest = await loadManifest(); }
     catch (err) {
@@ -1114,7 +1130,10 @@ async function createTui(options) {
 
     await waitUntilExit();
   } catch (err) {
+    if (_cleanupExitHandlers) _cleanupExitHandlers();
     tuiTerminal.restore();
+    if (_log) console.log = _log;
+    if (_error) console.error = _error;
     if (err && err.name === 'ExitPromptError') {
       console.log('');
       log.warn('Cancelled.');
@@ -1122,6 +1141,9 @@ async function createTui(options) {
     }
     throw err;
   } finally {
+    if (_cleanupExitHandlers) _cleanupExitHandlers();
+    if (_log) console.log = _log;
+    if (_error) console.error = _error;
     setTuiMode(false);
     tuiTerminal.reset();
   }

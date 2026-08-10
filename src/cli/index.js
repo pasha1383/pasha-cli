@@ -30,6 +30,14 @@ program
   .option('--no-redis', 'Disable Redis')
   .option('--extras <list>', 'Comma-separated extras')
   .option('--modules <list>', 'Comma-separated module names')
+  .option('--project-name <name>', 'Project name')
+  .option('--author <name>', 'Author full name')
+  .option('--github <user>', 'GitHub username')
+  .option('--description <desc>', 'Short project description')
+  .option('--agent-docs', 'Enable AGENT.md generation')
+  .option('--no-agent-docs', 'Disable AGENT.md generation')
+  .option('--skip-install', 'Skip npm install / post-install steps')
+  .option('--skip-git', 'Skip git init prompt')
   .option('--dry-run', 'Print file tree without writing')
   .action(async (opts) => {
     try {

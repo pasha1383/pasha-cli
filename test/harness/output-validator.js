@@ -174,6 +174,20 @@ async function validatePythonImports(outDir) {
   const sourceExts = SOURCE_EXTS_BY_LANG.python;
   const files = await listAllFiles(outDir);
 
+  const topLevelModules = new Set();
+  for (const entry of await fs.readdir(outDir)) {
+    if (entry.startsWith('.') || entry === 'node_modules' || entry === '__pycache__') continue;
+    const absEntry = path.join(outDir, entry);
+    try {
+      const stat = await fs.stat(absEntry);
+      if (stat.isDirectory()) {
+        topLevelModules.add(entry);
+      } else if (stat.isFile() && entry.endsWith('.py')) {
+        topLevelModules.add(entry.replace(/\.py$/, ''));
+      }
+    } catch (_) {}
+  }
+
   for (const { absPath, relPath } of files) {
     const ext = path.extname(relPath).toLowerCase();
     if (!sourceExts.includes(ext)) continue;
@@ -186,6 +200,9 @@ async function validatePythonImports(outDir) {
       while ((match = importRegex.exec(content)) !== null) {
         const modulePath = match[1];
         const moduleParts = modulePath.split('.');
+
+        if (!topLevelModules.has(moduleParts[0])) continue;
+
         const filePath = path.join(outDir, ...moduleParts);
 
         const candidates = [
@@ -315,7 +332,8 @@ async function validateTypeScript(outDir) {
 }
 
 async function validatePython(outDir) {
-  const files = await listAllFiles(outDir);
+  const absOutDir = path.resolve(outDir);
+  const files = await listAllFiles(absOutDir);
   const pyFiles = files.filter((f) => path.extname(f.relPath).toLowerCase() === '.py');
   const errors = [];
 
@@ -323,7 +341,7 @@ async function validatePython(outDir) {
     return { passed: true, totalFiles: 0, errors: [] };
   }
 
-  const tmpFile = path.join(outDir, '.pasha_compile_check.py');
+  const tmpFile = path.join(absOutDir, '.pasha_compile_check.py');
   await fs.writeFile(tmpFile, `
 import sys
 for p in sys.argv[1:]:
@@ -336,9 +354,8 @@ for p in sys.argv[1:]:
 `.trim() + '\n', 'utf8');
 
   try {
-    const pyPaths = pyFiles.map((f) => f.absPath);
-    execSync(`python3 "${tmpFile}" ${pyPaths.map((p) => `"${p}"`).join(' ')}`, {
-      cwd: outDir,
+    execSync(`python3 "${tmpFile}" ${pyFiles.map((f) => `"${f.absPath}"`).join(' ')}`, {
+      cwd: absOutDir,
       timeout: 30000,
       stdio: 'pipe',
     });

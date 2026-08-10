@@ -1,0 +1,28 @@
+{
+  "name": "Python + Litestar + Layered (Controller-Service-Repository)",
+  "prerequisites": ["python3", "pip3", "git"],
+  "shared": null,
+  "stackFeatures": "litestar",
+  "modules": {
+    "enabled": true,
+    "message": "Module/entity name (e.g. product, user, order)",
+    "default": "product"
+  },
+  "fileConditions": {
+    "docker-compose.yml.hbs": "useDocker",
+    "src/shared": "hasSharedInfra",
+    "src/shared/database": "hasOrm",
+    "src/shared/database/sqlalchemy.py.hbs": "ormSqlalchemy",
+    "src/shared/database/tortoise.py.hbs": "ormTortoise",
+    "src/shared/database/none.py.hbs": "ormNone",
+    "src/shared/cache": "useRedis",
+    "src/shared/auth": "useAuth",
+    "src/shared/health": "useHealthCheck",
+    "AGENT.md.hbs": "useAgentDocs",
+    "Dockerfile.hbs": "useAppDockerfile",
+    ".dockerignore.hbs": "useAppDockerfile",
+    ".github": "useCI"
+  },
+  "postInstall": [],
+  "gitInit": true
+}

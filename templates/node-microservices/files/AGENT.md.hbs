@@ -1,0 +1,63 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository. Read this before
+generating or editing code.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Architecture:** Microservices (Multi-Service) — independently deployable
+  services orchestrated via docker-compose.
+- **Entry point:** Docker Compose (`docker compose up`)
+
+## Services
+
+| Service    | Description              | Port  | Directory              |
+|------------|--------------------------|-------|------------------------|
+| gateway    | API Gateway (proxy/routing) | 8080  | `services/gateway/`  |
+| service-a  | Example domain service A   | 3001  | `services/service-a/` |
+| service-b  | Example domain service B   | 3002  | `services/service-b/` |
+
+Each service lives in its own directory under `services/` and is independently
+buildable via its own `Dockerfile`.
+
+## Commands
+
+```bash
+cp .env.example .env
+
+docker compose build          # build all services
+docker compose up             # start everything (foreground)
+docker compose up -d          # start in detached mode
+docker compose down           # stop and remove containers
+docker compose logs -f        # tail all logs
+
+./scripts/start-all.sh        # convenience: build + up
+
+docker compose restart gateway  # restart just one service
+```
+
+## Hard rules
+
+1. **Every service gets its own directory** under `services/`. No shared
+   application code between services — libraries/extracted packages go into
+   a `packages/` directory at the root.
+2. **Services communicate over the Docker network** using the service name
+   as the hostname (`http://service-a:3001`).
+3. **The gateway is the single entry point.** External traffic hits the gateway
+   on port 8080. The gateway proxies to downstream services.
+4. **Env vars live in the root `.env` file.** Each service reads the same
+   env file (mounted via `env_file` in docker-compose). For service-specific
+   settings, prefix them (`SERVICE_A_…`, `SERVICE_B_…`).
+5. **Each service is independently deployable.** You can rebuild and restart
+   one service without affecting others.
+6. **No cross-service database access.** A service owns its own data.
+   If service-a needs data from service-b, it calls service-b's API.
+7. **Health checks are mandatory** for every service. The gateway's health
+   endpoint reports aggregate status of all downstream services when possible.
+
+## When you are unsure
+
+Prefer asking over guessing. Multi-service changes often have cascading effects
+across the compose network, health checks, and inter-service contracts.

@@ -1,0 +1,62 @@
+services:
+  gateway:
+    build:
+      context: ./services/gateway
+      dockerfile: Dockerfile
+    container_name: {{projectName}}-gateway
+    restart: unless-stopped
+    ports:
+      - '${GATEWAY_PORT:-8080}:8080'
+    env_file:
+      - .env
+    depends_on:
+      service-a:
+        condition: service_started
+      service-b:
+        condition: service_started
+    networks:
+      - {{projectName}}-net
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:8080/health']
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  service-a:
+    build:
+      context: ./services/service-a
+      dockerfile: Dockerfile
+    container_name: {{projectName}}-service-a
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - {{projectName}}-net
+    healthcheck:
+      test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://localhost:3001/health || exit 1']
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  service-b:
+    build:
+      context: ./services/service-b
+      dockerfile: Dockerfile
+    container_name: {{projectName}}-service-b
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - {{projectName}}-net
+    healthcheck:
+      test: ['CMD-SHELL', 'wget --no-verbose --tries=1 --spider http://localhost:3002/health || exit 1']
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+networks:
+  {{projectName}}-net:
+    driver: bridge

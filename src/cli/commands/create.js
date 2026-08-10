@@ -365,10 +365,18 @@ function buildContext(flags, modules, baseAnswers, ctx) {
     fullCtx.requirementsTxt = deps.requirements.join('\n') + '\n';
     if (deps.devRequirements && deps.devRequirements.length > 0)
       fullCtx.devRequirementsTxt = deps.devRequirements.join('\n') + '\n';
+  } else if (flavor === 'laravel') {
+    const deps = fm.resolveDependencies(flags);
+    fullCtx.composerRequire = deps.composerRequire;
+    fullCtx.composerRequireDev = deps.composerRequireDev;
   } else if (flavor) {
     const deps = fm.resolveDependencies(flags);
-    fullCtx.dependenciesJson = JSON.stringify(deps.dependencies, null, 4).replace(/\n/g, '\n  ');
-    fullCtx.devDependenciesJson = JSON.stringify(deps.devDependencies, null, 4).replace(/\n/g, '\n  ');
+    if (deps.cargoDeps) {
+      fullCtx.cargoDeps = deps.cargoDeps;
+    } else if (deps.dependencies) {
+      fullCtx.dependenciesJson = JSON.stringify(deps.dependencies, null, 4).replace(/\n/g, '\n  ');
+      fullCtx.devDependenciesJson = JSON.stringify(deps.devDependencies, null, 4).replace(/\n/g, '\n  ');
+    }
     fullCtx.scriptsJson = JSON.stringify(fm.resolveScripts(flags), null, 4).replace(/\n/g, '\n  ');
     if (flags.useTests && fm.resolveJestConfig)
       fullCtx.jestConfigJson = JSON.stringify(fm.resolveJestConfig(), null, 4).replace(/\n/g, '\n  ');

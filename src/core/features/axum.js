@@ -142,18 +142,20 @@ function resolveDependencies(flags) {
   }
 
   if (flags.ormDiesel) {
-    cargoDeps.push({ name: 'diesel', version: '2.2', features: ['chrono', 'r2d2'] });
-    if (flags.dbPostgres) cargoDeps.push({ name: 'diesel', version: '2.2', features: ['postgres'] });
-    if (flags.dbMysql) cargoDeps.push({ name: 'diesel', version: '2.2', features: ['mysql'] });
-    if (flags.dbSqlite) cargoDeps.push({ name: 'diesel', version: '2.2', features: ['sqlite'] });
+    const dieselFeatures = ['chrono', 'r2d2'];
+    if (flags.dbPostgres) dieselFeatures.push('postgres');
+    if (flags.dbMysql) dieselFeatures.push('mysql');
+    if (flags.dbSqlite) dieselFeatures.push('sqlite');
+    cargoDeps.push({ name: 'diesel', version: '2.2', features: dieselFeatures });
     cargoDeps.push({ name: 'chrono', version: '0.4', features: ['serde'] });
   }
 
   if (flags.ormSeaOrm) {
-    cargoDeps.push({ name: 'sea-orm', version: '0.12', features: ['macros', 'runtime-tokio-rustls', 'with-chrono', 'with-uuid'] });
-    if (flags.dbPostgres) cargoDeps.push({ name: 'sea-orm', version: '0.12', features: ['sqlx-postgres'] });
-    if (flags.dbMysql) cargoDeps.push({ name: 'sea-orm', version: '0.12', features: ['sqlx-mysql'] });
-    if (flags.dbSqlite) cargoDeps.push({ name: 'sea-orm', version: '0.12', features: ['sqlx-sqlite'] });
+    const seaOrmFeatures = ['macros', 'runtime-tokio-rustls', 'with-chrono', 'with-uuid'];
+    if (flags.dbPostgres) seaOrmFeatures.push('sqlx-postgres');
+    if (flags.dbMysql) seaOrmFeatures.push('sqlx-mysql');
+    if (flags.dbSqlite) seaOrmFeatures.push('sqlx-sqlite');
+    cargoDeps.push({ name: 'sea-orm', version: '0.12', features: seaOrmFeatures });
     cargoDeps.push({ name: 'chrono', version: '0.4', features: ['serde'] });
     cargoDeps.push({ name: 'uuid', version: '1', features: ['v4', 'serde'] });
   }

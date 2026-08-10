@@ -169,7 +169,7 @@ function resolveDependencies(flags) {
     gemfileDevGems.push('"shoulda-matchers", "~> 6.2"');
   }
 
-  return { gemfileGems, gemfileDevGems };
+  return { dependencies: gemfileGems, devDependencies: gemfileDevGems };
 }
 
 function resolveScripts(flags) {

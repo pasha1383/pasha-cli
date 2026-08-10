@@ -1,0 +1,25 @@
+module Domain
+  module {{pascalCase moduleName}}s
+    class {{pascalCase moduleName}}RepositoryInterface
+      def all
+        raise NotImplementedError
+      end
+
+      def find(id)
+        raise NotImplementedError
+      end
+
+      def create(entity)
+        raise NotImplementedError
+      end
+
+      def update(entity)
+        raise NotImplementedError
+      end
+
+      def delete(id)
+        raise NotImplementedError
+      end
+    end
+  end
+end

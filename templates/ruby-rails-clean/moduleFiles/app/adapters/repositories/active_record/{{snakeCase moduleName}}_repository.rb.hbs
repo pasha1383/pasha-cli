@@ -1,0 +1,32 @@
+require_relative "../../domain/{{snakeCase moduleName}}/entities/{{snakeCase moduleName}}"
+require_relative "../../domain/{{snakeCase moduleName}}/repositories/{{snakeCase moduleName}}_repository_interface"
+
+module Adapters
+  class {{pascalCase moduleName}}Repository < Domain::{{pascalCase moduleName}}s::{{pascalCase moduleName}}RepositoryInterface
+    def all
+      {{pascalCase moduleName}}.all.order(created_at: :desc)
+    end
+
+    def find(id)
+      {{pascalCase moduleName}}.find(id)
+    end
+
+    def create(entity)
+      record = {{pascalCase moduleName}}.new(name: entity.name)
+      record.save!
+
+      {{pascalCase moduleName}}Serializer.render(record)
+
+      record
+    end
+
+    def update(record, entity)
+      record.update!(name: entity.name)
+      record
+    end
+
+    def delete(id)
+      {{pascalCase moduleName}}.find(id).destroy!
+    end
+  end
+end

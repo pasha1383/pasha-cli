@@ -1,0 +1,25 @@
+module UseCases
+  module {{pascalCase moduleName}}s
+    class Update{{pascalCase moduleName}}
+      def initialize(repository:)
+        @repository = repository
+      end
+
+      def call(id, params)
+        entity = Domain::{{pascalCase moduleName}}s::{{pascalCase moduleName}}.new(name: params[:name])
+
+        raise Domain::{{pascalCase moduleName}}s::{{pascalCase moduleName}}::ValidationError, entity.errors.full_messages unless entity.valid?
+
+        record = @repository.find(id)
+        record = @repository.update(record, entity)
+
+        Domain::{{pascalCase moduleName}}s::{{pascalCase moduleName}}.new(
+          id: record.id,
+          name: record.name,
+          created_at: record.created_at,
+          updated_at: record.updated_at
+        )
+      end
+    end
+  end
+end

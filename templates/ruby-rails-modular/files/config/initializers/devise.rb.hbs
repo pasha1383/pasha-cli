@@ -1,0 +1,17 @@
+{{#if useAuth}}
+Devise.setup do |config|
+  config.mailer_sender = "please-change-me@example.com"
+  config.secret_key = ENV.fetch("DEVISE_JWT_SECRET_KEY")
+
+  config.jwt do |jwt|
+    jwt.secret = config.secret_key
+    jwt.dispatch_requests = [
+      ["POST", %r{^/sign_in$}]
+    ]
+    jwt.revocation_requests = [
+      ["DELETE", %r{^/sign_out$}]
+    ]
+    jwt.expiration_time = 24.hours.to_i
+  end
+end
+{{/if}}

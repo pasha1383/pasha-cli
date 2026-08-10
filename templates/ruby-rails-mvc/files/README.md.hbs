@@ -1,0 +1,101 @@
+# {{projectName}}
+
+{{description}}
+
+## Prerequisites
+
+- Ruby 3.2+
+- {{#if dbPostgres}}PostgreSQL{{/if}}{{#if dbMysql}}MySQL{{/if}}{{#if dbSqlite}}SQLite3{{/if}}{{#unless hasDatabase}}No database required{{/unless}}
+- {{#if useSidekiq}}Redis (for Sidekiq){{/if}}
+
+## Setup
+
+```bash
+bin/setup
+```
+
+## Running the application
+
+```bash
+bin/rails server    # start on :3000
+```
+
+{{#if useSidekiq}}
+```bash
+bundle exec sidekiq # start background worker
+```
+{{/if}}
+
+{{#if useDocker}}
+## Docker
+
+```bash
+docker compose up -d  # start db + redis
+docker compose down
+```
+{{/if}}
+
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `bin/rails server` | Start dev server |
+| `bin/rails console` | Rails console |
+| `bin/rails routes` | List routes |
+| `bin/rails db:migrate` | Run migrations |
+| `bin/rails db:rollback` | Rollback migration |
+| `bin/rails db:seed` | Seed database |
+
+{{#if useTests}}
+## Testing
+
+```bash
+bundle exec rspec                  # all tests
+bundle exec rspec spec/models      # model specs
+bundle exec rspec spec/requests    # request specs
+```
+{{/if}}
+
+{{#if useLint}}
+## Linting
+
+```bash
+bundle exec rubocop                # check
+bundle exec rubocop -A             # auto-correct
+```
+{{/if}}
+
+{{#if useSwagger}}
+## API Docs
+
+Visit `/api-docs` for the Swagger UI.
+```bash
+RAILS_ENV=test bin/rails rswag     # generate swagger specs
+```
+{{/if}}
+
+## Architecture
+
+Standard Rails MVC API-only application.
+
+```
+app/
+  controllers/
+    application_controller.rb
+    api/
+      {{#each modules}}
+      {{snakeCase this}}s_controller.rb
+      {{/each}}
+  models/
+    {{#each modules}}
+    {{snakeCase this}}.rb
+    {{/each}}
+  serializers/
+    {{#each modules}}
+    {{snakeCase this}}_serializer.rb
+    {{/each}}
+config/
+  routes.rb
+db/
+  migrate/
+```

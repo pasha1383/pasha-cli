@@ -1,0 +1,11 @@
+{{#if useHealthCheck}}
+OkComputer.mount_at = "health"
+
+OkComputer::Registry.register "db", OkComputer::ActiveRecordCheck.new
+
+{{#if useSidekiq}}
+OkComputer::Registry.register "redis", OkComputer::RedisCheck.new(url: ENV.fetch("REDIS_URL", "redis://localhost:6379/1"))
+
+OkComputer::Registry.register "sidekiq", OkComputer::SidekiqLatencyCheck.new("default", 30)
+{{/if}}
+{{/if}}

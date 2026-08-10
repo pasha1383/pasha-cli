@@ -1,0 +1,59 @@
+require_relative "../../domain/{{snakeCase moduleName}}/entities/{{snakeCase moduleName}}"
+require_relative "../../use_cases/{{snakeCase moduleName}}/list_{{snakeCase moduleName}}s"
+require_relative "../../use_cases/{{snakeCase moduleName}}/get_{{snakeCase moduleName}}"
+require_relative "../../use_cases/{{snakeCase moduleName}}/create_{{snakeCase moduleName}}"
+require_relative "../../use_cases/{{snakeCase moduleName}}/update_{{snakeCase moduleName}}"
+require_relative "../../use_cases/{{snakeCase moduleName}}/delete_{{snakeCase moduleName}}"
+
+module Api
+  class {{pascalCase moduleName}}sController < ApplicationController
+    def index
+      list = UseCases::{{pascalCase moduleName}}s::List{{pascalCase moduleName}}s.new(repository: repository)
+      result = list.call
+
+      render json: {{pascalCase moduleName}}Serializer.render_collection(result)
+    end
+
+    def show
+      get = UseCases::{{pascalCase moduleName}}s::Get{{pascalCase moduleName}}.new(repository: repository)
+      result = get.call(params[:id].to_i)
+
+      render json: {{pascalCase moduleName}}Serializer.render(result)
+    end
+
+    def create
+      create_uc = UseCases::{{pascalCase moduleName}}s::Create{{pascalCase moduleName}}.new(repository: repository)
+      result = create_uc.call({{snakeCase moduleName}}_params)
+
+      render json: {{pascalCase moduleName}}Serializer.render(result), status: :created
+    rescue Domain::{{pascalCase moduleName}}s::{{pascalCase moduleName}}::ValidationError => e
+      render json: { errors: e.message }, status: :unprocessable_entity
+    end
+
+    def update
+      update_uc = UseCases::{{pascalCase moduleName}}s::Update{{pascalCase moduleName}}.new(repository: repository)
+      result = update_uc.call(params[:id].to_i, {{snakeCase moduleName}}_params)
+
+      render json: {{pascalCase moduleName}}Serializer.render(result)
+    rescue Domain::{{pascalCase moduleName}}s::{{pascalCase moduleName}}::ValidationError => e
+      render json: { errors: e.message }, status: :unprocessable_entity
+    end
+
+    def destroy
+      delete_uc = UseCases::{{pascalCase moduleName}}s::Delete{{pascalCase moduleName}}.new(repository: repository)
+      delete_uc.call(params[:id].to_i)
+
+      head :no_content
+    end
+
+    private
+
+    def {{snakeCase moduleName}}_params
+      params.require(:{{snakeCase moduleName}}).permit(:name).to_h.symbolize_keys
+    end
+
+    def repository
+      @repository ||= Adapters::{{pascalCase moduleName}}Repository.new
+    end
+  end
+end

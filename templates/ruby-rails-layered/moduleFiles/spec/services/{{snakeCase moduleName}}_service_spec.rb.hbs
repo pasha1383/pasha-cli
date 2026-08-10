@@ -1,0 +1,44 @@
+{{#if useTests}}
+require "rails_helper"
+
+RSpec.describe {{pascalCase moduleName}}Service, type: :service do
+  let(:repository) { instance_double({{pascalCase moduleName}}Repository) }
+  let(:service) { described_class.new(repository: repository) }
+
+  describe "#list_all" do
+    it "delegates to repository" do
+      records = build_list(:{{snakeCase moduleName}}, 2)
+      allow(repository).to receive(:all).and_return(records)
+
+      result = service.list_all
+
+      expect(result).to eq(records)
+      expect(repository).to have_received(:all)
+    end
+  end
+
+  describe "#find" do
+    it "delegates to repository" do
+      record = build(:{{snakeCase moduleName}}, id: 1)
+      allow(repository).to receive(:find).with(1).and_return(record)
+
+      result = service.find(1)
+
+      expect(result).to eq(record)
+    end
+  end
+
+  describe "#create" do
+    it "builds, saves and returns the record" do
+      record = build(:{{snakeCase moduleName}})
+      params = { name: "New" }
+      allow(repository).to receive(:build).with(params).and_return(record)
+      allow(repository).to receive(:save!).with(record).and_return(record)
+
+      result = service.create(params)
+
+      expect(result).to eq(record)
+    end
+  end
+end
+{{/if}}

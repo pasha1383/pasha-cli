@@ -1,0 +1,30 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Framework:** Ruby on Rails (API-only) — Clean Architecture
+- **Ruby version:** 3.2+
+- **Architecture:** Domain → Use Cases → Adapters
+{{#if ormActiverecord}}
+- **ORM:** ActiveRecord (in adapter layer only){{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}{{/if}}
+
+## Layers
+
+1. **Domain** (`app/domain/`) — Pure Ruby entities and repository interfaces. Zero framework dependencies.
+2. **Use Cases** (`app/use_cases/`) — Application-specific business rules. Orchestrates domain entities via repository interfaces.
+3. **Adapters** (`app/adapters/`) — Framework integration. Controllers, ActiveRecord repositories, serializers.
+
+## Hard rules
+
+1. **Dependency rule:** Inner layers never import from outer layers. Domain knows nothing about ActiveRecord. Use cases only depend on repository interfaces.
+2. **Repository interfaces live in domain.** `{{pascalCase moduleName}}RepositoryInterface` defines the contract. The AR adapter implements it.
+3. **Entities are POROs.** No `ApplicationRecord`, no mixins. Use `attr_accessor` and custom validation logic.
+4. **Use cases wrap every operation.** Even simple CRUD gets a use case class. Controllers never call repositories directly.
+5. **Controllers wire dependencies.** Build the repository, pass it to the use case, return the response. No service locator pattern — use constructor injection.
+6. **Adding a module means creating** domain entity, repository interface, 5 use cases, AR repository, controller, serializer, migration.

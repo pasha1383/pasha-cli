@@ -1,0 +1,9 @@
+{{#if useSwagger}}
+Rswag::Api.configure do |c|
+  c.openapi_root = Rails.root.join("swagger")
+end
+
+Rswag::Ui.configure do |c|
+  c.openapi_endpoint "/api-docs/v1/swagger.yaml", "{{projectName}} API V1"
+end
+{{/if}}

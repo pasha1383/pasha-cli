@@ -1,0 +1,31 @@
+class {{pascalCase moduleName}}Repository
+  def all
+    {{pascalCase moduleName}}.all
+  end
+
+  def find(id)
+    {{pascalCase moduleName}}.find(id)
+  end
+
+  def build(params)
+    {{pascalCase moduleName}}.new(params)
+  end
+
+  def save!(record)
+    record.save!
+
+    record
+  end
+
+  def update!(record, params)
+    record.update!(params)
+
+    record
+  end
+
+  def destroy!(record)
+    record.destroy!
+
+    nil
+  end
+end

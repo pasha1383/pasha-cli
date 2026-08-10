@@ -1,0 +1,8 @@
+{{#if hasDatabase}}
+{{#each modules}}
+puts "Seeding {{snakeCase this}}s..."
+3.times do |n|
+  {{pascalCase this}}.find_or_create_by!(name: "{{snakeCase this}}-#{n + 1}")
+end
+{{/each}}
+{{/if}}

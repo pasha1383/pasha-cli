@@ -1,0 +1,16 @@
+{{#if ormActiverecord}}
+class {{pascalCase moduleName}} < ApplicationRecord
+  validates :name, presence: true, length: { maximum: 255 }
+end
+{{/if}}
+{{#if ormNone}}
+class {{pascalCase moduleName}}
+  include ActiveModel::Model
+  include ActiveModel::Attributes
+
+  attribute :id, :integer
+  attribute :name, :string
+
+  validates :name, presence: true, length: { maximum: 255 }
+end
+{{/if}}

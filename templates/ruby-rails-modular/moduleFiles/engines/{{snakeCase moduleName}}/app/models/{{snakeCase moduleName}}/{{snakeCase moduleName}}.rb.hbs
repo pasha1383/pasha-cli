@@ -1,0 +1,5 @@
+module {{pascalCase moduleName}}
+  class {{pascalCase moduleName}} < ApplicationRecord
+    validates :name, presence: true, length: { maximum: 255 }
+  end
+end

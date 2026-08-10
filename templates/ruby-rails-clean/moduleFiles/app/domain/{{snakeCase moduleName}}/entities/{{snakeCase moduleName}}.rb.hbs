@@ -1,0 +1,57 @@
+module Domain
+  module {{pascalCase moduleName}}s
+    class {{pascalCase moduleName}}
+      attr_reader :id, :name, :created_at, :updated_at
+
+      def initialize(id: nil, name:, created_at: nil, updated_at: nil)
+        @id = id
+        @name = name
+        @created_at = created_at
+        @updated_at = updated_at
+      end
+
+      def valid?
+        errors.clear
+        errors.add(:name, "can't be blank") if name.blank?
+        errors.add(:name, "is too long (maximum is 255 characters)") if name.to_s.length > 255
+        errors.empty?
+      end
+
+      def errors
+        @errors ||= ErrorCollector.new
+      end
+
+      class ErrorCollector
+        include Enumerable
+
+        def initialize
+          @messages = Hash.new { |h, k| h[k] = [] }
+        end
+
+        def add(field, message)
+          @messages[field] << message
+        end
+
+        def clear
+          @messages.clear
+        end
+
+        def empty?
+          @messages.empty?
+        end
+
+        def each(&)
+          @messages.each(&)
+        end
+
+        def [](key)
+          @messages[key]
+        end
+
+        def full_messages
+          @messages.flat_map { |field, msgs| msgs.map { |msg| "#{field} #{msg}" } }
+        end
+      end
+    end
+  end
+end

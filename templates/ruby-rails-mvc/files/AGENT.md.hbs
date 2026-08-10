@@ -1,0 +1,73 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Framework:** Ruby on Rails (API-only) — MVC architecture
+- **Ruby version:** 3.2+
+- **Architecture:** Standard Rails MVC
+{{#if ormActiverecord}}
+- **ORM:** ActiveRecord{{/if}}
+{{#if ormNone}}
+- **Data layer:** in-memory repositories{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}{{/if}}
+{{#if useSidekiq}}
+- **Background jobs:** Sidekiq / Redis{{/if}}
+
+## Modules
+
+{{#each modules}}
+- `{{snakeCase this}}`
+{{/each}}
+
+## Commands
+
+```bash
+bin/rails server                                   # dev server on :3000
+bin/rails console                                  # interactive console
+bin/rails db:migrate                               # run migrations
+bin/rails db:rollback                              # rollback last migration
+bin/rails routes                                   # list all routes
+{{#if useDocker}}
+docker compose up -d                               # start databases
+docker compose down                                # stop databases
+{{/if}}
+{{#if useLint}}
+bundle exec rubocop                                # lint check
+bundle exec rubocop -A                             # auto-correct
+{{/if}}
+{{#if useTests}}
+bundle exec rspec                                  # run all tests
+bundle exec rspec spec/models                      # model specs
+bundle exec rspec spec/requests                    # request specs
+{{/if}}
+{{#if useSwagger}}
+RAILS_ENV=test bin/rails rswag                     # generate swagger docs
+{{/if}}
+```
+
+## Hard rules
+
+1. **Controllers are thin.** Only parameter whitelisting, service/domain calls, and rendering. No business logic in controllers.
+2. **`config/database.yml` uses ERB `ENV.fetch` for credentials.** Never hardcode secrets.
+3. **All endpoints return JSON.** This is an API-only app. No views, no HTML.
+4. **Use `rescue_from` in ApplicationController** for `RecordNotFound`, `RecordInvalid`, `ParameterMissing`. Don't rescue in individual controllers.
+5. **Serializers in `app/serializers/`.** Every response goes through a serializer class. Never render raw ActiveRecord objects.
+6. **Migrations must be reversible.** Always implement both `up` and `down` (or use `change` for reversible operations).
+7. **Keep routes RESTful.** Use `resources` in config/routes.rb. Nest only one level deep when necessary.
+
+{{#if hasOrm}}
+## Database
+
+- Schemas live in `db/migrate/` as timestamped files.
+- The authoritative schema dump is `db/schema.rb` (do not edit manually).
+- Use `bin/rails db:migrate` to apply and `db:rollback` to revert.
+{{/if}}
+
+## When you are unsure
+
+Prefer asking over guessing. Generating a plausible-looking file in the wrong layer costs more to unpick than a clarifying question costs to answer.

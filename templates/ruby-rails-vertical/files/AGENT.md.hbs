@@ -1,0 +1,28 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Framework:** Ruby on Rails (API-only) — Vertical Slice architecture
+- **Ruby version:** 3.2+
+- **Architecture:** One directory per feature (controller + model + service + serializer together)
+{{#if hasDatabase}}
+- **Database:** {{database}}{{/if}}
+
+## Modules (Features)
+
+{{#each modules}}
+- `app/features/{{snakeCase this}}` — {{pascalCase this}} feature slice
+{{/each}}
+
+## Hard rules
+
+1. **One directory per feature.** Controller, model, service, serializer — all live together in `app/features/<feature>/`.
+2. **Features don't import from other features.** Each slice is self-contained. Cross-feature communication goes through domain events or the database.
+3. **No shared service layer.** If logic is genuinely shared, extract it into `app/lib/` or a shared concern.
+4. **Routes point to feature controllers.** `app/config/routes.rb` namespaces everything under `app/features/<feature>/`.
+5. **All business logic in the service.** Controller delegates to the service. Model is persistence-only.
+6. **Adding a feature means creating** a single directory with controller, model, service, serializer, and migration inside it.

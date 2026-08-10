@@ -1,0 +1,57 @@
+{{#if useTests}}
+require "rails_helper"
+
+RSpec.describe "{{pascalCase moduleName}} feature", type: :request do
+  describe "GET /api/{{snakeCase moduleName}}s" do
+    it "returns all {{snakeCase moduleName}}s" do
+      create_list(:{{snakeCase moduleName}}, 3)
+
+      get api_{{snakeCase moduleName}}s_path
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body.size).to eq(3)
+    end
+  end
+
+  describe "POST /api/{{snakeCase moduleName}}s" do
+    it "creates a new {{snakeCase moduleName}}" do
+      post api_{{snakeCase moduleName}}s_path, params: { {{snakeCase moduleName}}: { name: "New" } }
+
+      expect(response).to have_http_status(:created)
+      expect(response.parsed_body["name"]).to eq("New")
+    end
+  end
+
+  describe "GET /api/{{snakeCase moduleName}}s/:id" do
+    it "returns the {{snakeCase moduleName}}" do
+      record = create(:{{snakeCase moduleName}})
+
+      get api_{{snakeCase moduleName}}_path(record)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["name"]).to eq(record.name)
+    end
+  end
+
+  describe "PUT /api/{{snakeCase moduleName}}s/:id" do
+    it "updates the {{snakeCase moduleName}}" do
+      record = create(:{{snakeCase moduleName}})
+
+      put api_{{snakeCase moduleName}}_path(record), params: { {{snakeCase moduleName}}: { name: "Updated" } }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["name"]).to eq("Updated")
+    end
+  end
+
+  describe "DELETE /api/{{snakeCase moduleName}}s/:id" do
+    it "deletes the {{snakeCase moduleName}}" do
+      record = create(:{{snakeCase moduleName}})
+
+      delete api_{{snakeCase moduleName}}_path(record)
+
+      expect(response).to have_http_status(:no_content)
+    end
+  end
+end
+{{/if}}

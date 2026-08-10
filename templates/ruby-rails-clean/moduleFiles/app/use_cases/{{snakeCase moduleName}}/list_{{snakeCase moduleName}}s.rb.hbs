@@ -1,0 +1,26 @@
+module UseCases
+  module {{pascalCase moduleName}}s
+    class List{{pascalCase moduleName}}s
+      def initialize(repository:)
+        @repository = repository
+      end
+
+      def call
+        records = @repository.all
+
+        records.map { |r| to_entity(r) }
+      end
+
+      private
+
+      def to_entity(record)
+        Domain::{{pascalCase moduleName}}s::{{pascalCase moduleName}}.new(
+          id: record.id,
+          name: record.name,
+          created_at: record.created_at,
+          updated_at: record.updated_at
+        )
+      end
+    end
+  end
+end

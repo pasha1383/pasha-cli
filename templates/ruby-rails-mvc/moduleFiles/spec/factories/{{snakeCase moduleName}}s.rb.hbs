@@ -1,0 +1,7 @@
+{{#if useTests}}
+FactoryBot.define do
+  factory :{{snakeCase moduleName}} do
+    sequence(:name) { |n| "{{snakeCase moduleName}}-#{n}" }
+  end
+end
+{{/if}}

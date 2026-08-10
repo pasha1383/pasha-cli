@@ -1,0 +1,90 @@
+{{#if useDocker}}
+services:
+  app: &app
+    build: .
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    env_file: .env
+    depends_on:
+{{#if dbNeedsServer}}
+      db:
+        condition: service_healthy
+{{/if}}
+{{#if useSidekiq}}
+      redis:
+        condition: service_healthy
+{{/if}}
+    volumes:
+      - .:/app
+      - bundle_cache:/usr/local/bundle
+
+{{#if useSidekiq}}
+  sidekiq:
+    <<: *app
+    ports: []
+    command: bundle exec sidekiq -C config/sidekiq.yml
+{{/if}}
+
+{{#if dbPostgres}}
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${DB_USER:-{{snakeCase projectName}}}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-{{snakeCase projectName}}_development}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-{{snakeCase projectName}}}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+{{/if}}
+
+{{#if dbMysql}}
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+      MYSQL_DATABASE: {{snakeCase projectName}}_development
+      MYSQL_USER: {{snakeCase projectName}}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+{{/if}}
+
+{{#if useSidekiq}}
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+{{/if}}
+
+volumes:
+  bundle_cache:
+{{#if dbPostgres}}
+  pg_data:
+{{/if}}
+{{#if dbMysql}}
+  mysql_data:
+{{/if}}
+{{#if useSidekiq}}
+  redis_data:
+{{/if}}
+{{/if}}

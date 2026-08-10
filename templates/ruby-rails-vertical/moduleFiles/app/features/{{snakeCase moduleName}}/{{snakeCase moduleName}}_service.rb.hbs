@@ -1,0 +1,32 @@
+class {{pascalCase moduleName}}Service
+  def list_all
+    {{pascalCase moduleName}}.all.order(created_at: :desc)
+  end
+
+  def find(id)
+    {{pascalCase moduleName}}.find(id)
+  end
+
+  def create(params)
+    record = {{pascalCase moduleName}}.new(params)
+    record.save!
+
+    record
+  rescue ActiveRecord::RecordInvalid => e
+    raise e
+  end
+
+  def update(id, params)
+    record = find(id)
+    record.update!(params)
+
+    record
+  end
+
+  def delete(id)
+    record = find(id)
+    record.destroy!
+
+    nil
+  end
+end

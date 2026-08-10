@@ -1,0 +1,40 @@
+module {{pascalCase moduleName}}
+  class {{pascalCase moduleName}}sController < ApplicationController
+    before_action :set_{{snakeCase moduleName}}, only: %i[show update destroy]
+
+    def index
+      {{snakeCase moduleName}}s = {{pascalCase moduleName}}.all
+
+      render json: {{pascalCase moduleName}}Serializer.render_collection({{snakeCase moduleName}}s)
+    end
+
+    def show
+      render json: {{pascalCase moduleName}}Serializer.render(@{{snakeCase moduleName}})
+    end
+
+    def create
+      {{snakeCase moduleName}} = {{pascalCase moduleName}}Service.new.create({{snakeCase moduleName}}_params)
+      render json: {{pascalCase moduleName}}Serializer.render({{snakeCase moduleName}}), status: :created
+    end
+
+    def update
+      {{snakeCase moduleName}} = {{pascalCase moduleName}}Service.new.update(@{{snakeCase moduleName}}, {{snakeCase moduleName}}_params)
+      render json: {{pascalCase moduleName}}Serializer.render({{snakeCase moduleName}})
+    end
+
+    def destroy
+      {{pascalCase moduleName}}Service.new.delete(@{{snakeCase moduleName}})
+      head :no_content
+    end
+
+    private
+
+    def set_{{snakeCase moduleName}}
+      @{{snakeCase moduleName}} = {{pascalCase moduleName}}.find(params[:id])
+    end
+
+    def {{snakeCase moduleName}}_params
+      params.require(:{{snakeCase moduleName}}).permit(:name)
+    end
+  end
+end

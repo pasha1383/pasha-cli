@@ -1,0 +1,12 @@
+module {{pascalCase moduleName}}
+  class {{pascalCase moduleName}}Serializer < BaseSerializer
+    def as_json(options = {})
+      {
+        id: resource.id,
+        name: resource.name,
+        created_at: resource.created_at&.iso8601,
+        updated_at: resource.updated_at&.iso8601
+      }
+    end
+  end
+end

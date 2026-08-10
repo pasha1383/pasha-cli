@@ -1,0 +1,35 @@
+class {{pascalCase moduleName}}Service
+  def initialize(repository: {{pascalCase moduleName}}Repository.new)
+    @repository = repository
+  end
+
+  def list_all
+    @repository.all
+  end
+
+  def find(id)
+    @repository.find(id)
+  end
+
+  def create(params)
+    {{snakeCase moduleName}} = @repository.build(params)
+
+    @repository.save!({{snakeCase moduleName}})
+
+    {{snakeCase moduleName}}
+  end
+
+  def update(id, params)
+    {{snakeCase moduleName}} = @repository.find(id)
+    @repository.update!({{snakeCase moduleName}}, params)
+
+    {{snakeCase moduleName}}
+  end
+
+  def delete(id)
+    {{snakeCase moduleName}} = @repository.find(id)
+    @repository.destroy!({{snakeCase moduleName}})
+
+    nil
+  end
+end

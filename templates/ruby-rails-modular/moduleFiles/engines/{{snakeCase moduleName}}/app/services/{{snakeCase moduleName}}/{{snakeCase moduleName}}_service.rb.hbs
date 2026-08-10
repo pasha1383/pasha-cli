@@ -1,0 +1,24 @@
+module {{pascalCase moduleName}}
+  class {{pascalCase moduleName}}Service
+    def list_all
+      {{pascalCase moduleName}}.all
+    end
+
+    def find(id)
+      {{pascalCase moduleName}}.find(id)
+    end
+
+    def create(params)
+      {{pascalCase moduleName}}.create!(params)
+    end
+
+    def update(record, params)
+      record.update!(params)
+      record
+    end
+
+    def delete(record)
+      record.destroy!
+    end
+  end
+end

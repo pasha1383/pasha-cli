@@ -1,0 +1,60 @@
+{{#if useTests}}
+require "rails_helper"
+
+RSpec.describe "{{pascalCase moduleName}}s", type: :request do
+  describe "GET /api/{{snakeCase moduleName}}s" do
+    it "returns a list of {{snakeCase moduleName}}s" do
+      create_list(:{{snakeCase moduleName}}, 3)
+
+      get api_{{snakeCase moduleName}}s_path
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body.size).to eq(3)
+    end
+  end
+
+  describe "POST /api/{{snakeCase moduleName}}s" do
+    it "creates a {{snakeCase moduleName}}" do
+      params = { {{snakeCase moduleName}}: attributes_for(:{{snakeCase moduleName}}) }
+
+      post api_{{snakeCase moduleName}}s_path, params: params
+
+      expect(response).to have_http_status(:created)
+      expect(response.parsed_body["name"]).to eq(params[:{{snakeCase moduleName}}][:name])
+    end
+  end
+
+  describe "GET /api/{{snakeCase moduleName}}s/:id" do
+    it "returns a {{snakeCase moduleName}}" do
+      {{snakeCase moduleName}} = create(:{{snakeCase moduleName}})
+
+      get api_{{snakeCase moduleName}}_path({{snakeCase moduleName}})
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["id"]).to eq({{snakeCase moduleName}}.id)
+    end
+  end
+
+  describe "PUT /api/{{snakeCase moduleName}}s/:id" do
+    it "updates a {{snakeCase moduleName}}" do
+      {{snakeCase moduleName}} = create(:{{snakeCase moduleName}})
+      params = { {{snakeCase moduleName}}: { name: "Updated Name" } }
+
+      put api_{{snakeCase moduleName}}_path({{snakeCase moduleName}}), params: params
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["name"]).to eq("Updated Name")
+    end
+  end
+
+  describe "DELETE /api/{{snakeCase moduleName}}s/:id" do
+    it "deletes a {{snakeCase moduleName}}" do
+      {{snakeCase moduleName}} = create(:{{snakeCase moduleName}})
+
+      delete api_{{snakeCase moduleName}}_path({{snakeCase moduleName}})
+
+      expect(response).to have_http_status(:no_content)
+    end
+  end
+end
+{{/if}}

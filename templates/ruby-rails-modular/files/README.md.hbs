@@ -1,0 +1,32 @@
+# {{projectName}}
+
+{{description}}
+
+## Architecture
+
+Modular Monolith with Rails Engines.
+
+```
+engines/
+  {{#each modules}}
+  {{snakeCase this}}/                    # self-contained engine
+    lib/{{snakeCase this}}/
+      engine.rb                          # engine definition
+    app/
+      controllers/{{snakeCase this}}/
+        {{snakeCase this}}s_controller.rb
+      models/{{snakeCase this}}/
+        {{snakeCase this}}.rb
+      services/{{snakeCase this}}/
+        {{snakeCase this}}_service.rb
+      serializers/{{snakeCase this}}/
+        {{snakeCase this}}_serializer.rb
+    config/
+      routes.rb                          # engine routes
+    db/
+      migrate/
+        create_{{snakeCase this}}s.rb
+  {{/each}}
+```
+
+Each engine is an isolated, self-contained module mounted in the main application's `config/routes.rb`.

@@ -1,0 +1,20 @@
+module UseCases
+  module {{pascalCase moduleName}}s
+    class Get{{pascalCase moduleName}}
+      def initialize(repository:)
+        @repository = repository
+      end
+
+      def call(id)
+        record = @repository.find(id)
+
+        Domain::{{pascalCase moduleName}}s::{{pascalCase moduleName}}.new(
+          id: record.id,
+          name: record.name,
+          created_at: record.created_at,
+          updated_at: record.updated_at
+        )
+      end
+    end
+  end
+end

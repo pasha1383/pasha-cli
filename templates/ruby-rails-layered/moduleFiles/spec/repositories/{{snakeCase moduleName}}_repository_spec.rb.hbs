@@ -1,0 +1,37 @@
+{{#if useTests}}
+require "rails_helper"
+
+RSpec.describe {{pascalCase moduleName}}Repository, type: :repository do
+  describe "#all" do
+    it "returns all {{snakeCase moduleName}}s" do
+      create_list(:{{snakeCase moduleName}}, 3)
+
+      result = subject.all
+
+      expect(result.size).to eq(3)
+    end
+  end
+
+  describe "#find" do
+    it "returns the {{snakeCase moduleName}} by id" do
+      record = create(:{{snakeCase moduleName}})
+
+      result = subject.find(record.id)
+
+      expect(result).to eq(record)
+    end
+
+    it "raises when not found" do
+      expect { subject.find(0) }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+  end
+
+  describe "#save!" do
+    it "persists a new record" do
+      record = build(:{{snakeCase moduleName}})
+
+      expect { subject.save!(record) }.to change({{pascalCase moduleName}}, :count).by(1)
+    end
+  end
+end
+{{/if}}

@@ -1,0 +1,21 @@
+# {{projectName}}
+
+{{description}}
+
+## Architecture
+
+Vertical Slice architecture — each feature is a self-contained directory with all layers.
+
+```
+app/
+  features/
+    {{#each modules}}
+    {{snakeCase this}}/
+      {{snakeCase this}}s_controller.rb    # request handling
+      {{snakeCase this}}.rb                # model / entity
+      {{snakeCase this}}_service.rb        # business logic
+      {{snakeCase this}}_serializer.rb     # JSON serialization
+    {{/each}}
+```
+
+Each feature slice contains everything it needs: controller, model, service, and serializer. No cross-cutting layers to navigate — every change for a feature happens in one directory.

@@ -1,0 +1,21 @@
+Rails.application.routes.draw do
+  namespace :api do
+  {{#each modules}}
+    resources :{{snakeCase this}}
+  {{/each}}
+  end
+
+  {{#if useHealthCheck}}
+  mount OkComputer::Engine, at: "health"
+  {{/if}}
+
+  {{#if useSidekiq}}
+  require "sidekiq/web"
+  mount Sidekiq::Web => "/sidekiq"
+  {{/if}}
+
+  {{#if useSwagger}}
+  mount Rswag::Ui::Engine => "/api-docs"
+  mount Rswag::Api::Engine => "/api-docs"
+  {{/if}}
+end

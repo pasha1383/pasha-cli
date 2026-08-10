@@ -1,0 +1,28 @@
+# {{projectName}}
+
+{{description}}
+
+## Architecture
+
+Layered (Controller → Service → Repository → Model) architecture on top of Rails API.
+
+```
+app/
+  controllers/
+    api/
+      {{#each modules}}
+      {{snakeCase this}}s_controller.rb  # request handling, param whitelisting
+      {{/each}}
+  services/
+    {{#each modules}}
+    {{snakeCase this}}_service.rb        # business logic, validation
+    {{/each}}
+  repositories/
+    {{#each modules}}
+    {{snakeCase this}}_repository.rb     # data access, queries
+    {{/each}}
+  models/
+    {{#each modules}}
+    {{snakeCase this}}.rb                # ActiveRecord model
+    {{/each}}
+```

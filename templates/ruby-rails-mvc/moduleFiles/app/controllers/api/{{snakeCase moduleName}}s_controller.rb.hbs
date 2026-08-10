@@ -1,0 +1,49 @@
+module Api
+  class {{pascalCase moduleName}}sController < ApplicationController
+    before_action :set_{{snakeCase moduleName}}, only: %i[show update destroy]
+
+    def index
+      {{snakeCase moduleName}}s = {{pascalCase moduleName}}.all
+
+      render json: {{pascalCase moduleName}}Serializer.render_collection({{snakeCase moduleName}}s)
+    end
+
+    def show
+      render json: {{pascalCase moduleName}}Serializer.render(@{{snakeCase moduleName}})
+    end
+
+    def create
+      {{snakeCase moduleName}} = {{pascalCase moduleName}}.new({{snakeCase moduleName}}_params)
+
+      if {{snakeCase moduleName}}.save
+        render json: {{pascalCase moduleName}}Serializer.render({{snakeCase moduleName}}), status: :created
+      else
+        render json: { errors: {{snakeCase moduleName}}.errors.full_messages }, status: :unprocessable_entity
+      end
+    end
+
+    def update
+      if @{{snakeCase moduleName}}.update({{snakeCase moduleName}}_params)
+        render json: {{pascalCase moduleName}}Serializer.render(@{{snakeCase moduleName}})
+      else
+        render json: { errors: @{{snakeCase moduleName}}.errors.full_messages }, status: :unprocessable_entity
+      end
+    end
+
+    def destroy
+      @{{snakeCase moduleName}}.destroy!
+
+      head :no_content
+    end
+
+    private
+
+    def set_{{snakeCase moduleName}}
+      @{{snakeCase moduleName}} = {{pascalCase moduleName}}.find(params[:id])
+    end
+
+    def {{snakeCase moduleName}}_params
+      params.require(:{{snakeCase moduleName}}).permit(:name)
+    end
+  end
+end

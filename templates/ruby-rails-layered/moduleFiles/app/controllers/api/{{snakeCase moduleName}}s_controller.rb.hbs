@@ -1,0 +1,39 @@
+module Api
+  class {{pascalCase moduleName}}sController < ApplicationController
+    def index
+      {{snakeCase moduleName}}s = {{pascalCase moduleName}}Service.new.list_all
+
+      render json: {{pascalCase moduleName}}Serializer.render_collection({{snakeCase moduleName}}s)
+    end
+
+    def show
+      {{snakeCase moduleName}} = {{pascalCase moduleName}}Service.new.find(params[:id])
+
+      render json: {{pascalCase moduleName}}Serializer.render({{snakeCase moduleName}})
+    end
+
+    def create
+      {{snakeCase moduleName}} = {{pascalCase moduleName}}Service.new.create({{snakeCase moduleName}}_params)
+
+      render json: {{pascalCase moduleName}}Serializer.render({{snakeCase moduleName}}), status: :created
+    end
+
+    def update
+      {{snakeCase moduleName}} = {{pascalCase moduleName}}Service.new.update(params[:id], {{snakeCase moduleName}}_params)
+
+      render json: {{pascalCase moduleName}}Serializer.render({{snakeCase moduleName}})
+    end
+
+    def destroy
+      {{pascalCase moduleName}}Service.new.delete(params[:id])
+
+      head :no_content
+    end
+
+    private
+
+    def {{snakeCase moduleName}}_params
+      params.require(:{{snakeCase moduleName}}).permit(:name)
+    end
+  end
+end

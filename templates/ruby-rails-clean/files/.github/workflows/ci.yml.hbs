@@ -1,0 +1,83 @@
+{{#if useCI}}
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+    {{#if dbPostgres}}
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: {{snakeCase projectName}}
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: {{snakeCase projectName}}_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    {{/if}}
+    {{#if dbMysql}}
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: {{snakeCase projectName}}_test
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd "mysqladmin ping -h localhost"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    {{/if}}
+    {{#if useSidekiq}}
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    {{/if}}
+
+    env:
+      RAILS_ENV: test
+    {{#if dbPostgres}}
+      DATABASE_URL: postgresql://{{snakeCase projectName}}:postgres@localhost:5432/{{snakeCase projectName}}_test
+    {{/if}}
+    {{#if dbMysql}}
+      DATABASE_URL: mysql2://root:root@localhost:3306/{{snakeCase projectName}}_test
+    {{/if}}
+    {{#if useSidekiq}}
+      REDIS_URL: redis://localhost:6379/1
+    {{/if}}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Set up database
+        run: bundle exec rails db:create db:migrate --trace
+
+    {{#if useLint}}
+      - name: Lint
+        run: bundle exec rubocop
+    {{/if}}
+
+      - name: Run tests
+        run: bundle exec rspec
+{{/if}}

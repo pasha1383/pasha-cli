@@ -1,0 +1,43 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Framework:** Ruby on Rails (API-only) — Layered (Service-Repository) architecture
+- **Ruby version:** 3.2+
+- **Architecture:** Controller → Service → Repository → Model
+{{#if ormActiverecord}}
+- **ORM:** ActiveRecord{{/if}}
+{{#if ormNone}}
+- **Data layer:** in-memory repositories{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}{{/if}}
+
+## Commands
+
+```bash
+bin/rails server                                   # dev server on :3000
+bin/rails db:migrate                               # run migrations
+{{#if useDocker}}
+docker compose up -d                               # start databases
+{{/if}}
+{{#if useLint}}
+bundle exec rubocop                                # lint check
+{{/if}}
+{{#if useTests}}
+bundle exec rspec                                  # run all tests
+{{/if}}
+```
+
+## Hard rules
+
+1. **Controller → Service → Repository → Model.** Each layer only calls the one directly below it.
+2. **Controllers delegate to services.** No `{{pascalCase moduleName}}.find` or ActiveRecord calls in controllers — only `{{pascalCase moduleName}}Service` calls.
+3. **Services contain all business logic.** Validations, transformations, authorization checks live here.
+4. **Repositories abstract data access.** All `find_by`, `where`, `create` calls go through the repository.
+5. **Models are pure persistence.** Validations only, no business logic beyond ActiveModel validations.
+6. **Every new module requires** controller, service, repository, model, serializer, migration, and specs.
+7. **Use `ApplicationController#rescue_from`** for global error handling.

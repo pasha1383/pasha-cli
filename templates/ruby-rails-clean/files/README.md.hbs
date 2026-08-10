@@ -1,0 +1,43 @@
+# {{projectName}}
+
+{{description}}
+
+## Architecture
+
+Clean Architecture (Domain → Use Cases → Adapters) on top of Rails.
+
+```
+app/
+  domain/                        # inner layer: entities + repository interfaces
+    {{#each modules}}
+    {{snakeCase this}}/
+      entities/
+        {{snakeCase this}}.rb    # domain entity (pure Ruby, no AR dependency)
+      repositories/
+        {{snakeCase this}}_repository_interface.rb
+    {{/each}}
+  use_cases/                     # application layer: use cases / interactors
+    {{#each modules}}
+    {{snakeCase this}}/
+      list_{{snakeCase this}}s.rb
+      get_{{snakeCase this}}.rb
+      create_{{snakeCase this}}.rb
+      update_{{snakeCase this}}.rb
+      delete_{{snakeCase this}}.rb
+    {{/each}}
+  adapters/                      # outer layer: controllers, AR repos, serializers
+    controllers/
+      api/
+        {{#each modules}}
+        {{snakeCase this}}s_controller.rb
+        {{/each}}
+    repositories/
+      active_record/
+        {{#each modules}}
+        {{snakeCase this}}_repository.rb
+        {{/each}}
+    serializers/
+      {{#each modules}}
+      {{snakeCase this}}_serializer.rb
+      {{/each}}
+```

@@ -1,0 +1,14 @@
+.bundle/
+log/*.log
+tmp/
+tmp/*
+!.gitkeep
+db/*.sqlite3
+db/*.sqlite3-journal
+.env
+.env.local
+vendor/bundle/
+node_modules/
+coverage/
+public/assets/
+storage/

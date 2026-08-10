@@ -1,0 +1,30 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Framework:** Ruby on Rails (API-only) — Modular Monolith with Engines
+- **Ruby version:** 3.2+
+- **Architecture:** Rails Engines mounted in a main application
+{{#if ormActiverecord}}
+- **ORM:** ActiveRecord{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}{{/if}}
+
+## Modules (Engines)
+
+{{#each modules}}
+- `engines/{{snakeCase this}}` — {{pascalCase this}} engine
+{{/each}}
+
+## Hard rules
+
+1. **Each engine is self-contained.** Models, controllers, services, routes — everything lives inside the engine directory.
+2. **Mount engines in `config/routes.rb`** in the main app. Engine routes are defined in `engines/<module>/config/routes.rb`.
+3. **Models are namespaced** to the engine module (e.g., `{{pascalCase moduleName}}::{{pascalCase moduleName}}`). This prevents name collisions.
+4. **Shared models can go in `app/models/`** at the main app level when multiple engines need the same data.
+5. **Engines use the main app's database connection.** Migrations are stored in each engine but applied via the main app's `db:migrate`.
+6. **Adding a new module means creating** the engine directory structure, lib/engine.rb, config/routes.rb, models, controllers, services, serializers, migrations, and registering the mount in main config/routes.rb.

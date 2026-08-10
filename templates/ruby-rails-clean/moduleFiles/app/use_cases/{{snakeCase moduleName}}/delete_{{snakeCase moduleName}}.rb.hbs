@@ -1,0 +1,16 @@
+module UseCases
+  module {{pascalCase moduleName}}s
+    class Delete{{pascalCase moduleName}}
+      def initialize(repository:)
+        @repository = repository
+      end
+
+      def call(id)
+        @repository.find(id)
+        @repository.delete(id)
+
+        nil
+      end
+    end
+  end
+end

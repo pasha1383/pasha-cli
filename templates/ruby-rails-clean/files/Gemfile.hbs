@@ -1,0 +1,54 @@
+source "https://rubygems.org"
+
+ruby "~> 3.2"
+
+gem "rails", "~> 7.2"
+gem "puma", "~> 6.4"
+gem "rack-cors", "~> 2.0"
+gem "bootsnap", require: false
+gem "tzinfo-data", platforms: %i[windows jruby]
+gem "dotenv-rails", "~> 3.1"
+{{#if dbPostgres}}
+gem "pg", "~> 1.5"
+{{/if}}
+{{#if dbMysql}}
+gem "mysql2", "~> 0.5"
+{{/if}}
+{{#if dbSqlite}}
+gem "sqlite3", "~> 1.7"
+{{/if}}
+{{#if useSidekiq}}
+gem "sidekiq", "~> 7.3"
+{{/if}}
+{{#if useSwagger}}
+gem "rswag-api", "~> 2.13"
+gem "rswag-ui", "~> 2.13"
+{{/if}}
+{{#if useAuth}}
+gem "devise", "~> 4.9"
+gem "devise-jwt", "~> 0.12"
+gem "bcrypt", "~> 3.1.20"
+{{/if}}
+{{#if useHealthCheck}}
+gem "okcomputer", "~> 1.18"
+{{/if}}
+{{#if useRateLimit}}
+gem "rack-attack", "~> 6.7"
+{{/if}}
+
+group :development, :test do
+  gem "debug", platforms: %i[mri windows]
+{{#if useLint}}
+  gem "rubocop", "~> 1.63"
+  gem "rubocop-rails", "~> 2.24"
+  gem "rubocop-rspec", "~> 2.29"
+{{/if}}
+{{#if useRSpec}}
+  gem "rspec-rails", "~> 6.1"
+  gem "factory_bot_rails", "~> 6.4"
+  gem "shoulda-matchers", "~> 6.2"
+{{/if}}
+{{#if useSwagger}}
+  gem "rswag-specs", "~> 2.13"
+{{/if}}
+end

@@ -1,0 +1,49 @@
+default: &default
+  adapter: {{#if dbPostgres}}postgresql{{/if}}{{#if dbMysql}}mysql2{{/if}}{{#if dbSqlite}}sqlite3{{/if}}{{#unless hasDatabase}}postgresql{{/unless}}
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
+  {{#if dbPostgres}}
+  host: <%= ENV.fetch("DB_HOST", "localhost") %>
+  port: <%= ENV.fetch("DB_PORT", 5432) %>
+  username: <%= ENV.fetch("DB_USER", "{{snakeCase projectName}}") %>
+  password: <%= ENV.fetch("DB_PASSWORD", "postgres") %>
+  {{/if}}
+  {{#if dbMysql}}
+  host: <%= ENV.fetch("DB_HOST", "localhost") %>
+  port: <%= ENV.fetch("DB_PORT", 3306) %>
+  username: <%= ENV.fetch("DB_USER", "root") %>
+  password: <%= ENV.fetch("DB_PASSWORD", "root") %>
+  {{/if}}
+  {{#if dbSqlite}}
+  database: storage/<%= Rails.env %>.sqlite3
+  {{/if}}
+
+development:
+  <<: *default
+  {{#if dbPostgres}}
+  database: {{snakeCase projectName}}_development
+  {{/if}}
+  {{#if dbMysql}}
+  database: {{snakeCase projectName}}_development
+  {{/if}}
+
+test:
+  <<: *default
+  {{#if dbPostgres}}
+  database: {{snakeCase projectName}}_test
+  {{/if}}
+  {{#if dbMysql}}
+  database: {{snakeCase projectName}}_test
+  {{/if}}
+
+production:
+  <<: *default
+  {{#if dbPostgres}}
+  url: <%= ENV["DATABASE_URL"] %>
+  {{/if}}
+  {{#if dbMysql}}
+  url: <%= ENV["DATABASE_URL"] %>
+  {{/if}}
+  {{#if dbSqlite}}
+  database: storage/production.sqlite3
+  {{/if}}

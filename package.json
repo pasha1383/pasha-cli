@@ -37,7 +37,8 @@
     "test:cov": "jest --coverage",
     "verify:tui": "node test/harness/walker.js --smoke",
     "verify:tui:full": "node test/harness/walker.js --full",
-    "verify:tui:fuzz": "node test/harness/walker.js --fuzz"
+    "verify:tui:fuzz": "node test/harness/walker.js --fuzz",
+    "verify:boot": "node test/harness/boot-tester.js"
   },
   "jest": {
     "testEnvironment": "node",

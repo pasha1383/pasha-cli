@@ -74,6 +74,36 @@
         }
       }
     },
+    "java": {
+      "label": "Java",
+      "frameworks": {
+        "spring-boot": {
+          "label": "Spring Boot",
+          "architectures": {
+            "layered": {
+              "label": "Layered (Controller-Service-Repository)",
+              "template": "java-spring-boot-layered"
+            },
+            "clean": {
+              "label": "Clean Architecture",
+              "template": "java-spring-boot-clean"
+            },
+            "hexagonal": {
+              "label": "Hexagonal / DDD",
+              "template": "java-spring-boot-hexagonal"
+            },
+            "modular": {
+              "label": "Modular Monolith",
+              "template": "java-spring-boot-modular"
+            },
+            "cqrs": {
+              "label": "CQRS (Axon Framework)",
+              "template": "java-spring-boot-cqrs"
+            }
+          }
+        }
+      }
+    },
     "node": {
       "label": "Node.js / TypeScript",
       "frameworks": {
@@ -149,6 +179,23 @@
             "vertical": {
               "label": "Vertical Slice",
               "template": "node-koa-vertical"
+            },
+            "cqrs": {
+              "label": "CQRS (Command-Query Separation)",
+              "template": "node-koa-cqrs"
+            },
+            "event-driven": {
+              "label": "Event-Driven / Event Sourcing",
+              "template": "node-koa-event-driven"
+            }
+          }
+        },
+        "microservices": {
+          "label": "Microservices",
+          "architectures": {
+            "microservices": {
+              "label": "Microservices (Multi-Service)",
+              "template": "node-microservices"
             }
           }
         },
@@ -385,6 +432,66 @@
             "vertical": {
               "label": "Vertical Slice",
               "template": "ruby-rails-vertical"
+            }
+          }
+        }
+      }
+    },
+    "php": {
+      "label": "PHP",
+      "frameworks": {
+        "laravel": {
+          "label": "Laravel",
+          "architectures": {
+            "mvc": {
+              "label": "MVC",
+              "template": "php-laravel-mvc"
+            },
+            "layered": {
+              "label": "Layered (N-Tier)",
+              "template": "php-laravel-layered"
+            },
+            "clean": {
+              "label": "Clean Architecture",
+              "template": "php-laravel-clean"
+            },
+            "hexagonal": {
+              "label": "Hexagonal (Ports & Adapters)",
+              "template": "php-laravel-hexagonal"
+            },
+            "modular": {
+              "label": "Modular Monolith",
+              "template": "php-laravel-modular"
+            }
+          }
+        }
+      }
+    },
+    "csharp": {
+      "label": "C# / .NET",
+      "frameworks": {
+        "aspnet": {
+          "label": "ASP.NET Core",
+          "architectures": {
+            "layered": {
+              "label": "Layered (Controller-Service-Repository)",
+              "template": "csharp-aspnet-layered"
+            },
+            "clean": {
+              "label": "Clean Architecture",
+              "template": "csharp-aspnet-clean"
+            },
+            "hexagonal": {
+              "label": "Hexagonal (Ports & Adapters / DDD)",
+              "template": "csharp-aspnet-hexagonal"
+            },
+            "onion": {
+              "label": "Onion Architecture",
+              "template": "csharp-aspnet-onion"
+            },
+            "cqrs": {
+              "label": "CQRS (MediatR)",
+              "template": "csharp-aspnet-cqrs"
             }
           }
         }

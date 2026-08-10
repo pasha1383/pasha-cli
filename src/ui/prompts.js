@@ -1,6 +1,10 @@
 'use strict';
 
 let _inquirer = null;
+let _tuiMode = false;
+let _tuiApp = null;
+let _tuiContext = {};
+
 async function _load() {
   if (!_inquirer) {
     _inquirer = await import('@inquirer/prompts');
@@ -8,7 +12,31 @@ async function _load() {
   return _inquirer;
 }
 
+function setTuiMode(enabled) {
+  _tuiMode = !!enabled;
+  if (!enabled) _tuiApp = null;
+}
+
+function setTuiApp(app) {
+  _tuiApp = app;
+}
+
+function setTuiContext(ctx) {
+  _tuiContext = Object.assign({}, ctx);
+}
+
+function isTuiMode() {
+  return _tuiMode && _tuiApp !== null;
+}
+
 async function prompt(questions) {
+  if (isTuiMode()) {
+    return _promptTui(questions);
+  }
+  return _promptInquirer(questions);
+}
+
+async function _promptInquirer(questions) {
   const { input, select, confirm: confirmPrompt, checkbox, password, Separator } = await _load();
   const answers = {};
   for (const q of questions) {
@@ -75,4 +103,25 @@ async function prompt(questions) {
   return answers;
 }
 
-module.exports = { prompt };
+async function _promptTui(questions) {
+  const { pushQuestion } = _tuiApp;
+  const answers = {};
+  for (const q of questions) {
+    const augmented = Object.assign({}, q, {
+      stepIndex: _tuiContext.stepIndex || 0,
+      totalSteps: _tuiContext.totalSteps || 1,
+      stepLabel: _tuiContext.stepLabel || '',
+      answers: _tuiContext.answers || {},
+      sidebarInfo: q.sidebarInfo || _tuiContext.sidebarInfo || null,
+    });
+    const answer = await new Promise((resolve) => {
+      pushQuestion(augmented, (value) => {
+        resolve(value);
+      });
+    });
+    answers[q.name] = answer;
+  }
+  return answers;
+}
+
+module.exports = { prompt, setTuiMode, setTuiApp, isTuiMode, setTuiContext };

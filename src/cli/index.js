@@ -39,6 +39,7 @@ program
   .option('--skip-install', 'Skip npm install / post-install steps')
   .option('--skip-git', 'Skip git init prompt')
   .option('--dry-run', 'Print file tree without writing')
+  .option('--tui', 'Use full-screen terminal UI (experimental)')
   .action(async (opts) => {
     try {
       await create(opts);
@@ -77,6 +78,14 @@ program
       log.fail(err.message);
       process.exit(1);
     }
+  });
+
+program
+  .command('explain <recipe>')
+  .description('Show the resolved layer tree for a recipe')
+  .action(async (recipe) => {
+    const { explain } = require('./commands/explain');
+    await explain(recipe);
   });
 
 program

@@ -13,7 +13,7 @@ const { makeIncludeCheck } = require('../../core/engine/conditions');
 const { checkAll, installTool, resolveCommandPath } = require('../../core/system/prerequisites');
 const { resolveFeatures } = require('../../core/features/index');
 const { Navigator } = require('../../core/wizard/navigator');
-const { prompt } = require('../../ui/prompts');
+const { prompt, setTuiMode, setTuiApp, setTuiContext, isTuiMode } = require('../../ui/prompts');
 const { welcome } = require('../../ui/screens/welcome');
 const { summary } = require('../../ui/screens/summary');
 const { done } = require('../../ui/screens/done');
@@ -21,6 +21,10 @@ const { error, section, divider } = require('../../ui/screens/error');
 const { Spinner } = require('../../ui/screens/progress');
 const history = require('../../core/session/history');
 const { loadPreset, savePreset } = require('../../core/session/presets');
+
+let _inkApp = null;
+let _inkInstance = null;
+let _tuiTerminal = null;
 
 const TEMPLATES_ROOT = path.join(__dirname, '../../../templates');
 
@@ -959,8 +963,167 @@ async function createInteractive(opts) {
   }
 }
 
+async function createTui(options) {
+  const tuiTerminal = require('../../ui/tui/terminal');
+  const { initInk, getInk } = require('../../ui/tui/ink-proxy');
+  _tuiTerminal = tuiTerminal;
+
+  await initInk();
+  const ink = getInk();
+
+  const { App } = require('../../ui/tui/app');
+  const { showProgress, showSummary, showDone } = App;
+
+  setTuiMode(true);
+  setTuiApp(App);
+
+  tuiTerminal.setup();
+  tuiTerminal.registerExitHandlers(() => {
+    tuiTerminal.restore();
+  });
+
+  const React = require('react');
+  const { waitUntilExit } = ink.render(React.createElement(App));
+
+  try {
+    let manifest;
+    try { manifest = await loadManifest(); }
+    catch (err) {
+      log.fail(`Failed to load template manifest: ${err.message}`);
+      tuiTerminal.restore();
+      process.exit(1);
+    }
+    _manifest = manifest;
+
+    let initialCtx = {};
+
+    if (options.preset) {
+      try {
+        const presetAnswers = await loadPreset(options.preset);
+        initialCtx = Object.assign({}, presetAnswers);
+        log.info(`Loaded preset: ${path.basename(options.preset)}`);
+      } catch (err) {
+        log.fail(`Failed to load preset: ${err.message}`);
+        tuiTerminal.restore();
+        process.exit(1);
+      }
+    }
+
+    if (options.resume) {
+      try {
+        let session = null;
+        if (typeof options.resume === 'string' && options.resume !== 'true') {
+          session = await history.loadSession(options.resume);
+          if (!session) log.warn(`Session "${options.resume}" not found.`);
+        } else {
+          session = await history.lastSession();
+          if (session) log.info(`Resuming last session: ${session.projectName} (${session.framework})`);
+        }
+        if (session) {
+          const sessionAnswers = history.sessionToAnswers(session);
+          initialCtx = Object.assign({}, sessionAnswers, initialCtx);
+        } else {
+          log.info('No previous sessions found. Starting fresh.');
+        }
+      } catch (err) {
+        log.warn(`Could not resume session: ${err.message}`);
+      }
+    }
+
+    const steps = [
+      { name: 'language',     label: 'Language',       run: stepLanguage },
+      { name: 'framework',    label: 'Framework',       run: stepFramework },
+      { name: 'architecture', label: 'Architecture',    run: stepArchitecture },
+      { name: 'prereqs',      label: 'Prerequisites',   run: stepPrerequisites },
+      { name: 'project',      label: 'Project Info',    run: stepProject },
+      { name: 'stack',        label: 'Stack',           run: stepStack },
+      { name: 'modules',      label: 'Modules',         run: stepModules },
+      { name: 'review',       label: 'Review',          run: stepReview },
+    ];
+
+    const nav = new Navigator(steps);
+
+    // Wrap each step to update TUI context and pass accumulated answers
+    for (let i = 0; i < steps.length; i++) {
+      const originalRun = steps[i].run;
+      const stepIdx = i;
+      steps[i].run = async (ctx, navigator) => {
+        setTuiContext({
+          stepIndex: stepIdx,
+          totalSteps: steps.length,
+          stepLabel: steps[stepIdx].label,
+          answers: ctx,
+        });
+        return originalRun(ctx, navigator);
+      };
+    }
+
+    setTuiContext({
+      stepIndex: 0,
+      totalSteps: steps.length,
+      stepLabel: steps[0].label,
+      answers: initialCtx,
+    });
+
+    const ctx = await nav.start(initialCtx);
+
+    if (!ctx._confirmed) {
+      showDone('Cancelled. No files were created.');
+      tuiTerminal.restore();
+      await waitUntilExit();
+      process.exit(0);
+    }
+
+    if (options.savePreset) {
+      try {
+        const savedPath = await savePreset(options.savePreset, ctx);
+        log.info(`Preset saved: ${options.savePreset}`);
+      } catch (err) {
+        log.fail(`Failed to save preset: ${err.message}`);
+      }
+    }
+
+    const phases = [
+      { label: 'Rendering templates' },
+      { label: 'Writing files' },
+      { label: 'Installing dependencies' },
+      { label: 'Initializing git' },
+    ];
+
+    if (options.dryRun) {
+      showProgress(phases, 0, 'Generating file list...');
+      await renderProjectDry(ctx);
+      showProgress(phases, 4, 'Done!');
+    } else {
+      showProgress(phases, 0, 'Creating project files...');
+      const outDir = await renderProject(ctx);
+      showProgress(phases, 4, 'Done!');
+      await history.saveSession(ctx);
+      await writePashaJson(outDir, ctx);
+
+      showDone(`Project "${ctx.projectName}" created at ${outDir}`);
+    }
+
+    await waitUntilExit();
+  } catch (err) {
+    tuiTerminal.restore();
+    if (err && err.name === 'ExitPromptError') {
+      console.log('');
+      log.warn('Cancelled.');
+      process.exit(0);
+    }
+    throw err;
+  } finally {
+    setTuiMode(false);
+    tuiTerminal.reset();
+  }
+}
+
 async function create(options = {}) {
   try {
+    if (options.tui) {
+      return createTui(options);
+    }
     if (options.yes) {
       return createNonInteractive(options);
     }

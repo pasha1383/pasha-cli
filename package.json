@@ -38,7 +38,8 @@
     "verify:tui": "node test/harness/walker.js --smoke",
     "verify:tui:full": "node test/harness/walker.js --full",
     "verify:tui:fuzz": "node test/harness/walker.js --fuzz",
-    "verify:boot": "node test/harness/boot-tester.js"
+    "verify:boot": "node test/harness/boot-tester.js",
+    "verify:tui:snaps": "node test/harness/snapshot-tester.js"
   },
   "jest": {
     "testEnvironment": "node",

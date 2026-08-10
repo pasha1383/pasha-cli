@@ -51,6 +51,9 @@ return [
         Illuminate\View\ViewServiceProvider::class,
 
         App\Providers\RouteServiceProvider::class,
+        {{#each modules}}
+        Modules\{{pascalCase this}}\Providers\{{pascalCase this}}ServiceProvider::class,
+        {{/each}}
         {{#if useAuth}}
         App\Providers\AuthServiceProvider::class,
         {{/if}}

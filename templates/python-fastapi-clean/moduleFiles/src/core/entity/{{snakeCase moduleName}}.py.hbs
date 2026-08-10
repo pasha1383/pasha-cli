@@ -1,0 +1,33 @@
+{{#if ormSqlalchemy}}
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import DeclarativeBase
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+class {{pascalCase moduleName}}(Base):
+    __tablename__ = "{{snakeCase moduleName}}"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(255), nullable=False)
+{{/if}}
+{{#if ormTortoise}}
+from tortoise import fields
+from tortoise.models import Model
+
+
+class {{pascalCase moduleName}}(Model):
+    id = fields.IntField(pk=True)
+    name = fields.CharField(max_length=255)
+
+    class Meta:
+        table = "{{snakeCase moduleName}}"
+{{/if}}
+{{#if ormNone}}
+class {{pascalCase moduleName}}:
+    def __init__(self, id: int = 0, name: str = ""):
+        self.id = id
+        self.name = name
+{{/if}}

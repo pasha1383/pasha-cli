@@ -1,0 +1,25 @@
+from os import environ
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
+class Settings:
+    app_env: str = environ.get("APP_ENV", "development")
+    app_port: int = int(environ.get("APP_PORT", "8000"))
+
+    {{#if hasDatabase}}
+    database_url: str = environ.get("DATABASE_URL", "{{#if dbSqlite}}sqlite+aiosqlite:///./data/{{snakeCase projectName}}.sqlite{{/if}}{{#if dbPostgres}}postgresql+asyncpg://{{dbName}}:postgres@localhost:5432/{{dbName}}{{/if}}{{#if dbMysql}}mysql+aiomysql://root:root@localhost:3306/{{dbName}}{{/if}}")
+    {{/if}}
+    {{#if useRedis}}
+    redis_host: str = environ.get("REDIS_HOST", "localhost")
+    redis_port: int = int(environ.get("REDIS_PORT", "6379"))
+    {{/if}}
+    {{#if useAuth}}
+    jwt_secret: str = environ.get("JWT_SECRET", "change-me")
+    jwt_expires_in: str = environ.get("JWT_EXPIRES_IN", "1h")
+    {{/if}}
+
+
+settings = Settings()

@@ -1,0 +1,55 @@
+"""FastAPI application factory."""
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from src.config.settings import settings
+from src.errors.app_error import AppError
+{{#if hasOrm}}
+from src.shared.database.{{#if ormSqlalchemy}}sqlalchemy{{/if}}{{#if ormTortoise}}tortoise{{/if}}{{#if ormDjango}}none{{/if}} import init_db, close_db
+{{/if}}
+{{#each modules}}
+from src.features.{{snakeCase this}}.routes import router as {{camelCase this}}_router
+{{/each}}
+
+
+def create_app() -> FastAPI:
+    app = FastAPI(
+        title="{{projectName}}",
+        description="{{description}}",
+        version="0.1.0",
+    )
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"] if settings.app_env == "development" else [],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    @app.on_event("startup")
+    async def startup():
+        {{#if hasOrm}}
+        await init_db(settings)
+        {{/if}}
+
+    @app.on_event("shutdown")
+    async def shutdown():
+        {{#if hasOrm}}
+        await close_db()
+        {{/if}}
+
+    {{#each modules}}
+    app.include_router({{camelCase this}}_router, prefix="/{{this}}", tags=["{{this}}"])
+    {{/each}}
+
+    @app.exception_handler(AppError)
+    async def app_error_handler(request, exc: AppError):
+        from starlette.responses import JSONResponse
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"error": exc.message, "status_code": exc.status_code},
+        )
+
+    return app

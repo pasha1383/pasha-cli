@@ -1,0 +1,54 @@
+from fastapi import APIRouter, Depends, status
+{{#if ormSqlalchemy}}
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.shared.database.sqlalchemy import get_session
+{{/if}}
+
+from .repository import {{pascalCase moduleName}}Repository
+from .schema import {{pascalCase moduleName}}Create, {{pascalCase moduleName}}Response
+from .service import {{pascalCase moduleName}}Service
+
+router = APIRouter()
+
+
+{{#if ormSqlalchemy}}
+def _get_repo(session: AsyncSession = Depends(get_session)) -> {{pascalCase moduleName}}Repository:
+    return {{pascalCase moduleName}}Repository(session)
+
+
+def _get_service(repo: {{pascalCase moduleName}}Repository = Depends(_get_repo)) -> {{pascalCase moduleName}}Service:
+    return {{pascalCase moduleName}}Service(repo)
+{{else}}
+_repo = {{pascalCase moduleName}}Repository()
+
+
+def _get_service() -> {{pascalCase moduleName}}Service:
+    return {{pascalCase moduleName}}Service(_repo)
+{{/if}}
+
+
+@router.post("/", response_model={{pascalCase moduleName}}Response, status_code=status.HTTP_201_CREATED)
+async def create(body: {{pascalCase moduleName}}Create, svc: {{pascalCase moduleName}}Service = Depends(_get_service)):
+    entity = await svc.create(body.model_dump())
+    return entity
+
+
+@router.get("/", response_model=list[{{pascalCase moduleName}}Response])
+async def list_all(svc: {{pascalCase moduleName}}Service = Depends(_get_service)):
+    return await svc.get_all()
+
+
+@router.get("/{pk}", response_model={{pascalCase moduleName}}Response)
+async def get_one(pk: int, svc: {{pascalCase moduleName}}Service = Depends(_get_service)):
+    return await svc.get_by_id(pk)
+
+
+@router.put("/{pk}", response_model={{pascalCase moduleName}}Response)
+async def update(pk: int, body: {{pascalCase moduleName}}Create, svc: {{pascalCase moduleName}}Service = Depends(_get_service)):
+    return await svc.update(pk, body.model_dump())
+
+
+@router.delete("/{pk}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete(pk: int, svc: {{pascalCase moduleName}}Service = Depends(_get_service)):
+    await svc.delete(pk)

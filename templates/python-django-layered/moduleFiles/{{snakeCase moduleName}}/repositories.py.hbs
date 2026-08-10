@@ -1,0 +1,21 @@
+from .models import {{pascalCase moduleName}}
+
+
+class {{pascalCase moduleName}}Repository:
+    def find_all(self):
+        return {{pascalCase moduleName}}.objects.all()
+
+    def find_by_id(self, pk):
+        try:
+            return {{pascalCase moduleName}}.objects.get(pk=pk)
+        except {{pascalCase moduleName}}.DoesNotExist:
+            return None
+
+    def save(self, obj):
+        obj.save()
+        return obj
+
+    def delete(self, pk):
+        obj = self.find_by_id(pk)
+        if obj:
+            obj.delete()

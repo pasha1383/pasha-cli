@@ -1,0 +1,33 @@
+from core.app_error import NotFoundError
+
+from .models import {{pascalCase moduleName}}
+from .repositories import {{pascalCase moduleName}}Repository
+
+_repo = {{pascalCase moduleName}}Repository()
+
+
+class {{pascalCase moduleName}}Service:
+    def __init__(self, repo=None):
+        self._repo = repo or _repo
+
+    def create(self, **data) -> {{pascalCase moduleName}}:
+        return {{pascalCase moduleName}}.objects.create(**data)
+
+    def get_all(self):
+        return self._repo.find_all()
+
+    def get_by_id(self, pk) -> {{pascalCase moduleName}}:
+        obj = self._repo.find_by_id(pk)
+        if obj is None:
+            raise NotFoundError(f"{{pascalCase moduleName}} with id {pk} not found")
+        return obj
+
+    def update(self, pk, **data) -> {{pascalCase moduleName}}:
+        obj = self.get_by_id(pk)
+        for field, value in data.items():
+            setattr(obj, field, value)
+        return self._repo.save(obj)
+
+    def delete(self, pk) -> None:
+        self.get_by_id(pk)
+        self._repo.delete(pk)

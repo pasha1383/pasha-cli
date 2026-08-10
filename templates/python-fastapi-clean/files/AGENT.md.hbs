@@ -1,0 +1,86 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Framework:** FastAPI (Python, async) — Layered architecture
+- **Architecture:** {{architectureLabel}}
+{{#if ormSqlalchemy}}
+- **ORM:** SQLAlchemy (async){{/if}}
+{{#if ormTortoise}}
+- **ORM:** Tortoise ORM{{/if}}
+{{#if ormNone}}
+- **Data layer:** in-memory repositories{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}{{/if}}
+{{#if hasValidation}}
+- **Validation:** Pydantic v2{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis{{/if}}
+{{#if hasBroker}}
+- **Message broker:** {{broker}}{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/docs` (built-in){{/if}}
+{{#if useAuth}}
+- **Auth:** JWT (OAuth2 password flow){{/if}}
+{{#if useHealthCheck}}
+- **Health:** `GET /health/`{{/if}}
+{{#if useRateLimit}}
+- **Rate limiting:** slowapi{{/if}}
+
+## Modules
+
+{{#each modules}}
+- `{{snakeCase this}}`
+{{/each}}
+
+## Commands
+
+```bash
+source venv/bin/activate
+uvicorn src.main:create_app --reload --factory  # dev server on :8000
+{{#if useDocker}}
+docker compose up -d                             # start databases/brokers
+docker compose down
+{{/if}}
+{{#if useLint}}
+ruff check .                                     # lint
+ruff format .                                    # format
+{{/if}}
+{{#if useTests}}
+pytest                                           # run tests
+pytest --cov=. --cov-report=term-missing
+{{/if}}
+{{#if ormTortoise}}
+aerich init -t src.shared.database.tortoise.TORTOISE_ORM
+aerich migrate
+aerich upgrade
+{{/if}}
+```
+
+## Hard rules
+
+1. **Router → Service → Repository.** A layer only calls the one directly
+   below it. Routers never touch repositories directly.
+2. **Pydantic schemas are the DTO boundary.** Request/response shapes live in
+   `<module>_schema.py`. The router exposes Pydantic models; the service
+   accepts/returns dicts or domain objects.
+3. **`src/config/settings.py` is the only file that reads `os.environ`** directly.
+4. **`AppError` / `NotFoundError` / `ValidationError`** from
+   `src/errors/app_error.py` — raise them in services, let the FastAPI
+   exception handler translate them.
+5. **Adding a module means adding every file.** `_model.py`, `_schema.py`,
+   `_repository.py`, `_service.py`, `_router.py`{{#if useTests}}, `_test.py`{{/if}}.
+6. **Register new routers** in `src/app.py` or they won't be reachable.
+{{#if useAuth}}
+7. **Protected endpoints** use `Depends(get_current_user)` from
+   `src/shared/auth/auth_dependency.py`.
+{{/if}}
+
+## When you are unsure
+
+Prefer asking over guessing. Generating a plausible-looking file in the wrong
+layer costs more to unpick than a clarifying question costs to answer.

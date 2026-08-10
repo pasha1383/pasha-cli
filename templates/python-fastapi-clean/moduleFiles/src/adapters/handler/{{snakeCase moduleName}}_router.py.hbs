@@ -1,0 +1,90 @@
+from fastapi import APIRouter, Depends, HTTPException, status
+{{#if ormSqlalchemy}}
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.shared.database.sqlalchemy import get_session
+{{/if}}
+
+from src.adapters.repository.{{snakeCase moduleName}}_repo import {{pascalCase moduleName}}Repo
+{{#if hasValidation}}
+from src.core.entity.{{snakeCase moduleName}} import {{pascalCase moduleName}}
+from pydantic import BaseModel, Field
+
+
+class {{pascalCase moduleName}}Create(BaseModel):
+    name: str = Field(..., min_length=1, max_length=255)
+
+
+class {{pascalCase moduleName}}Response(BaseModel):
+    id: int
+    name: str
+
+    model_config = {"from_attributes": True}
+{{/if}}
+from src.use_cases.{{snakeCase moduleName}}_use_case import {{pascalCase moduleName}}UseCase
+
+router = APIRouter()
+
+
+{{#if ormSqlalchemy}}
+def _get_repo(session: AsyncSession = Depends(get_session)) -> {{pascalCase moduleName}}Repo:
+    return {{pascalCase moduleName}}Repo(session)
+
+
+def _get_use_case(repo: {{pascalCase moduleName}}Repo = Depends(_get_repo)) -> {{pascalCase moduleName}}UseCase:
+    return {{pascalCase moduleName}}UseCase(repo)
+{{else}}
+_repo = {{pascalCase moduleName}}Repo()
+
+
+def _get_use_case() -> {{pascalCase moduleName}}UseCase:
+    return {{pascalCase moduleName}}UseCase(_repo)
+{{/if}}
+
+
+{{#if hasValidation}}
+@router.post("/", response_model={{pascalCase moduleName}}Response, status_code=status.HTTP_201_CREATED)
+async def create(body: {{pascalCase moduleName}}Create, uc: {{pascalCase moduleName}}UseCase = Depends(_get_use_case)):
+    entity = await uc.create(body.model_dump())
+    return entity
+{{else}}
+@router.post("/", status_code=status.HTTP_201_CREATED)
+async def create(body: dict, uc: {{pascalCase moduleName}}UseCase = Depends(_get_use_case)):
+    entity = await uc.create(body)
+    return {"id": entity.id, "name": entity.name}
+{{/if}}
+
+
+{{#if hasValidation}}
+@router.get("/", response_model=list[{{pascalCase moduleName}}Response])
+async def list_all(uc: {{pascalCase moduleName}}UseCase = Depends(_get_use_case)):
+    return await uc.get_all()
+
+@router.get("/{pk}", response_model={{pascalCase moduleName}}Response)
+{{else}}
+@router.get("/")
+async def list_all(uc: {{pascalCase moduleName}}UseCase = Depends(_get_use_case)):
+    entities = await uc.get_all()
+    return [{"id": e.id, "name": e.name} for e in entities]
+
+@router.get("/{pk}")
+{{/if}}
+async def get_one(pk: int, uc: {{pascalCase moduleName}}UseCase = Depends(_get_use_case)):
+    return await uc.get_by_id(pk)
+
+
+{{#if hasValidation}}
+@router.put("/{pk}", response_model={{pascalCase moduleName}}Response)
+async def update(pk: int, body: {{pascalCase moduleName}}Create, uc: {{pascalCase moduleName}}UseCase = Depends(_get_use_case)):
+    return await uc.update(pk, body.model_dump())
+{{else}}
+@router.put("/{pk}")
+async def update(pk: int, body: dict, uc: {{pascalCase moduleName}}UseCase = Depends(_get_use_case)):
+    entity = await uc.update(pk, body)
+    return {"id": entity.id, "name": entity.name}
+{{/if}}
+
+
+@router.delete("/{pk}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete(pk: int, uc: {{pascalCase moduleName}}UseCase = Depends(_get_use_case)):
+    await uc.delete(pk)

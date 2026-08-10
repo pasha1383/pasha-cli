@@ -1,0 +1,58 @@
+# {{projectName}}
+
+{{description}}
+
+Built with pasha CLI — **Layered** architecture on Flask.
+
+## Stack
+
+{{#if ormSqlalchemy}}- **ORM:** SQLAlchemy (Flask-SQLAlchemy){{/if}}
+{{#if ormNone}}- **Data layer:** in-memory repositories{{/if}}
+{{#if hasDatabase}}- **Database:** {{database}}{{/if}}
+
+## Run
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+{{#if devRequirementsTxt}}
+pip install -r dev-requirements.txt
+{{/if}}
+
+cp .env.example .env
+{{#if useDocker}}
+docker compose up -d
+{{/if}}
+flask run --debug
+```
+
+## Modules
+
+{{#each modules}}
+- `{{this}}` → `http://localhost:5000/{{this}}`
+{{/each}}
+
+## Structure
+
+```
+src/
+├── config/
+│   └── settings.py        ← env loading
+├── errors/
+│   └── app_error.py       ← error classes
+├── shared/
+│   └── database/          ← ORM setup
+└── blueprints/<module>/
+    ├── __init__.py             ← Blueprint
+    ├── <module>_model.py       ← SQLAlchemy model
+    ├── <module>_repository.py  ← data access
+    ├── <module>_service.py     ← business logic
+    ├── <module>_views.py       ← Flask route handlers
+    └── <module>_test.py        ← pytest tests
+```
+app.py                   ← Flask app factory
+```
+
+---
+Made with ❤️ by {{author}}

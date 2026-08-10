@@ -1,0 +1,46 @@
+{{#if ormSqlalchemy}}
+from .model import {{pascalCase moduleName}}, db
+
+
+class {{pascalCase moduleName}}Repository:
+    def find_all(self) -> list[{{pascalCase moduleName}}]:
+        return {{pascalCase moduleName}}.query.all()
+
+    def find_by_id(self, pk: int) -> {{pascalCase moduleName}} | None:
+        return {{pascalCase moduleName}}.query.get(pk)
+
+    def save(self, entity: {{pascalCase moduleName}}) -> {{pascalCase moduleName}}:
+        db.session.add(entity)
+        db.session.commit()
+        return entity
+
+    def delete(self, pk: int) -> None:
+        entity = self.find_by_id(pk)
+        if entity:
+            db.session.delete(entity)
+            db.session.commit()
+{{else}}
+from .model import {{pascalCase moduleName}}
+
+
+class {{pascalCase moduleName}}Repository:
+    def __init__(self):
+        self._items: dict[int, {{pascalCase moduleName}}] = {}
+        self._next_id = 1
+
+    def find_all(self) -> list[{{pascalCase moduleName}}]:
+        return list(self._items.values())
+
+    def find_by_id(self, pk: int) -> {{pascalCase moduleName}} | None:
+        return self._items.get(pk)
+
+    def save(self, entity: {{pascalCase moduleName}}) -> {{pascalCase moduleName}}:
+        if entity.id == 0:
+            entity.id = self._next_id
+            self._next_id += 1
+        self._items[entity.id] = entity
+        return entity
+
+    def delete(self, pk: int) -> None:
+        self._items.pop(pk, None)
+{{/if}}

@@ -1,0 +1,16 @@
+FROM python:3.12-slim AS build
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --user --no-cache-dir -r requirements.txt
+
+FROM python:3.12-slim
+WORKDIR /app
+RUN addgroup --gid 1001 app && adduser --uid 1001 --gid 1001 app
+COPY --from=build /root/.local /home/app/.local
+COPY . .
+ENV PATH=/home/app/.local/bin:$PATH
+USER app
+EXPOSE 5000
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')" || exit 1
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:create_app()"]

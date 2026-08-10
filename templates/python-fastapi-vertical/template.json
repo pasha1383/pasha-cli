@@ -1,0 +1,29 @@
+{
+  "name": "Python + FastAPI + Vertical Slice",
+  "prerequisites": ["python3", "pip3", "git"],
+  "shared": null,
+  "stackFeatures": "python",
+  "modules": {
+    "enabled": true,
+    "message": "Feature/slice name (e.g. product, user, order)",
+    "default": "product"
+  },
+  "fileConditions": {
+    "docker-compose.yml.hbs": "useDocker",
+    "src/shared": "hasSharedInfra",
+    "src/shared/database": "hasOrm",
+    "src/shared/database/sqlalchemy.py.hbs": "ormSqlalchemy",
+    "src/shared/database/tortoise.py.hbs": "ormTortoise",
+    "src/shared/database/none.py.hbs": "ormNone",
+    "src/shared/cache": "useRedis",
+    "src/shared/auth": "useAuth",
+    "src/shared/health": "useHealthCheck",
+    "AGENT.md.hbs": "useAgentDocs",
+    "Dockerfile.hbs": "useAppDockerfile",
+    ".dockerignore.hbs": "useAppDockerfile",
+    ".github": "useCI",
+    "src/features/{{snakeCase moduleName}}/schema.py.hbs": "hasValidation"
+  },
+  "postInstall": [],
+  "gitInit": true
+}

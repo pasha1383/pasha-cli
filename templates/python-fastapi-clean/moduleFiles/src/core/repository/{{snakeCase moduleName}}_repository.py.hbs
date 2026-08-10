@@ -1,0 +1,22 @@
+from abc import ABC, abstractmethod
+
+from src.core.entity.{{snakeCase moduleName}} import {{pascalCase moduleName}}
+
+
+class {{pascalCase moduleName}}Repository(ABC):
+
+    @abstractmethod
+    async def save(self, entity: {{pascalCase moduleName}}) -> {{pascalCase moduleName}}:
+        ...
+
+    @abstractmethod
+    async def find_all(self) -> list[{{pascalCase moduleName}}]:
+        ...
+
+    @abstractmethod
+    async def find_by_id(self, pk: int) -> {{pascalCase moduleName}} | None:
+        ...
+
+    @abstractmethod
+    async def delete(self, pk: int) -> None:
+        ...

@@ -1,0 +1,15 @@
+{{#if ormSqlalchemy}}
+from src.shared.database.sqlalchemy import db
+
+
+class {{pascalCase moduleName}}(db.Model):
+    __tablename__ = "{{snakeCase moduleName}}"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+{{else}}
+class {{pascalCase moduleName}}:
+    def __init__(self, id: int = 0, name: str = ""):
+        self.id = id
+        self.name = name
+{{/if}}

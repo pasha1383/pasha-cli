@@ -1,0 +1,11 @@
+class {{pascalCase moduleName}}:
+    """Pure domain entity — no Django, no ORM imports."""
+
+    def __init__(self, id: int = 0, name: str = ""):
+        self.id = id
+        self.name = name
+
+    def __eq__(self, other):
+        if not isinstance(other, {{pascalCase moduleName}}):
+            return False
+        return self.id == other.id

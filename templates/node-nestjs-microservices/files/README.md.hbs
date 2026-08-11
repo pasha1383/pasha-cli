@@ -1,0 +1,65 @@
+# {{projectName}}
+
+{{description}}
+
+Built with pasha CLI — **Microservices** architecture on NestJS.
+
+## Stack
+
+- **Framework:** NestJS (hybrid HTTP + microservice)
+- **Transport:** {{#if useKafka}}Kafka{{else}}{{#if useRabbitmq}}RabbitMQ{{else}}{{#if useRedis}}Redis{{else}}TCP{{/if}}{{/if}}{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+- **Validation:** {{#if hasValidation}}{{validation}}{{else}}none{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis
+{{/if}}
+{{#if hasBroker}}
+- **Messaging:** {{broker}}
+{{/if}}
+
+## Run
+
+```bash
+cp .env.example .env
+{{#if useDocker}}
+npm run infra:up          # start docker services
+{{/if}}
+npm install
+{{#if ormPrisma}}
+npm run prisma:migrate    # create the database schema
+{{/if}}
+npm run start:dev
+```
+
+## Endpoints
+
+{{#each modules}}
+- `{{this}}` (HTTP) → `http://localhost:3000/{{this}}`
+- `{{this}}` (microservice) → `{ cmd: '{{this}}.create' }`, `{ cmd: '{{this}}.findAll' }`, `{ cmd: '{{this}}.findOne' }`
+{{/each}}
+
+## Architecture
+
+```
+src/
+├── main.ts                       ← hybrid HTTP + microservice bootstrap (NestFactory.create + connectMicroservice)
+├── app.module.ts
+├── config/
+│   └── app.config.ts
+└── <moduleName>/
+    ├── <moduleName>.controller.ts ← @MessagePattern / @EventPattern handlers for RPC and events
+    └── <moduleName>.module.ts
+```
+
+The app starts **two listeners** on a single process:
+1. An HTTP server (Express/Fastify) on `PORT` (default 3000)
+2. A microservice transport listener on `MICROSERVICE_PORT` (default 3001)
+
+Message handlers in controllers respond to remote procedure calls (`@MessagePattern`) and handle
+asynchronous events (`@EventPattern`). External services communicate with this microservice
+by connecting a `ClientProxy` over the configured transport (TCP, Redis, Kafka, RabbitMQ, NATS, or gRPC).
+
+---
+Made with ❤️ by {{author}}

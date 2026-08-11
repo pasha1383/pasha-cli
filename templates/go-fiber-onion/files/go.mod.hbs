@@ -1,0 +1,13 @@
+module {{github}}/{{projectName}}
+
+go 1.22
+
+require (
+	github.com/gofiber/fiber/v3 v3.0.0-beta.3
+{{#if useSwagger}}
+	github.com/swaggo/fiber-swagger v1.3.0
+{{/if}}
+{{#each goModules}}
+	{{module}} {{version}}
+{{/each}}
+)

@@ -1,0 +1,101 @@
+# {{projectName}}
+
+{{description}}
+
+Built with pasha CLI — **Onion Architecture** on Go + Chi.
+
+## Stack
+
+- **Framework:** Chi (stdlib-compatible router)
+- **Architecture:** Onion (Domain → Application → Infrastructure)
+{{#if ormNone}}
+- **Data layer:** in-memory repositories
+{{else}}
+- **ORM:** GORM
+{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+{{#if hasValidation}}
+- **Validation:** go-playground/validator
+{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis
+{{/if}}
+{{#if hasBroker}}
+- **Messaging:** {{broker}}
+{{/if}}
+{{#if useAuth}}
+- **Auth:** JWT (golang-jwt)
+{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/swagger/index.html`
+{{/if}}
+
+## Run
+
+```bash
+cp .env.example .env
+{{#if useDocker}}
+make infra-up          # start docker services
+{{/if}}
+go mod tidy
+{{#if ormGorm}}
+# GORM auto-migration runs on startup — no manual migration needed
+{{/if}}
+{{#if ormNone}}
+go run ./cmd            # start the server
+{{else}}
+make run                # start the server
+{{/if}}
+```
+
+Or use Air for hot reload:
+
+```bash
+go install github.com/air-verse/air@latest
+make dev
+```
+
+## Modules
+
+{{#each modules}}
+- `{{this}}` → `http://localhost:8080/api/{{this}}`
+{{/each}}
+
+## Onion Architecture
+
+```
+cmd/
+└── main.go                  ← entry point, wires dependencies
+
+internal/
+├── config/config.go           ← reads env
+├── middleware/                 ← auth, rate limiting
+├── errors/app_error.go         ← error types and helpers
+├── shared/                     ← database, cache, health
+│   ├── database/
+│   ├── cache/
+│   └── health/
+├── domain/                     ← innermost layer — entities, interfaces, domain logic
+│   └── <module>/
+│       ├── entity.go           ← domain entity struct
+│       ├── repository.go       ← repository interface (no impl)
+│       └── service.go          ← pure domain logic
+├── application/                ← use cases, DTOs — orchestrates domain
+│   └── <module>/
+│       ├── usecase.go          ← application use cases
+│       └── dto.go              ← request/response DTOs
+└── infrastructure/             ← outermost layer — adapts domain to framework
+    ├── persistence/
+    │   └── <module>_repository.go  ← implements domain.Repository
+    └── handler/
+        └── <module>_handler.go     ← HTTP handler (framework-specific)
+```
+
+**Dependency rule:** Inner layers (domain) never import outer layers (infrastructure).
+Domain has zero framework imports. Infrastructure adapts domain interfaces to the framework.
+
+---
+
+Made with ❤️ by {{author}}

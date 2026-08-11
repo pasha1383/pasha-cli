@@ -1,0 +1,69 @@
+{{#if ormSqlalchemy}}
+from src.domain.{{snakeCase moduleName}}.entity import {{pascalCase moduleName}} as {{pascalCase moduleName}}Entity
+from src.domain.{{snakeCase moduleName}}.repository import {{pascalCase moduleName}}Repository as {{pascalCase moduleName}}RepositoryInterface
+from src.shared.database.sqlalchemy import db
+
+
+class {{pascalCase moduleName}}Model(db.Model):
+    __tablename__ = "{{snakeCase moduleName}}"
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(255), nullable=False)
+
+    def __repr__(self):
+        return f"<{{pascalCase moduleName}} {self.name}>"
+
+
+class {{pascalCase moduleName}}Repository({{pascalCase moduleName}}RepositoryInterface):
+    def save(self, entity: {{pascalCase moduleName}}Entity) -> {{pascalCase moduleName}}Entity:
+        if entity.id:
+            model = db.session.get({{pascalCase moduleName}}Model, entity.id)
+            model.name = entity.name
+        else:
+            model = {{pascalCase moduleName}}Model(name=entity.name)
+            db.session.add(model)
+        db.session.flush()
+        entity.id = model.id
+        db.session.commit()
+        return entity
+
+    def find_all(self) -> list[{{pascalCase moduleName}}Entity]:
+        models = {{pascalCase moduleName}}Model.query.all()
+        return [{{pascalCase moduleName}}Entity(id=m.id, name=m.name) for m in models]
+
+    def find_by_id(self, pk: int) -> {{pascalCase moduleName}}Entity | None:
+        model = db.session.get({{pascalCase moduleName}}Model, pk)
+        return {{pascalCase moduleName}}Entity(id=model.id, name=model.name) if model else None
+
+    def delete(self, pk: int) -> None:
+        model = db.session.get({{pascalCase moduleName}}Model, pk)
+        if model:
+            db.session.delete(model)
+            db.session.commit()
+{{/if}}
+{{#if ormNone}}
+from src.domain.{{snakeCase moduleName}}.entity import {{pascalCase moduleName}} as {{pascalCase moduleName}}Entity
+from src.domain.{{snakeCase moduleName}}.repository import {{pascalCase moduleName}}Repository as {{pascalCase moduleName}}RepositoryInterface
+
+
+class {{pascalCase moduleName}}Repository({{pascalCase moduleName}}RepositoryInterface):
+    def __init__(self):
+        self._items: dict[int, {{pascalCase moduleName}}Entity] = {}
+        self._next_id = 1
+
+    def save(self, entity: {{pascalCase moduleName}}Entity) -> {{pascalCase moduleName}}Entity:
+        if entity.id == 0:
+            entity.id = self._next_id
+            self._next_id += 1
+        self._items[entity.id] = entity
+        return entity
+
+    def find_all(self) -> list[{{pascalCase moduleName}}Entity]:
+        return list(self._items.values())
+
+    def find_by_id(self, pk: int) -> {{pascalCase moduleName}}Entity | None:
+        return self._items.get(pk)
+
+    def delete(self, pk: int) -> None:
+        self._items.pop(pk, None)
+{{/if}}

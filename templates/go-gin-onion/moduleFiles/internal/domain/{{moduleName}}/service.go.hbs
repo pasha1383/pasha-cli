@@ -1,0 +1,40 @@
+package {{snakeCase moduleName}}
+
+{{#if ormNone}}
+import "github.com/google/uuid"
+{{/if}}
+
+type {{pascalCase moduleName}}Service struct {
+	repo {{pascalCase moduleName}}Repository
+}
+
+func New{{pascalCase moduleName}}Service(repo {{pascalCase moduleName}}Repository) *{{pascalCase moduleName}}Service {
+	return &{{pascalCase moduleName}}Service{repo: repo}
+}
+
+func (s *{{pascalCase moduleName}}Service) Create(name string) (*{{pascalCase moduleName}}, error) {
+	model := &{{pascalCase moduleName}}{
+{{#if ormGorm}}
+		Name: name,
+{{else}}
+		ID:   uuid.New().String(),
+		Name: name,
+{{/if}}
+	}
+	if err := s.repo.Save(model); err != nil {
+		return nil, err
+	}
+	return model, nil
+}
+
+func (s *{{pascalCase moduleName}}Service) FindAll() ([]{{pascalCase moduleName}}, error) {
+	return s.repo.FindAll()
+}
+
+func (s *{{pascalCase moduleName}}Service) FindByID(id {{#if ormGorm}}uint{{else}}string{{/if}}) (*{{pascalCase moduleName}}, error) {
+	return s.repo.FindByID(id)
+}
+
+func (s *{{pascalCase moduleName}}Service) Remove(id {{#if ormGorm}}uint{{else}}string{{/if}}) error {
+	return s.repo.Delete(id)
+}

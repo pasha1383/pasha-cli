@@ -1,0 +1,8 @@
+import { Module } from '@nestjs/common';
+import { {{pascalCase moduleName}}Controller } from './{{moduleName}}.controller';
+
+@Module({
+  controllers: [{{pascalCase moduleName}}Controller],
+  exports: [],
+})
+export class {{pascalCase moduleName}}Module {}

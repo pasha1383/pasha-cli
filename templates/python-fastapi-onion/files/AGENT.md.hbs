@@ -1,0 +1,87 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Framework:** FastAPI (Python, async) — Onion Architecture
+- **Architecture:** {{architectureLabel}}
+{{#if ormSqlalchemy}}
+- **ORM:** SQLAlchemy (async){{/if}}
+{{#if ormTortoise}}
+- **ORM:** Tortoise ORM{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}{{/if}}
+{{#if hasValidation}}
+- **Validation:** Pydantic v2{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis{{/if}}
+{{#if hasBroker}}
+- **Message broker:** {{broker}}{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/docs` (built-in){{/if}}
+{{#if useAuth}}
+- **Auth:** JWT{{/if}}
+{{#if useHealthCheck}}
+- **Health:** `GET /health/`{{/if}}
+{{#if useRateLimit}}
+- **Rate limiting:** slowapi{{/if}}
+
+## Modules (Bounded Contexts)
+
+{{#each modules}}
+- `{{snakeCase this}}`
+{{/each}}
+
+## Layer rules (onion)
+
+1. **Domain** (`src/domain/`) — innermost layer. Entities, value objects,
+   repository interfaces (ports), domain services. Zero framework imports.
+   Pure Python only.
+2. **Application** (`src/application/`) — use cases and DTOs. Orchestrates
+   domain entities via interfaces. No framework imports.
+3. **Infrastructure** (`src/infrastructure/`) — outermost layer. Persistence
+   adapters, web routers, external integrations. Depends on domain and
+   application.
+
+## Commands
+
+```bash
+source venv/bin/activate
+uvicorn src.main:create_app --reload --factory   # dev server on :8000
+{{#if useDocker}}
+docker compose up -d                                # start databases/brokers
+docker compose down
+{{/if}}
+{{#if useLint}}
+ruff check .                                        # lint
+ruff format .                                       # format
+{{/if}}
+{{#if useTests}}
+pytest                                              # run tests
+pytest --cov=. --cov-report=term-missing
+{{/if}}
+```
+
+## Hard rules
+
+1. **Dependency inversion.** Domain defines `Repository` interface (ABC);
+   Infrastructure implements it. Use cases depend on the interface, never on
+   SQLAlchemy/Tortoise directly.
+2. **DTOs at the boundary.** DTOs are defined in the application layer.
+   Domain entities are plain Python classes.
+3. **`src/config/settings.py` is the only file that reads `os.environ`.**
+4. **`AppError` / `NotFoundError` / `ValidationError`** from
+   `src/errors/app_error.py` — raise them in use cases, let FastAPI's
+   exception handler translate them.
+5. **Adding a bounded context:** create the domain entity + repository
+   interface + domain service, then the application use cases + DTOs,
+   then the infrastructure persistence adapter + web router.
+6. **Register new routers** in `src/app.py`.
+
+## When you are unsure
+
+Prefer asking over guessing. Generating a plausible-looking file in the wrong
+layer costs more to unpick than a clarifying question costs to answer.

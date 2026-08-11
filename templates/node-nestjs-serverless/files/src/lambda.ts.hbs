@@ -1,0 +1,7 @@
+import { Handler, APIGatewayProxyEvent, Context } from 'aws-lambda';
+import { bootstrapServerless } from './handler';
+
+export const handler: Handler<APIGatewayProxyEvent> = async (event, context, callback) => {
+  const serverless = await bootstrapServerless();
+  return serverless(event, context, callback);
+};

@@ -1,0 +1,55 @@
+from django.urls import path
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+from application.{{snakeCase moduleName}}.use_case import (
+    Create{{pascalCase moduleName}}UseCase,
+    Get{{pascalCase moduleName}}UseCase,
+    Update{{pascalCase moduleName}}UseCase,
+    Delete{{pascalCase moduleName}}UseCase,
+)
+from infrastructure.persistence.{{snakeCase moduleName}}_repository import {{pascalCase moduleName}}Repository
+
+_repo = {{pascalCase moduleName}}Repository()
+
+
+def _to_dict(obj):
+    return {"id": obj.id, "name": obj.name}
+
+
+def _to_dict_list(objs):
+    return [{"id": o.id, "name": o.name} for o in objs]
+
+
+@api_view(["GET", "POST"])
+def list_create_{{moduleName}}(request):
+    get_uc = Get{{pascalCase moduleName}}UseCase(_repo)
+    if request.method == "GET":
+        objs = get_uc.get_all()
+        return Response(_to_dict_list(objs))
+    create_uc = Create{{pascalCase moduleName}}UseCase(_repo)
+    obj = create_uc.execute(request.data.get("name", ""))
+    return Response(_to_dict(obj), status=status.HTTP_201_CREATED)
+
+
+@api_view(["GET", "PUT", "DELETE"])
+def get_update_delete_{{moduleName}}(request, pk):
+    get_uc = Get{{pascalCase moduleName}}UseCase(_repo)
+    if request.method == "GET":
+        obj = get_uc.get_by_id(pk)
+        return Response(_to_dict(obj))
+    elif request.method == "PUT":
+        update_uc = Update{{pascalCase moduleName}}UseCase(_repo)
+        obj = update_uc.execute(pk, request.data.get("name", ""))
+        return Response(_to_dict(obj))
+    elif request.method == "DELETE":
+        delete_uc = Delete{{pascalCase moduleName}}UseCase(_repo)
+        delete_uc.execute(pk)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+urlpatterns = [
+    path("", list_create_{{moduleName}}, name="{{moduleName}}-list-create"),
+    path("<int:pk>/", get_update_delete_{{moduleName}}, name="{{moduleName}}-detail"),
+]

@@ -1,0 +1,8 @@
+package {{snakeCase moduleName}}
+
+type {{pascalCase moduleName}}Repository interface {
+	Save(model *{{pascalCase moduleName}}) error
+	FindAll() ([]{{pascalCase moduleName}}, error)
+	FindByID(id {{#if ormGorm}}uint{{else}}string{{/if}}) (*{{pascalCase moduleName}}, error)
+	Delete(id {{#if ormGorm}}uint{{else}}string{{/if}}) error
+}

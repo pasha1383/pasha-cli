@@ -1,0 +1,19 @@
+# Domain Layer
+
+Innermost layer of the Onion. Pure Python — no framework, no database,
+no ORM imports.
+
+Rules:
+- Every entity is a plain class (`__init__` + optional `__eq__`).
+- Repository interfaces are abstract (`abc.ABC`) — define the contract,
+  never the implementation.
+- Domain services contain business logic that spans multiple entities
+  or doesn't naturally belong to a single entity.
+- Domain NEVER imports from `application/` or `infrastructure/`.
+- `application/` may import from domain.
+- `infrastructure/` may import from both domain and application.
+
+Files per bounded context:
+- `entity.py` — the domain entity
+- `repository.py` — abstract repository port (interface)
+- `service.py` — domain service (pure business logic)

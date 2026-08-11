@@ -1,0 +1,37 @@
+service: {{projectName}}
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: ${opt:region, 'us-east-1'}
+  stage: ${opt:stage, 'dev'}
+  environment:
+    NODE_ENV: production
+    PORT: 3000
+{{#if hasDatabase}}
+    DATABASE_URL: ${env:DATABASE_URL}
+{{/if}}
+{{#if useRedis}}
+    REDIS_URL: ${env:REDIS_URL}
+{{/if}}
+
+functions:
+  api:
+    handler: src/lambda.handler
+    events:
+      - http:
+          path: /{proxy+}
+          method: any
+          cors: true
+
+plugins:
+  - serverless-offline
+
+package:
+  patterns:
+    - '!node_modules/.cache/**'
+    - '!src/**/*.spec.ts'
+    - '!test/**'
+    - '!.github/**'

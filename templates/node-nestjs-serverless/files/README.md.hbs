@@ -1,0 +1,70 @@
+# {{projectName}}
+
+{{description}}
+
+Built with pasha CLI — **Serverless** architecture on NestJS for AWS Lambda.
+
+## Stack
+
+- **Framework:** NestJS
+- **Runtime:** AWS Lambda (Node.js 20.x)
+- **Adapter:** `@codegenie/serverless-express`
+- **Deployment:** Serverless Framework (`serverless.yml`)
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+- **Validation:** {{#if hasValidation}}{{validation}}{{else}}none{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis
+{{/if}}
+
+## Run locally
+
+```bash
+cp .env.example .env
+npm install
+npm run start:dev          # starts HTTP server on localhost:3000
+```
+
+## Deploy to AWS
+
+```bash
+npm install -g serverless
+npm run build
+sls deploy                 # deploys to AWS Lambda + API Gateway
+```
+
+## Endpoints
+
+{{#each modules}}
+- `{{this}}` → `POST /{{this}}`, `GET /{{this}}`, `GET /{{this}}/:id`
+{{/each}}
+
+## Structure
+
+```
+src/
+├── main.ts              ← local dev server (NestFactory.create → app.listen)
+├── lambda.ts            ← AWS Lambda entry point (exports handler)
+├── handler.ts           ← serverless-express wrapper (caches NestJS instance)
+├── app.module.ts
+├── config/
+│   └── app.config.ts
+└── <moduleName>/
+    ├── <moduleName>.controller.ts ← standard REST controller
+    └── <moduleName>.module.ts
+serverless.yml           ← Serverless Framework deployment config
+```
+
+### How it works
+
+1. **Local development:** `main.ts` boots a standard NestJS HTTP server — no Lambda involved.
+2. **Lambda cold start:** `lambda.ts` calls `bootstrapServerless()`, which creates a NestJS
+   app via `@codegenie/serverless-express` and caches the handler.
+3. **Warm invocations:** The cached handler reuses the existing NestJS instance, keeping
+   response times low.
+4. **API Gateway integration:** The Serverless Framework maps API Gateway HTTP events to
+   the Lambda function. All routes pass through NestJS's router.
+
+---
+Made with ❤️ by {{author}}

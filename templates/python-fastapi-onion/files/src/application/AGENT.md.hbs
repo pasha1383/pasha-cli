@@ -1,0 +1,17 @@
+# Application Layer
+
+Use cases (commands & queries) and DTOs — the "what" of the system.
+
+Rules:
+- Each use case is a class with a single `execute()` method (or multiple
+  query/command methods).
+- Use cases depend ONLY on domain interfaces (repository ports) — never on
+  concrete implementations.
+- DTOs are plain data classes or Pydantic models that define the shape of
+  data crossing the application boundary.
+- Use cases NEVER import from `infrastructure/`.
+- Use cases may import from `domain/` and from `src/errors/`.
+
+Files per bounded context:
+- `use_case.py` — commands and queries
+- `dto.py` — data transfer objects

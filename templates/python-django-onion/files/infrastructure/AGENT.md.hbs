@@ -1,0 +1,17 @@
+# Infrastructure Layer
+
+Outermost layer of the Onion. Persistence adapters, web controllers,
+and external integrations — the "how".
+
+Rules:
+- Web routers in `infrastructure/web/<module>_router.py` — DRF views
+  and URL patterns.
+- Persistence adapters in `infrastructure/persistence/<module>_repository.py`
+  implement the domain repository interface against Django ORM models.
+- Infrastructure may import from `domain/`, `application/`, `core/`,
+  and `config/`.
+
+Files per bounded context:
+- `web/<module>_router.py` — DRF views + URL patterns
+- `persistence/<module>_repository.py` — Django ORM persistence adapter
+  implementing the domain interface

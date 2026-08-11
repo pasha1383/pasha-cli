@@ -1,0 +1,68 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Framework:** Django + DRF (Python) — Onion Architecture
+- **Architecture:** {{architectureLabel}}
+{{#if hasDatabase}}
+- **Database:** {{database}} (Django ORM){{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/api/docs/`{{/if}}
+{{#if useAuth}}
+- **Auth:** JWT (SimpleJWT){{/if}}
+{{#if useHealthCheck}}
+- **Health:** `GET /health/`{{/if}}
+
+## Modules (Bounded Contexts)
+
+{{#each modules}}
+- `{{snakeCase this}}`
+{{/each}}
+
+## Layer rules (onion)
+
+1. **Domain** (`domain/`) — innermost layer. Entities, repository interfaces
+   (ports), domain services. Zero Django/DRF imports. Pure Python.
+2. **Application** (`application/`) — use cases and DTOs. Orchestrates
+   domain entities via interfaces. No Django/ORM imports (pure Python
+   or DRF serializers for DTOs).
+3. **Infrastructure** (`infrastructure/`) — outermost layer. Django ORM
+   persistence adapters, DRF views/urls. Depends on domain and application.
+
+## Commands
+
+```bash
+source venv/bin/activate
+python manage.py runserver 0.0.0.0:8000        # dev server
+{{#if useDocker}}
+docker compose up -d                              # start databases
+docker compose down
+{{/if}}
+{{#if useLint}}
+ruff check .                                      # lint
+ruff format .                                     # format
+{{/if}}
+{{#if useTests}}
+python manage.py test                             # run tests
+{{/if}}
+```
+
+## Hard rules
+
+1. **Dependency inversion.** Domain defines `Repository` interface (ABC);
+   Infrastructure implements it via Django ORM.
+2. **DTOs at the boundary.** DTOs/serializers are defined in the application
+   layer. Domain entities are plain Python classes.
+3. **`core/app_error.py`** for `AppError` / `NotFoundError` / `ValidationError`.
+4. **Adding a bounded context:** create domain entity + interface + service,
+   then application use cases + DTOs, then infrastructure persistence adapter
+   + web router.
+
+## When you are unsure
+
+Prefer asking over guessing. Generating a plausible-looking file in the wrong
+layer costs more to unpick than a clarifying question costs to answer.

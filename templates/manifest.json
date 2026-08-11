@@ -17,6 +17,10 @@
             "hexagonal": {
               "label": "Hexagonal (Ports & Adapters)",
               "template": "go-gin-hexagonal"
+            },
+            "onion": {
+              "label": "Onion Architecture",
+              "template": "go-gin-onion"
             }
           }
         },
@@ -34,6 +38,10 @@
             "hexagonal": {
               "label": "Hexagonal (Ports & Adapters)",
               "template": "go-echo-hexagonal"
+            },
+            "onion": {
+              "label": "Onion Architecture",
+              "template": "go-echo-onion"
             }
           }
         },
@@ -51,6 +59,10 @@
             "hexagonal": {
               "label": "Hexagonal (Ports & Adapters)",
               "template": "go-fiber-hexagonal"
+            },
+            "onion": {
+              "label": "Onion Architecture",
+              "template": "go-fiber-onion"
             }
           }
         },
@@ -60,6 +72,10 @@
             "layered": {
               "label": "Layered (Handler-Service-Repository)",
               "template": "go-chi-layered"
+            },
+            "onion": {
+              "label": "Onion Architecture",
+              "template": "go-chi-onion"
             }
           }
         },
@@ -133,6 +149,14 @@
             "vertical": {
               "label": "Vertical Slice",
               "template": "node-nestjs-vertical"
+            },
+            "microservices": {
+              "label": "Microservices (@nestjs/microservices)",
+              "template": "node-nestjs-microservices"
+            },
+            "serverless": {
+              "label": "Serverless (AWS Lambda)",
+              "template": "node-nestjs-serverless"
             }
           }
         },
@@ -310,6 +334,10 @@
             "vertical": {
               "label": "Vertical Slice",
               "template": "python-django-vertical"
+            },
+            "onion": {
+              "label": "Onion Architecture",
+              "template": "python-django-onion"
             }
           }
         },
@@ -335,6 +363,10 @@
             "vertical": {
               "label": "Vertical Slice",
               "template": "python-fastapi-vertical"
+            },
+            "onion": {
+              "label": "Onion Architecture",
+              "template": "python-fastapi-onion"
             }
           }
         },
@@ -360,6 +392,10 @@
             "vertical": {
               "label": "Vertical Slice",
               "template": "python-flask-vertical"
+            },
+            "onion": {
+              "label": "Onion Architecture",
+              "template": "python-flask-onion"
             }
           }
         },

@@ -1,0 +1,51 @@
+import { Controller } from '@nestjs/common';
+import { MessagePattern, Payload, EventPattern } from '@nestjs/microservices';
+import { randomUUID } from 'crypto';
+
+interface {{pascalCase moduleName}}Record {
+  id: string;
+  name: string;
+}
+
+@Controller()
+export class {{pascalCase moduleName}}Controller {
+  private readonly items = new Map<string, {{pascalCase moduleName}}Record>();
+
+  @MessagePattern({ cmd: '{{moduleName}}.create' })
+  create(@Payload() data: { name: string }): {{pascalCase moduleName}}Record {
+    const id = randomUUID();
+    const record: {{pascalCase moduleName}}Record = { id, name: data.name };
+    this.items.set(id, record);
+    return record;
+  }
+
+  @MessagePattern({ cmd: '{{moduleName}}.findAll' })
+  findAll(): {{pascalCase moduleName}}Record[] {
+    return Array.from(this.items.values());
+  }
+
+  @MessagePattern({ cmd: '{{moduleName}}.findOne' })
+  findOne(@Payload() id: string): {{pascalCase moduleName}}Record | undefined {
+    return this.items.get(id);
+  }
+
+  @MessagePattern({ cmd: '{{moduleName}}.update' })
+  update(@Payload() data: { id: string; name: string }): {{pascalCase moduleName}}Record | undefined {
+    const record = this.items.get(data.id);
+    if (record) {
+      record.name = data.name;
+    }
+    return record;
+  }
+
+  @MessagePattern({ cmd: '{{moduleName}}.remove' })
+  remove(@Payload() id: string): { deleted: boolean } {
+    const deleted = this.items.delete(id);
+    return { deleted };
+  }
+
+  @EventPattern('{{moduleName}}.created')
+  handleCreated(data: {{pascalCase moduleName}}Record): void {
+    console.info('Event received: {{moduleName}}.created', data);
+  }
+}

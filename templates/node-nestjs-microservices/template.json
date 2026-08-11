@@ -1,0 +1,58 @@
+{
+  "name": "Node.js + NestJS + Microservices",
+  "prerequisites": [
+    "node",
+    "npm",
+    "git"
+  ],
+  "shared": "_shared/nestjs",
+  "stackFeatures": "nestjs",
+  "modules": {
+    "enabled": true,
+    "message": "Module/entity name (e.g. product, user, order)",
+    "default": "product"
+  },
+  "fileConditions": {
+    "prisma": "ormPrisma",
+    "docker-compose.yml.hbs": "useDocker",
+    "src/shared": "hasSharedInfra",
+    "src/shared/database": "hasOrm",
+    "src/shared/database/prisma.service.ts.hbs": "ormPrisma",
+    "src/shared/database/prisma.module.ts.hbs": "ormPrisma",
+    "src/shared/database/typeorm.module.ts.hbs": "ormTypeorm",
+    "src/shared/database/typeorm.datasource.ts.hbs": "ormTypeorm",
+    "src/shared/database/migrations": "ormTypeorm",
+    "src/shared/database/seed.ts.hbs": "ormMongoose",
+    "src/shared/database/mongoose.module.ts.hbs": "ormMongoose",
+    "src/shared/cache": "useRedis",
+    "src/shared/messaging": "hasBroker",
+    "src/shared/messaging/kafka.module.ts.hbs": "useKafka",
+    "src/shared/messaging/rabbitmq.module.ts.hbs": "useRabbitmq",
+    "src/config/validation.pipe.ts.hbs": "useClassValidator",
+    "src/config/zod.pipe.ts.hbs": "useZod",
+    "src/config/swagger.ts.hbs": "useSwagger",
+    "AGENT.md.hbs": "useAgentDocs",
+    "src/AGENT.md.hbs": "useAgentDocs",
+    "src/config/AGENT.md.hbs": "useAgentDocs",
+    "src/shared/AGENT.md.hbs": "useAgentDocs",
+    ".eslintrc.js": "useLint",
+    ".prettierrc": "useLint",
+    "Dockerfile.hbs": "useAppDockerfile",
+    ".dockerignore.hbs": "useAppDockerfile",
+    ".github": "useCI",
+    "test": "useTests",
+    "src/shared/auth": "useAuth",
+    "src/shared/health": "useHealthCheck",
+    "src/shared/health/indicators/prisma.health-indicator.ts.hbs": "ormPrisma",
+    "src/shared/health/indicators/typeorm.health-indicator.ts.hbs": "ormTypeorm",
+    "src/shared/health/indicators/mongoose.health-indicator.ts.hbs": "ormMongoose",
+    "src/shared/health/indicators/redis.health-indicator.ts.hbs": "useRedis",
+    "src/shared/auth/AGENT.md.hbs": "useAgentDocs",
+    "src/shared/health/AGENT.md.hbs": "useAgentDocs"
+  },
+  "postInstall": [
+    "npm install",
+    "npm install --save @nestjs/microservices"
+  ],
+  "gitInit": true
+}

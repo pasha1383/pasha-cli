@@ -1,0 +1,29 @@
+package {{snakeCase moduleName}}
+
+import (
+	dom "{{github}}/{{projectName}}/internal/domain/{{moduleName}}"
+)
+
+type {{pascalCase moduleName}}UseCase struct {
+	svc *dom.{{pascalCase moduleName}}Service
+}
+
+func New{{pascalCase moduleName}}UseCase(svc *dom.{{pascalCase moduleName}}Service) *{{pascalCase moduleName}}UseCase {
+	return &{{pascalCase moduleName}}UseCase{svc: svc}
+}
+
+func (uc *{{pascalCase moduleName}}UseCase) Create(name string) (*dom.{{pascalCase moduleName}}, error) {
+	return uc.svc.Create(name)
+}
+
+func (uc *{{pascalCase moduleName}}UseCase) List() ([]dom.{{pascalCase moduleName}}, error) {
+	return uc.svc.FindAll()
+}
+
+func (uc *{{pascalCase moduleName}}UseCase) GetByID(id {{#if ormGorm}}uint{{else}}string{{/if}}) (*dom.{{pascalCase moduleName}}, error) {
+	return uc.svc.FindByID(id)
+}
+
+func (uc *{{pascalCase moduleName}}UseCase) Delete(id {{#if ormGorm}}uint{{else}}string{{/if}}) error {
+	return uc.svc.Remove(id)
+}

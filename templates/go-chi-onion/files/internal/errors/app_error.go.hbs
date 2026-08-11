@@ -1,0 +1,49 @@
+package errors
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+type AppError struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
+
+func (e *AppError) Error() string {
+	return e.Message
+}
+
+func NewAppError(code int, message string) *AppError {
+	return &AppError{Code: code, Message: message}
+}
+
+func writeJSON(w http.ResponseWriter, status int, data interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(data)
+}
+
+func NotFound(w http.ResponseWriter, message string) {
+	writeJSON(w, http.StatusNotFound, map[string]string{"error": message})
+}
+
+func BadRequest(w http.ResponseWriter, message string) {
+	writeJSON(w, http.StatusBadRequest, map[string]string{"error": message})
+}
+
+func Unauthorized(w http.ResponseWriter, message string) {
+	writeJSON(w, http.StatusUnauthorized, map[string]string{"error": message})
+}
+
+func InternalServer(w http.ResponseWriter, message string) {
+	writeJSON(w, http.StatusInternalServerError, map[string]string{"error": message})
+}
+
+func ErrorResponse(w http.ResponseWriter, err error) {
+	if appErr, ok := err.(*AppError); ok {
+		writeJSON(w, appErr.Code, map[string]string{"error": appErr.Message})
+		return
+	}
+	writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+}

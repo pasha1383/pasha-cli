@@ -1,0 +1,52 @@
+package health
+
+import (
+	"github.com/gofiber/fiber/v3"
+{{#if healthChecksDb}}
+	"gorm.io/gorm"
+{{/if}}
+)
+
+type Handler struct {
+{{#if healthChecksDb}}
+	db *gorm.DB
+{{/if}}
+}
+
+{{#if healthChecksDb}}
+func NewHandler(db *gorm.DB) *Handler {
+	return &Handler{db: db}
+}
+{{else}}
+func NewHandler(_ *struct{}) *Handler {
+	return &Handler{}
+}
+{{/if}}
+
+func (h *Handler) Check(c fiber.Ctx) error {
+	healthy := true
+	checks := make(map[string]string)
+
+{{#if healthChecksDb}}
+	sqlDB, err := h.db.DB()
+	if err != nil {
+		healthy = false
+		checks["database"] = "error: " + err.Error()
+	} else if err := sqlDB.Ping(); err != nil {
+		healthy = false
+		checks["database"] = "error: " + err.Error()
+	} else {
+		checks["database"] = "ok"
+	}
+{{/if}}
+
+{{#if healthChecksRedis}}
+	checks["redis"] = "ok"
+{{/if}}
+
+	status := fiber.StatusOK
+	if !healthy {
+		status = fiber.StatusServiceUnavailable
+	}
+	return c.Status(status).JSON(fiber.Map{"status": healthy, "checks": checks})
+}

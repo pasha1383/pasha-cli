@@ -1,0 +1,79 @@
+import { Body, Controller, Get, Param, Post, Put, Delete, NotFoundException } from '@nestjs/common';
+{{#if useSwagger}}
+import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+{{/if}}
+import { randomUUID } from 'crypto';
+
+interface {{pascalCase moduleName}}Record {
+  id: string;
+  name: string;
+}
+
+{{#if useSwagger}}
+@ApiTags('{{moduleName}}')
+{{/if}}
+@Controller('{{moduleName}}')
+export class {{pascalCase moduleName}}Controller {
+  private readonly items = new Map<string, {{pascalCase moduleName}}Record>();
+
+  @Post()
+{{#if useSwagger}}
+  @ApiOperation({ summary: 'Create a {{moduleName}}' })
+  @ApiResponse({ status: 201, description: 'Created.' })
+{{/if}}
+  create(@Body() body: { name: string }): {{pascalCase moduleName}}Record {
+    const id = randomUUID();
+    const record: {{pascalCase moduleName}}Record = { id, name: body.name };
+    this.items.set(id, record);
+    return record;
+  }
+
+  @Get()
+{{#if useSwagger}}
+  @ApiOperation({ summary: 'List all {{moduleName}} records' })
+{{/if}}
+  findAll(): {{pascalCase moduleName}}Record[] {
+    return Array.from(this.items.values());
+  }
+
+  @Get(':id')
+{{#if useSwagger}}
+  @ApiOperation({ summary: 'Get one {{moduleName}} by id' })
+  @ApiParam({ name: 'id' })
+  @ApiResponse({ status: 404, description: 'Not found.' })
+{{/if}}
+  findOne(@Param('id') id: string): {{pascalCase moduleName}}Record {
+    const record = this.items.get(id);
+    if (!record) {
+      throw new NotFoundException(`{{pascalCase moduleName}} with id "${id}" not found`);
+    }
+    return record;
+  }
+
+  @Put(':id')
+{{#if useSwagger}}
+  @ApiOperation({ summary: 'Update a {{moduleName}}' })
+  @ApiParam({ name: 'id' })
+{{/if}}
+  update(@Param('id') id: string, @Body() body: { name: string }): {{pascalCase moduleName}}Record {
+    const record = this.items.get(id);
+    if (!record) {
+      throw new NotFoundException(`{{pascalCase moduleName}} with id "${id}" not found`);
+    }
+    record.name = body.name;
+    return record;
+  }
+
+  @Delete(':id')
+{{#if useSwagger}}
+  @ApiOperation({ summary: 'Delete a {{moduleName}}' })
+  @ApiParam({ name: 'id' })
+{{/if}}
+  remove(@Param('id') id: string): { deleted: boolean } {
+    if (!this.items.has(id)) {
+      throw new NotFoundException(`{{pascalCase moduleName}} with id "${id}" not found`);
+    }
+    this.items.delete(id);
+    return { deleted: true };
+  }
+}

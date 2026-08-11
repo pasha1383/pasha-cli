@@ -1,0 +1,54 @@
+import { NestFactory } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { AppModule } from './app.module';
+{{#if useClassValidator}}
+import { globalValidationPipe } from './config/validation.pipe';
+{{/if}}
+{{#if useSwagger}}
+import { setupSwagger } from './config/swagger';
+{{/if}}
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+{{#if useClassValidator}}
+  app.useGlobalPipes(globalValidationPipe);
+{{/if}}
+{{#if useSwagger}}
+  setupSwagger(app);
+{{/if}}
+
+  const transport = (process.env.MICROSERVICE_TRANSPORT || 'tcp') as string;
+
+  const transportMap: Record<string, Transport> = {
+    tcp: Transport.TCP,
+    redis: Transport.REDIS,
+    kafka: Transport.KAFKA,
+    rmq: Transport.RMQ,
+    nats: Transport.NATS,
+    grpc: Transport.GRPC,
+    mqtt: Transport.MQTT,
+  };
+
+  const options = transportMap[transport] ? transportMap[transport] : Transport.TCP;
+
+  const microservice = app.connectMicroservice<MicroserviceOptions>({
+    transport: options,
+    options: {
+      host: process.env.MICROSERVICE_HOST || 'localhost',
+      port: parseInt(process.env.MICROSERVICE_PORT || '3001', 10),
+    },
+  });
+
+  await app.startAllMicroservices();
+
+  const port = process.env.PORT ?? 3000;
+  await app.listen(port);
+  console.info(`HTTP server running on http://localhost:${port}`);
+  console.info(`Microservice transport: ${transport} on ${process.env.MICROSERVICE_HOST || 'localhost'}:${process.env.MICROSERVICE_PORT || '3001'}`);
+{{#if useSwagger}}
+  console.info(`API docs at http://localhost:${port}/api/docs`);
+{{/if}}
+}
+
+bootstrap();

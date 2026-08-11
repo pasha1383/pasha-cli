@@ -1,0 +1,23 @@
+{
+  "name": "Python + Django + Onion Architecture",
+  "prerequisites": ["python3", "pip3", "git"],
+  "shared": null,
+  "stackFeatures": "python",
+  "modules": {
+    "enabled": true,
+    "message": "App name (e.g. product, user, order)",
+    "default": "product"
+  },
+  "fileConditions": {
+    "docker-compose.yml.hbs": "useDocker",
+    "AGENT.md.hbs": "useAgentDocs",
+    "domain/AGENT.md.hbs": "useAgentDocs",
+    "application/AGENT.md.hbs": "useAgentDocs",
+    "infrastructure/AGENT.md.hbs": "useAgentDocs",
+    "Dockerfile.hbs": "useAppDockerfile",
+    ".dockerignore.hbs": "useAppDockerfile",
+    ".github": "useCI"
+  },
+  "postInstall": [],
+  "gitInit": true
+}

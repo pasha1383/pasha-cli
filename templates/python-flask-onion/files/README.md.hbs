@@ -1,0 +1,60 @@
+# {{projectName}}
+
+{{description}}
+
+Built with pasha CLI — **Onion Architecture** on Flask.
+
+## Stack
+
+{{#if ormSqlalchemy}}- **ORM:** SQLAlchemy (Flask-SQLAlchemy){{/if}}
+{{#if hasDatabase}}- **Database:** {{database}}{{/if}}
+{{#if useRedis}}- **Cache:** Redis{{/if}}
+
+## Run
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+{{#if devRequirementsTxt}}
+pip install -r dev-requirements.txt
+{{/if}}
+
+cp .env.example .env
+{{#if useDocker}}
+docker compose up -d
+{{/if}}
+flask --app src.app:create_app run --debug --host=0.0.0.0 --port=8000
+```
+
+## Modules
+
+{{#each modules}}
+- `{{this}}` -> `http://localhost:8000/{{this}}`
+{{/each}}
+
+## Structure
+
+```
+src/
+├── app.py                                    <- Flask app factory
+├── config/settings.py                        <- env loading
+├── errors/app_error.py                       <- error classes
+├── shared/database/sqlalchemy.py             <- ORM setup
+├── domain/<module>/
+│   ├── entity.py                             <- domain entity (pure Python)
+│   ├── repository.py                         <- repository interface (ABC)
+│   └── service.py                            <- domain service
+├── application/<module>/
+│   ├── use_case.py                           <- use cases
+│   └── dto.py                                <- DTOs
+└── infrastructure/
+    ├── persistence/<module>_repository.py    <- persistence adapter
+    └── web/<module>_router.py               <- Flask blueprint
+```
+
+Call direction: `infrastructure -> application -> domain`. Domain never imports
+from infrastructure or application.
+
+---
+Made with love by {{author}}

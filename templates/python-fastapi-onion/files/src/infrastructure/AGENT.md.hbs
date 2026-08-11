@@ -1,0 +1,18 @@
+# Infrastructure Layer
+
+Outermost layer of the Onion. Persistence adapters, web routers (FastAPI),
+and external integrations — the "how".
+
+Rules:
+- Web routers in `infrastructure/web/<module>_router.py` — register
+  endpoints, call use cases, return responses.
+- Persistence adapters in `infrastructure/persistence/<module>_repository.py`
+  implement the domain repository interface against a real database
+  (SQLAlchemy, Tortoise, or in-memory).
+- Infrastructure may import from `domain/`, `application/`, `shared/`,
+  and `config/`.
+
+Files per bounded context:
+- `web/<module>_router.py` — FastAPI router (endpoints)
+- `persistence/<module>_repository.py` — persistence adapter implementing
+  the domain interface

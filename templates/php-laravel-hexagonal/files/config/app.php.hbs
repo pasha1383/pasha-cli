@@ -52,7 +52,7 @@ return [
 
         App\Providers\RouteServiceProvider::class,
         {{#each modules}}
-        Src\Infrastructure\Providers\{{pascalCase this}}ServiceProvider::class,
+        Src\Infrastructure\Providers\\{{pascalCase this}}ServiceProvider::class,
         {{/each}}
         {{#if useAuth}}
         App\Providers\AuthServiceProvider::class,

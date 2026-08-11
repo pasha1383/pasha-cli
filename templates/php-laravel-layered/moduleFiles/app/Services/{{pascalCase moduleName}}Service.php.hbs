@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Repositories\{{pascalCase moduleName}}Repository;
+use App\Repositories\\{{pascalCase moduleName}}Repository;
 use Illuminate\Database\Eloquent\Collection;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -20,7 +20,7 @@ class {{pascalCase moduleName}}Service
         return $this->repository->all();
     }
 
-    public function getById(int $id): \App\Models\{{pascalCase moduleName}}
+    public function getById(int $id): \App\Models\\{{pascalCase moduleName}}
     {
         $item = $this->repository->findById($id);
 
@@ -31,12 +31,12 @@ class {{pascalCase moduleName}}Service
         return $item;
     }
 
-    public function create(array $data): \App\Models\{{pascalCase moduleName}}
+    public function create(array $data): \App\Models\\{{pascalCase moduleName}}
     {
         return $this->repository->create($data);
     }
 
-    public function update(int $id, array $data): \App\Models\{{pascalCase moduleName}}
+    public function update(int $id, array $data): \App\Models\\{{pascalCase moduleName}}
     {
         $item = $this->getById($id);
 

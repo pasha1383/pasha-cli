@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
-use Src\Infrastructure\Http\Controllers\{{pascalCase moduleName}}Controller;
+use Src\Infrastructure\Http\Controllers\\{{pascalCase moduleName}}Controller;
 
 Route::prefix('api')->group(function () {
     {{#if useHealthCheck}}
@@ -11,6 +11,6 @@ Route::prefix('api')->group(function () {
     {{/if}}
 
     {{#each modules}}
-    Route::apiResource('{{this}}', \Src\Infrastructure\Http\Controllers\{{pascalCase this}}Controller::class);
+    Route::apiResource('{{this}}', \Src\Infrastructure\Http\Controllers\\{{pascalCase this}}Controller::class);
     {{/each}}
 });

@@ -10,6 +10,6 @@ Route::prefix('api')->group(function () {
     {{/if}}
 
     {{#each modules}}
-    Route::apiResource('{{this}}', \App\Http\Controllers\{{pascalCase this}}Controller::class);
+    Route::apiResource('{{this}}', \App\Http\Controllers\\{{pascalCase this}}Controller::class);
     {{/each}}
 });

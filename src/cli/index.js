@@ -14,11 +14,6 @@ program
   .version(pkg.version);
 
 program
-  .command('create', { isDefault: true })
-  .description('Scaffold a new project')
-  .option('-r, --resume', 'Resume from a previous session')
-  .option('-p, --preset <path>', 'Load answers from a preset JSON file')
-  .option('--save-preset <path>', 'Save answers to a preset JSON file')
   .option('-y, --yes', 'Use defaults for all prompts (non-interactive)')
   .option('-l, --language <lang>', 'Target language')
   .option('-f, --framework <fw>', 'Target framework')
@@ -40,11 +35,11 @@ program
   .option('--skip-install', 'Skip npm install / post-install steps')
   .option('--skip-git', 'Skip git init prompt')
   .option('--dry-run', 'Print file tree without writing')
-  .option('--tui', 'Use full-screen terminal UI (experimental)')
-  .option('--tui-force', 'Force TUI mode even without a real terminal (for development/testing)')
-  .option('--no-tui', 'Disable full-screen terminal UI, use sequential prompts')
-  .option('--plain', 'Plain mode: no TUI, no colours, ASCII-only')
-  .option('--no-animation', 'Disable animations in TUI mode')
+  .option('-p, --preset <path>', 'Load answers from a preset JSON file')
+  .option('--save-preset <path>', 'Save answers to a preset JSON file')
+  .option('-r, --resume', 'Resume from a previous session')
+  .option('--plain', 'Plain mode: no TUI, sequential prompts, no colours')
+  .option('--no-animation', 'Disable animations')
   .action(async (opts) => {
     try {
       if (opts.plain) {

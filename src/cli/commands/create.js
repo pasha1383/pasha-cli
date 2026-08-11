@@ -1294,14 +1294,14 @@ async function create(options = {}) {
       io.setPlainMode(true);
       try { require('chalk').level = 0; } catch (_e) {}
     }
-    if ((options.tui || options.tuiForce) && io.canUseTui(options)) {
-      return createTui(options);
-    }
     if (options.yes) {
       return createNonInteractive(options);
     }
     if (hasEnoughCliFlags(options)) {
       return createNonInteractive(options);
+    }
+    if (!options.plain && io.canUseTui(options)) {
+      return createTui(options);
     }
     return createInteractive(options);
   } catch (err) {

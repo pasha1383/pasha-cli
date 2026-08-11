@@ -1,16 +1,10 @@
 'use strict';
 
-let _inquirer = null;
+const readline = require('readline');
+
 let _tuiMode = false;
 let _tuiApp = null;
 let _tuiContext = {};
-
-async function _load() {
-  if (!_inquirer) {
-    _inquirer = await import('@inquirer/prompts');
-  }
-  return _inquirer;
-}
 
 function setTuiMode(enabled) {
   _tuiMode = !!enabled;
@@ -33,84 +27,12 @@ async function prompt(questions) {
   if (isTuiMode()) {
     return _promptTui(questions);
   }
-  return _promptInquirer(questions);
-}
-
-async function _promptInquirer(questions) {
-  const { input, select, confirm: confirmPrompt, checkbox, password, Separator } = await _load();
-  const answers = {};
-  for (const q of questions) {
-    switch (q.type) {
-      case 'input':
-        answers[q.name] = await input({
-          message: q.message,
-          default: q.default,
-          validate: q.validate ? (v) => {
-            const result = q.validate(v);
-            return result === true ? true : result || 'Invalid input';
-          } : undefined,
-          theme: q.theme,
-        });
-        break;
-      case 'list':
-      case 'select': {
-        const rawChoices = q.choices || [];
-        const choices = rawChoices.map(c => {
-          if (c === null || c === undefined) return new Separator();
-          if (typeof c === 'object' && (c.value === undefined || c.value === null)) return new Separator();
-          if (typeof c === 'object') return { name: c.name, value: c.value, description: c.description };
-          return { name: String(c), value: c };
-        });
-        answers[q.name] = await select({
-          message: q.message,
-          choices,
-          default: q.default,
-          theme: q.theme,
-          loop: false,
-        });
-        break;
-      }
-      case 'confirm':
-        answers[q.name] = await confirmPrompt({
-          message: q.message,
-          default: q.default !== false,
-          theme: q.theme,
-        });
-        break;
-      case 'checkbox':
-        answers[q.name] = await checkbox({
-          message: q.message,
-          choices: (q.choices || []).map(c => ({
-            name: c.name,
-            value: c.value,
-            checked: c.checked || false,
-            description: c.description,
-          })),
-          theme: q.theme,
-        });
-        break;
-      case 'password':
-        answers[q.name] = await password({
-          message: q.message,
-          mask: '*',
-          theme: q.theme,
-        });
-        break;
-      default:
-        throw new Error(`Unknown prompt type: ${q.type}`);
-    }
-  }
-  return answers;
+  return _promptFallback(questions);
 }
 
 async function _promptTui(questions) {
-  if (!_tuiApp || !_tuiApp.pushQuestion) {
-    throw new Error('TUI app not initialized. Call setTuiApp() first.');
-  }
-
   const { pushQuestion } = _tuiApp;
   const answers = {};
-
   for (const q of questions) {
     const augmented = Object.assign({}, q, {
       stepIndex: _tuiContext.stepIndex || 0,
@@ -119,21 +41,103 @@ async function _promptTui(questions) {
       answers: _tuiContext.answers || {},
       sidebarInfo: q.sidebarInfo || _tuiContext.sidebarInfo || null,
     });
-
-    const answer = await new Promise((resolve, reject) => {
+    const answer = await new Promise((resolve) => {
       try {
         pushQuestion(augmented, (value) => {
           resolve(value);
         });
       } catch (err) {
-        reject(err);
+        resolve(null);
       }
     });
-
     answers[q.name] = answer;
   }
-
   return answers;
+}
+
+async function _promptFallback(questions) {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  const answers = {};
+  for (const q of questions) {
+    switch (q.type) {
+      case 'confirm': {
+        const def = q.default !== false ? 'Y/n' : 'y/N';
+        answers[q.name] = await _ask(rl, `${q.message} (${def}) `);
+        const val = answers[q.name].toLowerCase();
+        if (q.default !== false) {
+          answers[q.name] = val !== 'n' && val !== 'no';
+        } else {
+          answers[q.name] = val === 'y' || val === 'yes';
+        }
+        break;
+      }
+      case 'input':
+        answers[q.name] = await _ask(rl, `${q.message} ` + (q.default ? `(${q.default}) ` : ''));
+        if (!answers[q.name] && q.default) answers[q.name] = q.default;
+        if (q.validate) {
+          const result = q.validate(answers[q.name]);
+          if (result !== true) {
+            console.log('  ' + (result || 'Invalid input'));
+            answers[q.name] = q.default || '';
+          }
+        }
+        break;
+      case 'list':
+      case 'select': {
+        const choices = q.choices || [];
+        console.log(q.message);
+        choices.forEach((c, i) => {
+          const name = typeof c === 'object' ? c.name : String(c);
+          console.log(`  ${i + 1}. ${name}`);
+        });
+        if (q.default) {
+          const defIdx = choices.findIndex(c =>
+            (typeof c === 'object' ? c.value : c) === q.default
+          );
+          if (defIdx >= 0) console.log(`  Default: ${defIdx + 1}`);
+        }
+        const input = await _ask(rl, 'Choose (number): ');
+        const idx = parseInt(input, 10) - 1;
+        if (idx >= 0 && idx < choices.length) {
+          const choice = choices[idx];
+          answers[q.name] = typeof choice === 'object' ? choice.value : choice;
+        } else if (q.default !== undefined) {
+          answers[q.name] = q.default;
+        } else {
+          answers[q.name] = (choices[0] && typeof choices[0] === 'object') ? choices[0].value : choices[0];
+        }
+        break;
+      }
+      case 'checkbox': {
+        const chs = q.choices || [];
+        console.log(q.message);
+        chs.forEach((c, i) => {
+          const checked = c.checked ? '[x]' : '[ ]';
+          console.log(`  ${checked} ${i + 1}. ${c.name}`);
+        });
+        const input = await _ask(rl, 'Enter numbers separated by commas (e.g. 1,2,4): ');
+        answers[q.name] = input.split(',')
+          .map(s => parseInt(s.trim(), 10) - 1)
+          .filter(i => i >= 0 && i < chs.length)
+          .map(i => chs[i].value);
+        break;
+      }
+      default:
+        answers[q.name] = q.default || '';
+    }
+  }
+  rl.close();
+  return answers;
+}
+
+function _ask(rl, text) {
+  return new Promise(resolve => {
+    rl.question(text, resolve);
+  });
 }
 
 module.exports = { prompt, setTuiMode, setTuiApp, isTuiMode, setTuiContext };

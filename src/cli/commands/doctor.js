@@ -4,7 +4,7 @@ const log = require('../../utils/logger');
 const { prompt } = require('../../ui/prompts');
 const { checkAll, installTool, PLATFORM, SUPPORTED_PLATFORMS } = require('../../core/system/prerequisites');
 
-const ALL_TOOLS = ['node', 'npm', 'git', 'python3', 'go', 'java'];
+const ALL_TOOLS = ['node', 'npm', 'git', 'python3', 'pip3', 'go', 'java', 'mvn', 'dotnet', 'php', 'composer', 'rustc', 'cargo', 'ruby', 'bundler'];
 
 async function doctor() {
   console.log(chalk.cyan('─'.repeat(65)));
@@ -29,8 +29,7 @@ async function doctor() {
     type: 'checkbox',
     name: 'toInstall',
     message: 'Which ones should I install now?',
-    choices: missing,
-    default: missing,
+    choices: missing.map(t => ({ name: t, value: t, checked: true })),
   }]);
 
   for (const tool of toInstall) {

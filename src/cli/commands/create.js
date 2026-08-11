@@ -67,6 +67,7 @@ async function ensurePrerequisites(tools) {
     message: `Install ${missing.map((m) => m.tool).join(', ')} now?`,
     default: true,
   }]);
+  if (shouldInstall === '__back__') return '__back__';
   if (!shouldInstall) {
     log.warn('Without these prerequisites, the generated project may not run.');
     return true;
@@ -163,6 +164,7 @@ function _buildStackSteps(fm, ctx, nav) {
           type: 'confirm', name: 'useRedis', message: 'Add Redis for caching?',
           default: c.useRedis !== undefined ? Boolean(c.useRedis) : false,
         }]);
+        if (a.useRedis === '__back__') return '__back__';
         return { useRedis: a.useRedis };
       },
     });
@@ -208,18 +210,19 @@ function _buildStackSteps(fm, ctx, nav) {
   });
 
   // AGENT docs (confirm — no back, always asked)
-  steps.push({
-    name: 'agentdocs',
-    label: 'AGENT Docs',
-    run: async (c) => {
-      const a = await prompt([{
-        type: 'confirm', name: 'useAgentDocs',
-        message: 'Generate AGENT.md files for AI-assisted development?',
-        default: c.useAgentDocs !== undefined ? c.useAgentDocs : true,
-      }]);
-      return { useAgentDocs: a.useAgentDocs };
-    },
-  });
+    steps.push({
+      name: 'agentdocs',
+      label: 'AGENT Docs',
+      run: async (c) => {
+        const a = await prompt([{
+          type: 'confirm', name: 'useAgentDocs',
+          message: 'Generate AGENT.md files for AI-assisted development?',
+          default: c.useAgentDocs !== undefined ? c.useAgentDocs : true,
+        }]);
+        if (a.useAgentDocs === '__back__') return '__back__';
+        return { useAgentDocs: a.useAgentDocs };
+      },
+    });
 
   // Extras (checkbox — no back choice)
   if (fm.extraFeatureChoices) {
@@ -618,6 +621,10 @@ async function renderProjectDry(ctx) {
 
 async function stepLanguage(ctx, nav) {
   progressHeader(nav.currentIndex + 1, nav.totalSteps, nav.currentStep.label);
+  if (ctx._mode === 'frontend') {
+    log.info('   Language: Frontend (auto-selected)');
+    return { language: 'frontend', languageLabel: 'Frontend' };
+  }
   const langs = getLanguages(_manifest);
   const defaultVal = ctx.language || undefined;
   const { language } = await prompt([{
@@ -626,7 +633,8 @@ async function stepLanguage(ctx, nav) {
     default: defaultVal,
   }]);
   if (language === '__back__') return '__back__';
-  return { language };
+  var labelChoice = langs.find(function (l) { return l.value === language; });
+  return { language, languageLabel: (labelChoice && labelChoice.name) || language };
 }
 
 async function stepFramework(ctx, nav) {
@@ -639,7 +647,8 @@ async function stepFramework(ctx, nav) {
     default: defaultVal,
   }]);
   if (framework === '__back__') return '__back__';
-  return { framework };
+  var fwChoice = fws.find(function (f) { return f.value === framework; });
+  return { framework, frameworkLabel: (fwChoice && fwChoice.name) || framework };
 }
 
 async function stepArchitecture(ctx, nav) {
@@ -670,7 +679,8 @@ async function stepArchitecture(ctx, nav) {
 
 async function stepPrerequisites(ctx, nav) {
   progressHeader(nav.currentIndex + 1, nav.totalSteps, nav.currentStep.label);
-  await ensurePrerequisites(ctx._templateConfig.prerequisites);
+  const res = await ensurePrerequisites(ctx._templateConfig.prerequisites);
+  if (res === '__back__') return '__back__';
   return {};
 }
 
@@ -706,6 +716,9 @@ async function stepProject(ctx, nav) {
       default: ctx.description || 'Built with pasha CLI',
     },
   ]);
+  for (const v of Object.values(answers)) {
+    if (v === '__back__') return '__back__';
+  }
   return answers;
 }
 
@@ -737,20 +750,28 @@ async function stepReview(ctx, nav) {
   if (ctx._mode !== 'multi') {
     if (isTuiMode()) {
       const tuiApp = require('../../ui/tui/app');
-      tuiApp.showSummary(fullCtx);
+      var action = await new Promise(function (resolve) {
+        tuiApp.showSummary(fullCtx, {
+          onGenerate: function () { resolve('__confirm__'); },
+          onBack: function () { resolve('__back__'); },
+        });
+      });
     } else {
       summary(fullCtx);
     }
   }
 
-  const { action } = await prompt([{
-    type: 'list', name: 'action', message: 'Ready to scaffold?',
-    choices: [
-      { name: chalk.green('✓ Generate project'), value: '__confirm__', description: 'Create the project directory with all generated files' },
-      { name: chalk.dim('← Go back and change something'), value: '__back__', description: 'Return to previous steps to adjust your choices' },
-      { name: chalk.red('✗ Cancel'), value: '__cancel__', description: 'Exit without creating any files' },
-    ],
-  }]);
+  if (action === undefined) {
+    var response = await prompt([{
+      type: 'list', name: 'action', message: 'Ready to scaffold?',
+      choices: [
+        { name: chalk.green('✓ Generate project'), value: '__confirm__', description: 'Create the project directory with all generated files' },
+        { name: chalk.dim('← Go back and change something'), value: '__back__', description: 'Return to previous steps to adjust your choices' },
+        { name: chalk.red('✗ Cancel'), value: '__cancel__', description: 'Exit without creating any files' },
+      ],
+    }]);
+    var action = response.action;
+  }
 
   if (action === '__cancel__') {
     log.warn('Aborted. No files were created.');
@@ -841,6 +862,7 @@ async function runMicroservices(ctx) {
 }
 
 function hasEnoughCliFlags(opts) {
+  if (opts.mode === 'frontend') return !!(opts.framework && opts.architecture);
   return !!(opts.language && opts.framework && opts.architecture);
 }
 
@@ -873,9 +895,11 @@ async function resolveTemplateInfo(lang, fw, arch) {
 }
 
 async function createNonInteractive(opts) {
-  const lang = opts.language || 'node';
-  const fw = opts.framework || 'nestjs';
-  const arch = opts.architecture || 'layered';
+  const isFrontendMode = opts.mode === 'frontend';
+
+  const lang = isFrontendMode ? 'frontend' : (opts.language || 'node');
+  const fw = isFrontendMode ? (opts.framework || 'react') : (opts.framework || 'nestjs');
+  const arch = isFrontendMode ? (opts.architecture || 'component-based') : (opts.architecture || 'layered');
 
   const ti = await resolveTemplateInfo(lang, fw, arch);
   const flavor = ti._stackFlavor;
@@ -940,7 +964,7 @@ async function createNonInteractive(opts) {
       author,
       github,
       description,
-      _mode: 'single',
+      _mode: isFrontendMode ? 'frontend' : 'single',
     },
     ti,
     stackAnswers
@@ -1012,8 +1036,14 @@ async function createInteractive(opts) {
     choices: [
       { name: chalk.bold('Single service'), value: 'single', description: 'One backend service with your chosen stack' },
       { name: chalk.cyan('Microservices (multi-service)'), value: 'multi', description: 'Multiple independent services orchestrated together' },
+      { name: chalk.magenta('Frontend app'), value: 'frontend', description: 'React, Vue, Next.js, Svelte, or static HTML site' },
     ],
   }]);
+
+  if (mode === 'frontend') {
+    initialCtx._mode = 'frontend';
+    initialCtx.language = 'frontend';
+  }
 
   if (mode === 'multi') {
     section('Project Info');
@@ -1212,24 +1242,22 @@ async function createTui(options) {
       if (!tc || !tc.prerequisites || !tc.prerequisites.length) return {};
       const tools = tc.prerequisites;
       const results = checkAll(tools);
-      const missing = results.filter((r) => !r.installed);
-      if (!missing.length) return {};
-      const names = missing.map(m => m.tool).join(', ');
-      const { shouldInstall } = await prompt([{
-        type: 'confirm', name: 'shouldInstall',
-        message: `${names} ${missing.length === 1 ? 'is' : 'are'} not installed. Install now?`,
-        default: true,
-      }]);
-      if (shouldInstall) {
-        for (const m of missing) {
-          try { await installTool(m.tool); }
-          catch (err) { /* continue */ }
-        }
-      }
-      return {};
+
+      const tuiApp = require('../../ui/tui/app');
+
+      return new Promise((resolve) => {
+        const installToolQuiet = (tool) => installTool(tool, { stdio: 'ignore' });
+        tuiApp.showPrereqsScreen(results, installToolQuiet, (allOk) => {
+          if (!allOk) {
+            log.warn('Some prerequisites were not installed. The generated project may not run.');
+          }
+          resolve({});
+        });
+      });
     }
 
     const nav = new Navigator(steps);
+    tuiApp.setNavigator(nav);
 
     // Wrap each step to update TUI context and pass accumulated answers
     for (let i = 0; i < steps.length; i++) {
@@ -1258,6 +1286,8 @@ async function createTui(options) {
     if (!ctx._confirmed) {
       showDone('Cancelled. No files were created.', null, null);
       await waitUntilExit();
+      tuiTerminal.restore();
+      process.stdout.write('Cancelled. No files were created.\n');
       process.exit(0);
     }
 
@@ -1344,6 +1374,12 @@ async function createTui(options) {
     }
 
     await waitUntilExit();
+    var summary = tuiTerminal.getSummary();
+    tuiTerminal.restore();
+    if (summary && summary.outPath) {
+      done(summary.outPath, summary.ctx);
+    }
+    process.exit(0);
   } catch (err) {
     if (err && err.name === 'ExitPromptError') {
       showDone('Cancelled.', null, null);
@@ -1351,6 +1387,7 @@ async function createTui(options) {
       showDone('Failed: ' + (err.message || 'Unknown error'), null, null);
     }
     await waitUntilExit();
+    tuiTerminal.restore();
     process.exit(err && err.name === 'ExitPromptError' ? 0 : 1);
   } finally {
     if (_cleanupExitHandlers) _cleanupExitHandlers();

@@ -1,0 +1,51 @@
+# {{projectName}}
+
+Built with Angular + Standalone Components architecture.
+
+## Stack
+- **Framework:** Angular (standalone components, no NgModules)
+- **Language:** TypeScript
+{{#if useMaterial}}
+- **UI:** Angular Material
+{{/if}}
+{{#if useTailwind}}
+- **Styling:** Tailwind CSS 4
+{{/if}}
+{{#if useTests}}
+- **Unit tests:** Jest + jest-preset-angular
+{{/if}}
+{{#if useE2E}}
+- **E2E tests:** Playwright
+{{/if}}
+
+## Commands
+```bash
+npm start        # Start dev server
+npm run build    # Production build
+{{#if useTests}}
+npm test         # Run unit tests
+{{/if}}
+{{#if useE2E}}
+npm run test:e2e # Run E2E tests
+{{/if}}
+{{#if useLint}}
+npm run lint     # Lint code
+npm run format   # Format code
+{{/if}}
+```
+
+## Project Structure
+```
+src/
+  app/
+    app.component.ts       # Root component
+    {{#each modules}}
+    {{this}}/
+      {{this}}.component.ts      # {{pascalCase this}} standalone component
+      {{this}}.component.spec.ts # {{pascalCase this}} tests
+    {{/each}}
+  environments/      # Environment configs
+  index.html         # HTML shell
+  main.ts            # Bootstrap (standalone API)
+  styles.css         # Global styles
+```

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="{{description}}">
+  <meta property="og:title" content="{{projectName}}">
+  <meta property="og:description" content="{{description}}">
+  <meta property="og:type" content="website">
+  <title>{{projectName}} — {{description}}</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="icon" type="image/svg+xml" href="/vite.svg">
+</head>
+<body>
+
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <header id="header" class="site-header" role="banner">
+    <div class="container">
+      <a href="/" class="logo" aria-label="{{projectName}} home">{{projectName}}</a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-menu" aria-label="Toggle navigation">
+        <span class="hamburger"></span>
+      </button>
+      <nav id="nav-menu" class="nav-menu" aria-label="Main navigation">
+        <ul role="menubar">
+          <li role="none"><a href="#hero" role="menuitem">Home</a></li>
+          <li role="none"><a href="#features" role="menuitem">Features</a></li>
+          <li role="none"><a href="#pricing" role="menuitem">Pricing</a></li>
+          <li role="none"><a href="#testimonials" role="menuitem">Testimonials</a></li>
+          <li role="none"><a href="#cta" role="menuitem">Get Started</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main-content">
+
+    <section id="hero" class="hero" aria-labelledby="hero-heading">
+      <div class="container">
+        <div class="hero-content">
+          <h1 id="hero-heading" class="hero-title">
+            Supercharge Your <span class="gradient-text">Workflow</span>
+          </h1>
+          <p class="hero-desc">{{description}}</p>
+          <div class="hero-actions">
+            <a href="#cta" class="btn btn-primary btn-lg">Start Free Trial</a>
+            <a href="#features" class="btn btn-outline btn-lg">Learn More <span aria-hidden="true">&rarr;</span></a>
+          </div>
+          <div class="hero-metrics">
+            <div class="metric">
+              <span class="metric-value" data-count="10000">10,000+</span>
+              <span class="metric-label">Happy Users</span>
+            </div>
+            <div class="metric">
+              <span class="metric-value">99.9%</span>
+              <span class="metric-label">Uptime SLA</span>
+            </div>
+            <div class="metric">
+              <span class="metric-value">5<span aria-hidden="true">&star;</span></span>
+              <span class="metric-label">Avg Rating</span>
+            </div>
+          </div>
+        </div>
+        <div class="hero-visual" aria-hidden="true">
+          <div class="hero-dashboard">
+            <div class="fake-chart">
+              <div class="fake-bar" style="height:60%"></div>
+              <div class="fake-bar" style="height:85%"></div>
+              <div class="fake-bar" style="height:45%"></div>
+              <div class="fake-bar" style="height:90%"></div>
+              <div class="fake-bar" style="height:70%"></div>
+              <div class="fake-bar" style="height:55%"></div>
+              <div class="fake-bar" style="height:80%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="features" aria-labelledby="features-heading">
+      <div class="container">
+        <div class="section-header">
+          <h2 id="features-heading" class="section-title">Everything You Need</h2>
+          <p class="section-subtitle">A complete toolkit to build, launch, and grow.</p>
+        </div>
+        <div class="features-grid">
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+            </div>
+            <h3 class="feature-title">Blazing Performance</h3>
+            <p class="feature-desc">Optimized loading with lazy assets, code splitting, and CDN delivery for sub-second page loads.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+            </div>
+            <h3 class="feature-title">Enterprise Security</h3>
+            <p class="feature-desc">SOC 2 compliant, end-to-end encryption, and role-based access controls out of the box.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"/></svg>
+            </div>
+            <h3 class="feature-title">Drag &amp; Drop Builder</h3>
+            <p class="feature-desc">Build beautiful pages with an intuitive visual editor. No coding required.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z"/><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z"/></svg>
+            </div>
+            <h3 class="feature-title">Real-Time Analytics</h3>
+            <p class="feature-desc">Live dashboards with custom metrics, funnels, and user behavior tracking.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
+            </div>
+            <h3 class="feature-title">API-First Design</h3>
+            <p class="feature-desc">REST and GraphQL APIs with auto-generated docs. Integrate with anything.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z"/></svg>
+            </div>
+            <h3 class="feature-title">AI-Powered Insights</h3>
+            <p class="feature-desc">Smart recommendations and anomaly detection powered by machine learning.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="pricing" class="pricing" aria-labelledby="pricing-heading">
+      <div class="container">
+        <div class="section-header">
+          <h2 id="pricing-heading" class="section-title">Simple, Transparent Pricing</h2>
+          <p class="section-subtitle">No hidden fees. Cancel anytime.</p>
+        </div>
+        <div class="pricing-grid">
+          <article class="pricing-card">
+            <div class="pricing-header">
+              <h3 class="pricing-name">Starter</h3>
+              <p class="pricing-desc">For individuals and small projects</p>
+            </div>
+            <div class="pricing-amount">
+              <span class="pricing-currency">$</span><span class="pricing-value">0</span><span class="pricing-period">/mo</span>
+            </div>
+            <ul class="pricing-features">
+              <li>Up to 5 projects</li>
+              <li>1 GB storage</li>
+              <li>Community support</li>
+              <li>Basic analytics</li>
+            </ul>
+            <a href="#cta" class="btn btn-outline btn-block">Get Started Free</a>
+          </article>
+          <article class="pricing-card pricing-card-featured">
+            <span class="pricing-badge">Most Popular</span>
+            <div class="pricing-header">
+              <h3 class="pricing-name">Pro</h3>
+              <p class="pricing-desc">For growing teams</p>
+            </div>
+            <div class="pricing-amount">
+              <span class="pricing-currency">$</span><span class="pricing-value">29</span><span class="pricing-period">/mo</span>
+            </div>
+            <ul class="pricing-features">
+              <li>Unlimited projects</li>
+              <li>50 GB storage</li>
+              <li>Priority support</li>
+              <li>Advanced analytics</li>
+              <li>Custom domains</li>
+              <li>Team collaboration</li>
+            </ul>
+            <a href="#cta" class="btn btn-primary btn-block">Start Free Trial</a>
+          </article>
+          <article class="pricing-card">
+            <div class="pricing-header">
+              <h3 class="pricing-name">Enterprise</h3>
+              <p class="pricing-desc">For large organizations</p>
+            </div>
+            <div class="pricing-amount">
+              <span class="pricing-currency">$</span><span class="pricing-value">99</span><span class="pricing-period">/mo</span>
+            </div>
+            <ul class="pricing-features">
+              <li>Everything in Pro</li>
+              <li>500 GB storage</li>
+              <li>Dedicated support</li>
+              <li>SSO &amp; SAML</li>
+              <li>Audit logs</li>
+              <li>99.99% SLA</li>
+            </ul>
+            <a href="#cta" class="btn btn-outline btn-block">Contact Sales</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="testimonials" class="testimonials" aria-labelledby="testimonials-heading">
+      <div class="container">
+        <div class="section-header">
+          <h2 id="testimonials-heading" class="section-title">Loved by Teams Everywhere</h2>
+          <p class="section-subtitle">See what our customers are saying.</p>
+        </div>
+        <div class="testimonials-grid">
+          <blockquote class="testimonial-card">
+            <div class="testimonial-stars" aria-label="5 out of 5 stars">
+              <span aria-hidden="true">&starf;&starf;&starf;&starf;&starf;</span>
+            </div>
+            <p class="testimonial-text">"The best decision we made this year. Our team productivity doubled within weeks."</p>
+            <footer class="testimonial-author">
+              <cite class="testimonial-name">Sarah Chen</cite>
+              <span class="testimonial-role">CTO, TechVentures</span>
+            </footer>
+          </blockquote>
+          <blockquote class="testimonial-card">
+            <div class="testimonial-stars" aria-label="5 out of 5 stars">
+              <span aria-hidden="true">&starf;&starf;&starf;&starf;&starf;</span>
+            </div>
+            <p class="testimonial-text">"Incredible support team. They helped us migrate 500K users without a hiccup."</p>
+            <footer class="testimonial-author">
+              <cite class="testimonial-name">Marcus Rivera</cite>
+              <span class="testimonial-role">VP Engineering, DataFlow</span>
+            </footer>
+          </blockquote>
+          <blockquote class="testimonial-card">
+            <div class="testimonial-stars" aria-label="5 out of 5 stars">
+              <span aria-hidden="true">&starf;&starf;&starf;&starf;&starf;</span>
+            </div>
+            <p class="testimonial-text">"We evaluated 10+ platforms before choosing {{projectName}}. Zero regrets."</p>
+            <footer class="testimonial-author">
+              <cite class="testimonial-name">Aisha Patel</cite>
+              <span class="testimonial-role">Founder, LaunchPad</span>
+            </footer>
+          </blockquote>
+        </div>
+      </div>
+    </section>
+
+    <section id="cta" class="cta" aria-labelledby="cta-heading">
+      <div class="container">
+        <div class="cta-card">
+          <h2 id="cta-heading" class="cta-title">Ready to Get Started?</h2>
+          <p class="cta-desc">Join thousands of teams already building with {{projectName}}. Free 14-day trial, no credit card required.</p>
+          <form class="cta-form" aria-label="Get started form">
+            <label for="cta-email" class="sr-only">Email address</label>
+            <input type="email" id="cta-email" name="email" placeholder="you@example.com" required class="cta-input">
+            <button type="submit" class="btn btn-primary">Start Free Trial</button>
+          </form>
+          <p class="cta-note">Free 14-day trial &middot; No credit card &middot; Cancel anytime</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer" role="contentinfo">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="/" class="footer-logo">{{projectName}}</a>
+          <p class="footer-desc">{{description}}</p>
+        </div>
+        <div class="footer-links">
+          <h4 class="footer-heading">Product</h4>
+          <ul>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#pricing">Pricing</a></li>
+            <li><a href="#">Changelog</a></li>
+            <li><a href="#">Integrations</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4 class="footer-heading">Company</h4>
+          <ul>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Careers</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4 class="footer-heading">Legal</h4>
+          <ul>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+            <li><a href="#">Cookie Policy</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; <span id="current-year"></span> {{projectName}}. Built by {{author}}.</p>
+        <a href="https://github.com/{{github}}" class="footer-github" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="scripts/main.js"></script>
+</body>
+</html>

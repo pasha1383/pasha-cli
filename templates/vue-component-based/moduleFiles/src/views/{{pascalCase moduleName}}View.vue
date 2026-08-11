@@ -1,0 +1,50 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+import { use{{pascalCase moduleName}} } from '@/composables/use{{pascalCase moduleName}}';
+import {{pascalCase moduleName}}Card from '@/components/{{moduleName}}/{{pascalCase moduleName}}Card.vue';
+
+const { items, count, addItem, removeItem } = use{{pascalCase moduleName}}();
+
+const newName = ref('');
+
+function handleAdd() {
+  if (!newName.value.trim()) return;
+  addItem({
+    id: crypto.randomUUID(),
+    name: newName.value.trim(),
+  });
+  newName.value = '';
+}
+</script>
+
+<template>
+  <div class="{{kebabCase moduleName}}-view p-6">
+    <h1 class="mb-6 text-2xl font-bold">{{\{{ pascalCase moduleName }}\}}</h1>
+
+    <div class="mb-6 flex gap-2">
+      <input
+        v-model="newName"
+        type="text"
+        placeholder="Add new {{moduleName}}..."
+        class="rounded border px-3 py-2"
+        @keyup.enter="handleAdd"
+      />
+      <button
+        class="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+        @click="handleAdd"
+      >
+        Add
+      </button>
+    </div>
+
+    <p class="mb-4 text-sm text-gray-600">Total: {{ '{{' }} count }}</p>
+
+    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <{{pascalCase moduleName}}Card
+        v-for="item in items"
+        :key="item.id"
+        :{{camelCase moduleName}}="item"
+      />
+    </div>
+  </div>
+</template>

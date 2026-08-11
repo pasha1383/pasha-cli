@@ -1,0 +1,15 @@
+import type { {{pascalCase moduleName}} } from './types';
+
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
+export async function fetch{{pascalCase moduleName}}(): Promise<{{pascalCase moduleName}}[]> {
+  const res = await fetch(`${API_BASE}/{{moduleName}}`);
+  if (!res.ok) throw new Error(`Failed to fetch {{moduleName}}: ${res.statusText}`);
+  return res.json();
+}
+
+export async function fetch{{pascalCase moduleName}}ById(id: string): Promise<{{pascalCase moduleName}}> {
+  const res = await fetch(`${API_BASE}/{{moduleName}}/${id}`);
+  if (!res.ok) throw new Error(`Failed to fetch {{moduleName}} ${id}: ${res.statusText}`);
+  return res.json();
+}

@@ -1,0 +1,32 @@
+import { useAppSelector, useAppDispatch } from '../../store';
+{{#if useTanstackQuery}}
+import { useFetch } from '../../hooks/useFetch';
+{{/if}}
+
+export function {{pascalCase moduleName}}Page() {
+  const dispatch = useAppDispatch();
+  const isLoading = useAppSelector((s) => s.app.loading);
+
+  {{#if useTanstackQuery}}
+  const { data, isLoading: isQueryLoading } = useFetch(['{{moduleName}}'], '/{{moduleName}}');
+  {{/if}}
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">{{pascalCase moduleName}}</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Redux Toolkit slice: state is managed in <code>store/slices/{{camelCase moduleName}}Slice.ts</code>
+          </p>
+        </div>
+      </div>
+
+      <div className="card">
+        <p className="text-sm text-gray-500">
+          Redux Toolkit + React Router integration. Slices handle async thunks and state.
+        </p>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,25 @@
+{
+  "name": "Angular + Feature Modules (NgModules)",
+  "prerequisites": ["node", "npm", "git"],
+  "shared": null,
+  "stackFeatures": "angular",
+  "modules": {
+    "enabled": true,
+    "message": "Feature name (e.g. auth, products, dashboard)",
+    "default": "products"
+  },
+  "fileConditions": {
+    "tailwind.config.js.hbs": "useTailwind",
+    "eslint.config.js": "useLint",
+    ".prettierrc": "useLint",
+    "jest.config.ts.hbs": "useTests",
+    "playwright.config.ts.hbs": "useE2E",
+    "e2e": "useE2E",
+    ".github": "useCI",
+    "Dockerfile.hbs": "useAppDockerfile",
+    ".dockerignore.hbs": "useAppDockerfile",
+    "AGENT.md.hbs": "useAgentDocs"
+  },
+  "postInstall": ["npm install"],
+  "gitInit": true
+}

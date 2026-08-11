@@ -1,0 +1,23 @@
+<script lang="ts">
+  import { fetch{{pascalCase moduleName}} } from '@features/{{moduleName}}/api';
+  import { {{pascalCase moduleName}}Feature } from '@features/{{moduleName}}/ui';
+</script>
+
+<div class="widget">
+  <h2>{{pascalCase moduleName}}</h2>
+  <{{pascalCase moduleName}}Feature />
+</div>
+
+<style>
+  .widget {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    background: #fafafa;
+  }
+
+  .widget h2 {
+    margin: 0 0 1rem;
+    font-size: 1.25rem;
+  }
+</style>

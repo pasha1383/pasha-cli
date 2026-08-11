@@ -1,0 +1,36 @@
+<script lang="ts">
+  let { items = $bindable([]) }: { items: unknown[] } = $props();
+</script>
+
+<div class="feature">
+  {#if items.length === 0}
+    <p class="empty">No data yet. Start building your <strong>{{moduleName}}</strong> feature!</p>
+  {:else}
+    <ul>
+      {#each items as item}
+        <li>{JSON.stringify(item)}</li>
+      {/each}
+    </ul>
+  {/if}
+</div>
+
+<style>
+  .feature {
+    padding: 1rem 0;
+  }
+
+  .empty {
+    color: #718096;
+    font-style: italic;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  li {
+    padding: 0.5rem;
+    border-bottom: 1px solid #edf2f7;
+  }
+</style>

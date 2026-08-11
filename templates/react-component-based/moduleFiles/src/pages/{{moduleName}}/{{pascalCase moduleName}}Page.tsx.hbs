@@ -1,0 +1,21 @@
+import { useParams } from 'react-router-dom';
+import { Button } from '../../components/Button';
+import { Card } from '../../components/Card';
+
+export function {{pascalCase moduleName}}Page() {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">{{pascalCase moduleName}}</h1>
+          <p className="mt-1 text-sm text-gray-500">Manage your {{moduleName}} resources</p>
+        </div>
+        <Button>Create {{pascalCase moduleName}}</Button>
+      </div>
+
+      <Card title="{{pascalCase moduleName}} List">
+        <p className="text-sm text-gray-500">No {{moduleName}} resources found. Create your first one.</p>
+      </Card>
+    </div>
+  );
+}

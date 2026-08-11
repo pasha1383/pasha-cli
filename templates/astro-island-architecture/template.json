@@ -1,0 +1,25 @@
+{
+  "name": "Astro + Islands Architecture",
+  "prerequisites": ["node", "npm", "git"],
+  "shared": null,
+  "stackFeatures": "astro",
+  "modules": {
+    "enabled": true,
+    "message": "Island/component name (e.g. search, carousel, chat)",
+    "default": "search"
+  },
+  "fileConditions": {
+    "tailwind.config.mjs.hbs": "useTailwind",
+    "eslint.config.js": "useLint",
+    ".prettierrc": "useLint",
+    "vitest.config.ts.hbs": "useTests",
+    "playwright.config.ts.hbs": "useE2E",
+    "e2e": "useE2E",
+    ".github": "useCI",
+    "Dockerfile.hbs": "useAppDockerfile",
+    ".dockerignore.hbs": "useAppDockerfile",
+    "AGENT.md.hbs": "useAgentDocs"
+  },
+  "postInstall": ["npm install"],
+  "gitInit": true
+}

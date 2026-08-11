@@ -1,0 +1,20 @@
+interface {{pascalCase moduleName}}CardProps {
+  {{#if hasValidation}}
+  {{moduleName}}: {
+    id: string;
+    name: string;
+    description: string;
+  };
+  {{else}}
+  {{moduleName}}: Record<string, unknown>;
+  {{/if}}
+}
+
+export function {{pascalCase moduleName}}Card({ {{moduleName}} }: {{pascalCase moduleName}}CardProps) {
+  return (
+    <div className="rounded-lg border bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
+      <h3 className="text-lg font-semibold">{String({{moduleName}}.name ?? {{moduleName}}.id)}</h3>
+      <p className="mt-1 text-sm text-gray-600">{String({{moduleName}}.description ?? '')}</p>
+    </div>
+  );
+}

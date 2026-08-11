@@ -1,0 +1,51 @@
+# {{projectName}}
+
+Built with Angular + NgRx state management.
+
+## Stack
+- **Framework:** Angular (standalone components + NgRx)
+- **State:** NgRx Store, Effects, Selectors, Actions
+- **Language:** TypeScript
+{{#if useMaterial}}
+- **UI:** Angular Material
+{{/if}}
+{{#if useTests}}
+- **Tests:** Jest + jest-preset-angular
+{{/if}}
+{{#if useE2E}}
+- **E2E:** Playwright
+{{/if}}
+
+## Project Structure (NgRx Feature Slice)
+```
+src/app/
+  app.component.ts
+  app.routes.ts             # Lazy-loaded feature routes
+
+  features/{{moduleName}}/
+    +state/
+      {{moduleName}}.actions.ts    # Action groups
+      {{moduleName}}.reducer.ts    # State reducer
+      {{moduleName}}.effects.ts    # Side effects
+      {{moduleName}}.selectors.ts  # Memoized selectors
+    {{moduleName}}.component.ts    # Feature UI component
+    {{moduleName}}.model.ts        # Entity model/interface
+    {{moduleName}}.routes.ts       # Feature routing + store providers
+    {{moduleName}}.service.ts      # API/data service
+```
+
+## Commands
+```bash
+npm start        # Start dev server
+npm run build    # Production build
+{{#if useTests}}
+npm test         # Run tests
+{{/if}}
+{{#if useE2E}}
+npm run test:e2e # Run E2E tests
+{{/if}}
+{{#if useLint}}
+npm run lint     # Lint code
+npm run format   # Format code
+{{/if}}
+```

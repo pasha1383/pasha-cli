@@ -1,0 +1,76 @@
+import { Component, OnInit, inject } from '@angular/core';
+import { Store } from '@ngrx/store';
+import { AsyncPipe, CommonModule } from '@angular/common';
+import { Observable } from 'rxjs';
+import { {{pascalCase moduleName}} } from './{{moduleName}}.model';
+import { {{pascalCase moduleName}}Actions } from './+state/{{moduleName}}.actions';
+import { selectAll{{pascalCase moduleName}}s, select{{pascalCase moduleName}}sLoading, select{{pascalCase moduleName}}sError } from './+state/{{moduleName}}.selectors';
+
+@Component({
+  selector: 'app-{{kebabCase moduleName}}',
+  standalone: true,
+  imports: [CommonModule, AsyncPipe],
+  template: `
+    <div class="{{moduleName}}">
+      <h2>{{pascalCase moduleName}}</h2>
+
+      @if (loading$ | async) {
+        <p>Loading...</p>
+      }
+
+      @if (error$ | async; as error) {
+        <p class="error">{{ error }}</p>
+      }
+
+      <ul>
+        @for (item of items$ | async; track item.id) {
+          <li>{{ item.name }} ({{ item.id }})</li>
+        }
+      </ul>
+
+      <button (click)="addDemo()">Add Demo Item</button>
+    </div>
+  `,
+  styles: [`
+    .{{moduleName}} {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    h2 { margin: 0 0 1rem; }
+    ul { list-style: none; padding: 0; }
+    li { padding: 0.5rem; border-bottom: 1px solid #edf2f7; }
+    .error { color: #e53e3e; }
+    button {
+      padding: 0.5rem 1rem;
+      border: 1px solid #cbd5e0;
+      border-radius: 4px;
+      background: #f7fafc;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+    button:hover { background: #edf2f7; }
+  `],
+  changeDetection: 0,
+})
+export class {{pascalCase moduleName}}Component implements OnInit {
+  private store = inject(Store);
+
+  items$: Observable<{{pascalCase moduleName}}[]> = this.store.select(selectAll{{pascalCase moduleName}}s);
+  loading$ = this.store.select(select{{pascalCase moduleName}}sLoading);
+  error$ = this.store.select(select{{pascalCase moduleName}}sError);
+
+  ngOnInit() {
+    this.store.dispatch({{pascalCase moduleName}}Actions.load{{pascalCase moduleName}}s());
+  }
+
+  addDemo() {
+    const newItem: {{pascalCase moduleName}} = {
+      id: crypto.randomUUID(),
+      name: `Item ${Date.now()}`,
+      createdAt: new Date().toISOString(),
+    };
+    this.store.dispatch({{pascalCase moduleName}}Actions.add{{pascalCase moduleName}}({ item: newItem }));
+  }
+}

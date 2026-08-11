@@ -1,0 +1,47 @@
+# {{projectName}}
+
+Built with Svelte 5 (Component-Based Architecture).
+
+## Stack
+- **Framework:** Svelte 5 (runes)
+- **Build:** Vite
+- **Language:** TypeScript
+{{#if useTailwind}}
+- **Styling:** Tailwind CSS 4
+{{/if}}
+{{#if useTests}}
+- **Unit tests:** Vitest + Testing Library
+{{/if}}
+{{#if useE2E}}
+- **E2E tests:** Playwright
+{{/if}}
+
+## Commands
+```bash
+npm run dev      # Start dev server
+npm run build    # Production build
+npm run preview  # Preview production build
+{{#if useTests}}
+npm run test     # Run tests
+{{/if}}
+{{#if useE2E}}
+npm run test:e2e # Run E2E tests
+{{/if}}
+{{#if useLint}}
+npm run lint     # Lint code
+npm run format   # Format code
+{{/if}}
+```
+
+## Project Structure
+```
+src/
+  components/     # Feature components (one per module)
+    {{moduleName}}/
+      {{moduleName}}.svelte   # Component
+      {{moduleName}}.test.ts  # Unit tests
+      index.ts                # Barrel export
+  lib/            # Shared utilities
+  App.svelte      # Root component
+  main.ts         # Entry point
+```

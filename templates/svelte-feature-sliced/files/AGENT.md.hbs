@@ -1,0 +1,49 @@
+# {{projectName}}
+
+Built with Svelte 5 + Feature-Sliced Design architecture.
+
+## Stack
+- **Framework:** Svelte 5 (runes)
+- **Build:** Vite
+- **Architecture:** Feature-Sliced Design (FSD)
+- **Language:** TypeScript
+{{#if useTailwind}}
+- **Styling:** Tailwind CSS 4
+{{/if}}
+
+## Project Structure (FSD)
+```
+src/
+  app/          # App shell, global styles, router
+  pages/        # Page compositions
+  widgets/      # Composite features (combines features + entities)
+    {{moduleName}}/
+      {{moduleName}}Widget.svelte
+  features/     # User interactions, state (one per business feature)
+    {{moduleName}}/
+      api/      # API calls, types
+      ui/       # UI components for this feature
+      index.ts
+  entities/     # Business entities (shared across features)
+  shared/       # Shared libs: API client, config, UI kit
+    api/
+    config/
+    lib/
+    ui/
+```
+
+## Commands
+```bash
+npm run dev      # Start dev server
+npm run build    # Production build
+{{#if useTests}}
+npm test         # Run unit tests
+{{/if}}
+{{#if useE2E}}
+npm run test:e2e # Run E2E tests
+{{/if}}
+{{#if useLint}}
+npm run lint     # Lint code
+npm run format   # Format code
+{{/if}}
+```

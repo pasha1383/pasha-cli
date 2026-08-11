@@ -1,0 +1,38 @@
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+{{#if useVueuse}}
+import { useLocalStorage } from '@vueuse/core';
+{{/if}}
+import {{pascalCase moduleName}}Form from '@/organisms/{{pascalCase moduleName}}/{{pascalCase moduleName}}Form.vue';
+import {{pascalCase moduleName}}Grid from '@/organisms/{{pascalCase moduleName}}/{{pascalCase moduleName}}Grid.vue';
+
+interface {{pascalCase moduleName}}Item {
+  id: string;
+  name: string;
+}
+
+{{#if useVueuse}}
+const items = useLocalStorage<{{pascalCase moduleName}}Item[]>('{{moduleName}}-items', []);
+{{else}}
+const items = ref<{{pascalCase moduleName}}Item[]>([]);
+{{/if}}
+
+const count = computed(() => items.value.length);
+
+function handleAdd(name: string) {
+  items.value.push({ id: crypto.randomUUID(), name });
+}
+
+function handleRemove(id: string) {
+  items.value = items.value.filter((i) => i.id !== id);
+}
+</script>
+
+<template>
+  <div class="{{kebabCase moduleName}}-page">
+    <h1 class="mb-6 text-2xl font-bold">{{\{{ pascalCase moduleName }}\}}</h1>
+    <{{pascalCase moduleName}}Form @submit="handleAdd" />
+    <p class="my-4 text-sm text-gray-600">Total: {{ '{{' }} count }}</p>
+    <{{pascalCase moduleName}}Grid :items="items" @remove="handleRemove" />
+  </div>
+</template>

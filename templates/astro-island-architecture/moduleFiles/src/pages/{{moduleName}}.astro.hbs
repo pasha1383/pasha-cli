@@ -1,0 +1,30 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import {{pascalCase moduleName}} from '@islands/{{pascalCase moduleName}}.svelte';
+---
+
+<BaseLayout title="{{pascalCase moduleName}}" description="Interactive island: {{moduleName}}">
+  <h1>{{pascalCase moduleName}}</h1>
+  <p>This page has an isolated interactive component:</p>
+
+  <div class="island-demo">
+    <{{pascalCase moduleName}} client:load title="Interactive {{pascalCase moduleName}}" initialValue={10} />
+  </div>
+
+  <p class="note">The rest of this page is static HTML. Only the island above ships JavaScript.</p>
+</BaseLayout>
+
+<style>
+  .island-demo {
+    max-width: 480px;
+    margin: 2rem 0;
+    border: 2px dashed #bdd3f0;
+    border-radius: 8px;
+    padding: 1.5rem;
+  }
+
+  .note {
+    color: #718096;
+    font-style: italic;
+  }
+</style>

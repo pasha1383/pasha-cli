@@ -1,0 +1,55 @@
+# {{projectName}}
+
+Built with Astro — Content-Focused Site.
+
+## Stack
+- **Framework:** Astro (static output)
+- **Language:** TypeScript
+- **Content:** Astro Content Collections (Markdown/MDX)
+{{#if useTailwind}}
+- **Styling:** Tailwind CSS 4
+{{/if}}
+{{#if useMdx}}
+- **MDX:** Enabled
+{{/if}}
+
+## Content Collections
+Content lives in `src/content/` as Markdown/MDX files with type-safe schemas.
+{{#each modules}}
+- **{{pascalCase this}}** — `src/content/{{this}}/`
+{{/each}}
+
+## Commands
+```bash
+npm run dev      # Start dev server (port 4321)
+npm run build    # Build static site
+npm run preview  # Preview production build
+{{#if useTests}}
+npm test         # Run tests
+{{/if}}
+{{#if useE2E}}
+npm run test:e2e # Run E2E tests
+{{/if}}
+{{#if useLint}}
+npm run lint     # Lint code
+npm run format   # Format code
+{{/if}}
+```
+
+## Project Structure
+```
+src/
+  content/        # Content collections (Markdown/MDX)
+    {{moduleName}}/
+      first-post.md      # Sample content
+    config.ts             # Collection schemas (Zod)
+  layouts/         # Page layouts
+    BaseLayout.astro      # Root HTML shell
+  pages/           # Astro pages (file-based routing)
+    index.astro           # Home page
+    {{moduleName}}.astro         # {{pascalCase moduleName}} listing
+    {{moduleName}}/
+      [...slug].astro     # Dynamic post pages
+  components/      # Shared .astro components
+  styles/          # Global CSS
+```

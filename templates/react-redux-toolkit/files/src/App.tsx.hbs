@@ -1,0 +1,58 @@
+{{#if useReactRouter}}
+import { BrowserRouter } from 'react-router-dom';
+import { AppRouter } from './router';
+{{/if}}
+{{#if useTanstackQuery}}
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+{{/if}}
+import { Provider } from 'react-redux';
+import { store } from './store';
+
+{{#if useTanstackQuery}}
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,
+      retry: 1,
+    },
+  },
+});
+{{/if}}
+
+function App() {
+  {{#if useReactRouter}}
+  return (
+    <Provider store={store}>
+      {{#if useTanstackQuery}}
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <AppRouter />
+        </BrowserRouter>
+      </QueryClientProvider>
+      {{else}}
+      <BrowserRouter>
+        <AppRouter />
+      </BrowserRouter>
+      {{/if}}
+    </Provider>
+  );
+  {{else}}
+  return (
+    <Provider store={store}>
+      {{#if useTanstackQuery}}
+      <QueryClientProvider client={queryClient}>
+        <div className="flex min-h-screen items-center justify-center">
+          <h1 className="text-3xl font-bold text-primary-600">{{projectName}}</h1>
+        </div>
+      </QueryClientProvider>
+      {{else}}
+      <div className="flex min-h-screen items-center justify-center">
+        <h1 className="text-3xl font-bold text-primary-600">{{projectName}}</h1>
+      </div>
+      {{/if}}
+    </Provider>
+  );
+  {{/if}}
+}
+
+export default App;

@@ -1,0 +1,25 @@
+{
+  "name": "Angular + Standalone Components",
+  "prerequisites": ["node", "npm", "git"],
+  "shared": null,
+  "stackFeatures": "angular",
+  "modules": {
+    "enabled": true,
+    "message": "Component name (e.g. header, product-list, user-card)",
+    "default": "hero-banner"
+  },
+  "fileConditions": {
+    "tailwind.config.js.hbs": "useTailwind",
+    "eslint.config.js": "useLint",
+    ".prettierrc": "useLint",
+    "jest.config.ts.hbs": "useTests",
+    "playwright.config.ts.hbs": "useE2E",
+    "e2e": "useE2E",
+    ".github": "useCI",
+    "Dockerfile.hbs": "useAppDockerfile",
+    ".dockerignore.hbs": "useAppDockerfile",
+    "AGENT.md.hbs": "useAgentDocs"
+  },
+  "postInstall": ["npm install"],
+  "gitInit": true
+}

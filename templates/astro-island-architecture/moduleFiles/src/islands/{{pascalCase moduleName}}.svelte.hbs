@@ -1,0 +1,105 @@
+<script lang="ts">
+  interface Props {
+    title?: string;
+    initialValue?: number;
+  }
+
+  let { title = '{{pascalCase moduleName}}', initialValue = 0 }: Props = $props();
+
+  let count = $state(initialValue);
+  let inputText = $state('');
+
+  function increment() {
+    count++;
+  }
+
+  function decrement() {
+    count--;
+  }
+
+  function reset() {
+    count = initialValue;
+  }
+</script>
+
+<div class="{{kebabCase moduleName}}-island">
+  <h3>{title}</h3>
+  <p class="counter">{count}</p>
+
+  <div class="actions">
+    <button onclick={decrement}>-</button>
+    <button onclick={reset}>Reset</button>
+    <button onclick={increment}>+</button>
+  </div>
+
+  <div class="input-section">
+    <input
+      type="text"
+      placeholder="Type something..."
+      bind:value={inputText}
+    />
+    {#if inputText}
+      <p class="echo">You typed: <strong>{inputText}</strong></p>
+    {/if}
+  </div>
+</div>
+
+<style>
+  .{{kebabCase moduleName}}-island {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 1.1rem;
+  }
+
+  .counter {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #2b6cb0;
+    text-align: center;
+    margin: 0;
+  }
+
+  .actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+
+  button {
+    padding: 0.4rem 1rem;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    background: #f7fafc;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+  }
+
+  button:hover {
+    background: #edf2f7;
+  }
+
+  .input-section {
+    margin-top: 0.5rem;
+  }
+
+  input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    box-sizing: border-box;
+  }
+
+  .echo {
+    font-size: 0.85rem;
+    color: #718096;
+    margin: 0.5rem 0 0;
+  }
+</style>

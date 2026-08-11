@@ -1,0 +1,37 @@
+{
+  "name": "React + Vite + Atomic Design",
+  "prerequisites": ["node", "npm", "git"],
+  "shared": null,
+  "stackFeatures": "react",
+  "modules": {
+    "enabled": true,
+    "message": "Component/page name (e.g. dashboard, profile, settings)",
+    "default": "dashboard"
+  },
+  "fileConditions": {
+    "tailwind.config.js.hbs": "useTailwind",
+    "postcss.config.js.hbs": "useTailwind",
+    ".eslintrc.cjs": "useLint",
+    ".prettierrc": "useLint",
+    "vitest.config.ts.hbs": "useVitest",
+    "playwright.config.ts.hbs": "usePlaywright",
+    ".storybook": "useStorybook",
+    ".storybook/main.ts.hbs": "useStorybook",
+    ".storybook/preview.ts.hbs": "useStorybook",
+    "src/App.test.tsx.hbs": "useVitest",
+    "src/setupTests.ts.hbs": "useVitest",
+    "src/router.tsx.hbs": "useReactRouter",
+    "src/hooks/useFetch.ts.hbs": "useTanstackQuery",
+    "src/utils/api-client.ts.hbs": "useTanstackQuery",
+    "src/types/api.ts.hbs": "useTanstackQuery",
+    "src/hooks/useAppStore.ts.hbs": "useZustand",
+    "src/store": "useZustand",
+    ".github": "useCI",
+    "Dockerfile.hbs": "useDockerfile",
+    ".dockerignore.hbs": "useDockerfile",
+    "AGENT.md.hbs": "useAgentDocs",
+    "src/AGENT.md.hbs": "useAgentDocs"
+  },
+  "postInstall": ["npm install"],
+  "gitInit": true
+}

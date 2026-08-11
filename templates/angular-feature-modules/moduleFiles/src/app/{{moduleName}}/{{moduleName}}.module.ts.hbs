@@ -1,0 +1,25 @@
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { {{pascalCase moduleName}}Component } from './{{moduleName}}.component';
+import { {{pascalCase moduleName}}Service } from './{{moduleName}}.service';
+import { {{pascalCase moduleName}}Routes } from './{{moduleName}}.routes';
+{{#if useMaterial}}
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+{{/if}}
+
+@NgModule({
+  declarations: [{{pascalCase moduleName}}Component],
+  imports: [
+    CommonModule,
+    RouterModule.forChild({{pascalCase moduleName}}Routes),
+    {{#if useMaterial}}
+    MatCardModule,
+    MatButtonModule,
+    {{/if}}
+  ],
+  providers: [{{pascalCase moduleName}}Service],
+  exports: [{{pascalCase moduleName}}Component],
+})
+export class {{pascalCase moduleName}}Module {}

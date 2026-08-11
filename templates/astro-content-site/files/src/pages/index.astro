@@ -1,0 +1,74 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Home" description="Built with Astro — content-focused site">
+  <section class="hero">
+    <h1>Welcome to {{projectName}}</h1>
+    <p class="tagline">A content-focused site built with Astro. Write in Markdown, render fast.</p>
+  </section>
+
+  <section class="collections">
+    <h2>Content Collections</h2>
+    <div class="grid">
+      {{#each modules}}
+      <a href="/{{this}}" class="card">
+        <h3>{{pascalCase this}}</h3>
+        <p>Browse {{this}} content</p>
+      </a>
+      {{/each}}
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    text-align: center;
+    padding: 4rem 0;
+  }
+
+  .hero h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .tagline {
+    color: #718096;
+    font-size: 1.1rem;
+  }
+
+  .collections {
+    padding: 2rem 0;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+
+  .card {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s;
+  }
+
+  .card:hover {
+    border-color: #bdd3f0;
+    background: #f7fafc;
+  }
+
+  .card h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.2rem;
+  }
+
+  .card p {
+    color: #718096;
+    margin: 0;
+  }
+</style>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="{{description}}">
+  <title>{{projectName}}</title>
+  {{#if useTailwind}}
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  {{/if}}
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="icon" type="image/svg+xml" href="/vite.svg">
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-900 font-sans antialiased">
+
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-indigo-600 focus:text-white focus:rounded">
+    Skip to main content
+  </a>
+
+  <header class="bg-white shadow-sm border-b border-gray-200" role="banner">
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between" aria-label="Main navigation">
+      <a href="/" class="text-xl font-bold text-indigo-600 hover:text-indigo-700 transition-colors" aria-label="{{projectName}} home">
+        {{projectName}}
+      </a>
+      <button id="mobile-menu-btn" class="md:hidden p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500" aria-expanded="false" aria-controls="main-nav" aria-label="Toggle navigation menu">
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+      <ul id="main-nav" class="hidden md:flex items-center space-x-8" role="menubar">
+        <li role="none"><a href="#features" class="text-gray-600 hover:text-indigo-600 transition-colors font-medium" role="menuitem">Features</a></li>
+        <li role="none"><a href="#about" class="text-gray-600 hover:text-indigo-600 transition-colors font-medium" role="menuitem">About</a></li>
+        <li role="none"><a href="#contact" class="text-gray-600 hover:text-indigo-600 transition-colors font-medium" role="menuitem">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="main-content">
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center" aria-labelledby="hero-heading">
+      <h1 id="hero-heading" class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-gray-900">
+        Build <span class="text-indigo-600">Beautiful</span> Web Apps
+      </h1>
+      <p class="mt-6 max-w-2xl mx-auto text-lg sm:text-xl text-gray-600">
+        {{description}}
+      </p>
+      <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
+        <a href="#get-started" class="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          Get Started
+        </a>
+        <a href="#learn-more" class="inline-flex items-center justify-center px-8 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+          Learn More
+        </a>
+      </div>
+    </section>
+
+    <section id="features" class="bg-white py-16" aria-labelledby="features-heading">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 id="features-heading" class="text-3xl font-bold text-center text-gray-900">Features</h2>
+        <p class="mt-4 text-center text-gray-600 max-w-2xl mx-auto">Everything you need to build modern web applications.</p>
+        <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <article class="p-6 bg-gray-50 rounded-xl hover:shadow-md transition-shadow">
+            <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4" aria-hidden="true">
+              <svg class="w-6 h-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900">Lightning Fast</h3>
+            <p class="mt-2 text-gray-600">Built with modern tooling for optimal performance and fast load times.</p>
+          </article>
+          <article class="p-6 bg-gray-50 rounded-xl hover:shadow-md transition-shadow">
+            <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4" aria-hidden="true">
+              <svg class="w-6 h-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900">Secure by Default</h3>
+            <p class="mt-2 text-gray-600">Best practices for security baked in from the start.</p>
+          </article>
+          <article class="p-6 bg-gray-50 rounded-xl hover:shadow-md transition-shadow">
+            <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4" aria-hidden="true">
+              <svg class="w-6 h-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900">Fully Responsive</h3>
+            <p class="mt-2 text-gray-600">Looks great on every device, from mobile to desktop.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="py-16" aria-labelledby="about-heading">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 id="about-heading" class="text-3xl font-bold text-center text-gray-900">About {{projectName}}</h2>
+        <p class="mt-6 max-w-3xl mx-auto text-center text-gray-600 text-lg leading-relaxed">
+          {{description}}. Crafted with modern HTML5, CSS3, and JavaScript. Accessible, performant, and built to scale.
+        </p>
+      </div>
+    </section>
+
+    <section id="contact" class="bg-white py-16" aria-labelledby="contact-heading">
+      <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 id="contact-heading" class="text-3xl font-bold text-gray-900">Get In Touch</h2>
+        <p class="mt-4 text-gray-600">Have questions? We'd love to hear from you.</p>
+        <form class="mt-8 space-y-6 text-left" aria-label="Contact form">
+          <div>
+            <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+            <input type="text" id="name" name="name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border" placeholder="Your name">
+          </div>
+          <div>
+            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+            <input type="email" id="email" name="email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border" placeholder="you@example.com">
+          </div>
+          <div>
+            <label for="message" class="block text-sm font-medium text-gray-700">Message</label>
+            <textarea id="message" name="message" rows="4" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border" placeholder="Your message..."></textarea>
+          </div>
+          <button type="submit" class="w-full inline-flex justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Send Message
+          </button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bg-gray-900 text-gray-400 py-12" role="contentinfo">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+        <p class="text-sm">&copy; <span id="current-year"></span> {{projectName}}. Built by {{author}}.</p>
+        <nav aria-label="Footer navigation">
+          <ul class="flex space-x-6 text-sm">
+            <li><a href="#" class="hover:text-white transition-colors">Privacy Policy</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Terms of Service</a></li>
+            <li><a href="https://github.com/{{github}}" class="hover:text-white transition-colors" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="scripts/main.js"></script>
+</body>
+</html>

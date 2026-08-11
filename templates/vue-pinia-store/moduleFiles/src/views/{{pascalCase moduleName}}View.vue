@@ -1,0 +1,57 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+import { use{{pascalCase moduleName}}Store } from '@/stores/{{moduleName}}';
+
+const store = use{{pascalCase moduleName}}Store();
+const newName = ref('');
+
+function handleAdd() {
+  if (!newName.value.trim()) return;
+  store.addItem(newName.value.trim());
+  newName.value = '';
+}
+</script>
+
+<template>
+  <div class="{{kebabCase moduleName}}-view p-6">
+    <h1 class="mb-6 text-2xl font-bold">{{\{{ pascalCase moduleName }}\}}</h1>
+
+    <div class="mb-6 flex gap-2">
+      <input
+        v-model="newName"
+        type="text"
+        placeholder="Add new {{moduleName}}..."
+        class="rounded border px-3 py-2"
+        @keyup.enter="handleAdd"
+      />
+      <button
+        class="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+        @click="handleAdd"
+      >
+        Add
+      </button>
+    </div>
+
+    <p class="mb-4 text-sm text-gray-600">Total: {{ '{{' }} store.count }}</p>
+
+    <ul class="divide-y rounded border">
+      <li
+        v-for="item in store.items"
+        :key="item.id"
+        class="flex items-center justify-between px-4 py-3"
+      >
+        <span>{{ '{{' }} item.name }}</span>
+        <span class="text-xs text-gray-400">{{ '{{' }} item.id }}</span>
+        <button
+          class="text-sm text-red-500 hover:text-red-700"
+          @click="store.removeItem(item.id)"
+        >
+          Remove
+        </button>
+      </li>
+      <li v-if="store.items.length === 0" class="px-4 py-6 text-center text-gray-500">
+        No items yet.
+      </li>
+    </ul>
+  </div>
+</template>

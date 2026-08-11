@@ -1,0 +1,51 @@
+import { useQuery, useMutation, type UseQueryOptions } from '@tanstack/react-query';
+import { apiClient } from '../utils/api-client';
+import type { ApiError } from '../types';
+
+export function useFetch<T>(
+  key: string[],
+  endpoint: string,
+  options?: Omit<UseQueryOptions<T, ApiError>, 'queryKey' | 'queryFn'>,
+) {
+  return useQuery<T, ApiError>({
+    queryKey: key,
+    queryFn: () => apiClient.get<T>(endpoint),
+    ...options,
+  });
+}
+
+export function usePaginatedFetch<T>(
+  key: string[],
+  endpoint: string,
+) {
+  return useFetch<{ data: T[]; meta: { total: number; page: number; pageSize: number; totalPages: number } }>(
+    key,
+    endpoint,
+  );
+}
+
+export function useCreate<TData, TVariables>(
+  endpoint: string,
+  invalidateKeys?: string[][],
+) {
+  return useMutation<TData, ApiError, TVariables>({
+    mutationFn: (variables) => apiClient.post<TData>(endpoint, variables),
+    // invalidateKeys would be used with queryClient in a real implementation
+  });
+}
+
+export function useUpdate<TData, TVariables>(
+  endpointFn: (vars: TVariables) => string,
+) {
+  return useMutation<TData, ApiError, TVariables>({
+    mutationFn: (variables) => apiClient.put<TData>(endpointFn(variables), variables),
+  });
+}
+
+export function useDelete<TData>(
+  endpointFn: (id: string) => string,
+) {
+  return useMutation<TData, ApiError, string>({
+    mutationFn: (id) => apiClient.delete<TData>(endpointFn(id)),
+  });
+}

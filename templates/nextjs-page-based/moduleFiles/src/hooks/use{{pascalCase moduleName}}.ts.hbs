@@ -1,0 +1,24 @@
+import { useState, useEffect } from 'react';
+
+interface Use{{pascalCase moduleName}}Options {
+  initialData?: Record<string, unknown>[];
+}
+
+export function use{{pascalCase moduleName}}({ initialData = [] }: Use{{pascalCase moduleName}}Options = {}) {
+  const [items, setItems] = useState<Record<string, unknown>[]>(initialData);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (initialData.length === 0) {
+      setLoading(true);
+      fetch('/api/{{moduleName}}')
+        .then((res) => res.json())
+        .then(setItems)
+        .catch(() => setError('Failed to load {{moduleName}}'))
+        .finally(() => setLoading(false));
+    }
+  }, [initialData.length]);
+
+  return { items, loading, error };
+}

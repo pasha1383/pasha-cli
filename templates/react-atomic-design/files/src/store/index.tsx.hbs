@@ -1,0 +1,27 @@
+import { createContext, useContext, type ReactNode } from 'react';
+{{#if useZustand}}
+import { useAppStore } from '../hooks/useAppStore';
+
+type StoreContextType = ReturnType<typeof useAppStore.getState>;
+
+const StoreContext = createContext<StoreContextType | null>(null);
+
+export function StoreProvider({ children }: { children: ReactNode }) {
+  return <StoreContext.Provider value={useAppStore.getState()}>{children}</StoreContext.Provider>;
+}
+
+export function useStore<T>(selector: (state: StoreContextType) => T): T {
+  const store = useAppStore(selector);
+  return store;
+}
+{{else}}
+const StoreContext = createContext<null>(null);
+
+export function StoreProvider({ children }: { children: ReactNode }) {
+  return <StoreContext.Provider value={null}>{children}</StoreContext.Provider>;
+}
+
+export function useStore() {
+  return useContext(StoreContext);
+}
+{{/if}}

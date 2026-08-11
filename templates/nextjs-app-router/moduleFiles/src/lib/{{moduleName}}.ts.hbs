@@ -1,0 +1,11 @@
+export async function get{{pascalCase moduleName}}List() {
+  const res = await fetch(`${process.env.API_URL}/api/{{moduleName}}`, { next: { revalidate: 60 } });
+  if (!res.ok) throw new Error('Failed to fetch {{moduleName}}');
+  return res.json();
+}
+
+export async function get{{pascalCase moduleName}}ById(id: string) {
+  const res = await fetch(`${process.env.API_URL}/api/{{moduleName}}/${id}`, { next: { revalidate: 60 } });
+  if (!res.ok) throw new Error(`Failed to fetch {{moduleName}} ${id}`);
+  return res.json();
+}

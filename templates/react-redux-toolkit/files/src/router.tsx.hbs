@@ -1,0 +1,19 @@
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { MainLayout } from './layouts/MainLayout';
+
+{{#each modules}}
+import { {{pascalCase this}}Page } from './pages/{{this}}/{{pascalCase this}}Page';
+{{/each}}
+
+export function AppRouter() {
+  return (
+    <Routes>
+      <Route element={<MainLayout />}>
+        <Route path="/" element={<Navigate to="/{{modules.[0]}}" replace />} />
+        {{#each modules}}
+        <Route path="/{{this}}" element={<{{pascalCase this}}Page />} />
+        {{/each}}
+      </Route>
+    </Routes>
+  );
+}

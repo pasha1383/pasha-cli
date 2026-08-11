@@ -1,0 +1,8 @@
+import { jestConfig } from '@angular-builders/jest';
+
+export default {
+  ...jestConfig(),
+  preset: 'jest-preset-angular',
+  setupFilesAfterSetup: ['<rootDir>/src/setup-jest.ts'],
+  testMatch: ['**/*.spec.ts'],
+};

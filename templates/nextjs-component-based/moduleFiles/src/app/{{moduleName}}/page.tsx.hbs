@@ -1,0 +1,36 @@
+import { {{pascalCase moduleName}}List } from '@/components/organisms/{{moduleName}}List/{{pascalCase moduleName}}List';
+
+{{#if hasValidation}}
+import { z } from 'zod';
+
+const {{pascalCase moduleName}}Schema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+});
+
+export type {{pascalCase moduleName}} = z.infer<typeof {{pascalCase moduleName}}Schema>;
+{{/if}}
+
+{{#unless hasValidation}}
+type {{pascalCase moduleName}} = {
+  id: string;
+  name: string;
+  description: string;
+};
+{{/unless}}
+
+const items: {{pascalCase moduleName}}[] = [
+  { id: '1', name: '{{pascalCase moduleName}} One', description: 'First {{moduleName}} item.' },
+  { id: '2', name: '{{pascalCase moduleName}} Two', description: 'Second {{moduleName}} item.' },
+  { id: '3', name: '{{pascalCase moduleName}} Three', description: 'Third {{moduleName}} item.' },
+];
+
+export default function {{pascalCase moduleName}}Page() {
+  return (
+    <main className="max-w-4xl mx-auto p-8">
+      <h1 className="text-3xl font-bold mb-6 capitalize">{{moduleName}}</h1>
+      <{{pascalCase moduleName}}List items={items} />
+    </main>
+  );
+}

@@ -1,0 +1,26 @@
+{
+  "name": "SvelteKit + File-Based Routing",
+  "prerequisites": ["node", "npm", "git"],
+  "shared": null,
+  "stackFeatures": "svelte",
+  "modules": {
+    "enabled": true,
+    "message": "Route name (e.g. dashboard, blog, settings)",
+    "default": "dashboard"
+  },
+  "fileConditions": {
+    "tailwind.config.js.hbs": "useTailwind",
+    "eslint.config.js": "useLint",
+    ".prettierrc": "useLint",
+    "vitest.config.ts.hbs": "useTests",
+    "playwright.config.ts.hbs": "useE2E",
+    "e2e": "useE2E",
+    ".github": "useCI",
+    "Dockerfile.hbs": "useAppDockerfile",
+    ".dockerignore.hbs": "useAppDockerfile",
+    "AGENT.md.hbs": "useAgentDocs",
+    "src/lib/components/__tests__": "useTests"
+  },
+  "postInstall": ["npm install"],
+  "gitInit": true
+}

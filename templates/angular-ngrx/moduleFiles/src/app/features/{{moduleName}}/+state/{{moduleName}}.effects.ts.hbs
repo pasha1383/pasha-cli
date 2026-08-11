@@ -1,0 +1,27 @@
+import { Injectable, inject } from '@angular/core';
+import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { Store } from '@ngrx/store';
+import { of } from 'rxjs';
+import { map, catchError, exhaustMap } from 'rxjs/operators';
+import { {{pascalCase moduleName}}Actions } from './{{moduleName}}.actions';
+import { {{pascalCase moduleName}}Service } from '../{{moduleName}}.service';
+
+@Injectable()
+export class {{pascalCase moduleName}}Effects {
+  private actions$ = inject(Actions);
+  private service = inject({{pascalCase moduleName}}Service);
+
+  load{{pascalCase moduleName}}s$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType({{pascalCase moduleName}}Actions.load{{pascalCase moduleName}}s),
+      exhaustMap(() =>
+        this.service.getAll().pipe(
+          map((items) => {{pascalCase moduleName}}Actions.load{{pascalCase moduleName}}sSuccess({ items })),
+          catchError((error: Error) =>
+            of({{pascalCase moduleName}}Actions.load{{pascalCase moduleName}}sFailure({ error: error.message })),
+          ),
+        ),
+      ),
+    ),
+  );
+}

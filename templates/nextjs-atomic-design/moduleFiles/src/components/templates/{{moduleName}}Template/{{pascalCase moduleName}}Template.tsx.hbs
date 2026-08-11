@@ -1,0 +1,15 @@
+import React from 'react';
+
+interface {{pascalCase moduleName}}TemplateProps {
+  title: string;
+  children: React.ReactNode;
+}
+
+export function {{pascalCase moduleName}}Template({ title, children }: {{pascalCase moduleName}}TemplateProps) {
+  return (
+    <main className="max-w-4xl mx-auto p-8">
+      <h1 className="text-3xl font-bold mb-6 capitalize">{title}</h1>
+      {children}
+    </main>
+  );
+}

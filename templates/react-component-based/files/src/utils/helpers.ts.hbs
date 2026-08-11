@@ -1,0 +1,22 @@
+export async function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function range(start: number, end: number): number[] {
+  return Array.from({ length: end - start }, (_, i) => start + i);
+}
+
+export function groupBy<T, K extends string | number>(
+  array: T[],
+  keyFn: (item: T) => K,
+): Record<K, T[]> {
+  return array.reduce(
+    (acc, item) => {
+      const key = keyFn(item);
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(item);
+      return acc;
+    },
+    {} as Record<K, T[]>,
+  );
+}

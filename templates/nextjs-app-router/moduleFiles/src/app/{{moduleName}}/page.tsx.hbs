@@ -1,0 +1,38 @@
+import type { Metadata } from 'next';
+import { {{pascalCase moduleName}}List } from './components/{{pascalCase moduleName}}List';
+{{#if hasValidation}}
+import { z } from 'zod';
+
+const {{pascalCase moduleName}}Schema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+});
+
+export type {{pascalCase moduleName}} = z.infer<typeof {{pascalCase moduleName}}Schema>;
+{{else}}
+type {{pascalCase moduleName}} = {
+  id: string;
+  name: string;
+  description: string;
+};
+{{/if}}
+
+export const metadata: Metadata = {
+  title: '{{pascalCase moduleName}}',
+};
+
+export default function {{pascalCase moduleName}}Page() {
+  const items: {{pascalCase moduleName}}[] = [
+    { id: '1', name: '{{pascalCase moduleName}} One', description: 'First {{moduleName}} item.' },
+    { id: '2', name: '{{pascalCase moduleName}} Two', description: 'Second {{moduleName}} item.' },
+    { id: '3', name: '{{pascalCase moduleName}} Three', description: 'Third {{moduleName}} item.' },
+  ];
+
+  return (
+    <main className="max-w-4xl mx-auto p-8">
+      <h1 className="text-3xl font-bold mb-6 capitalize">{{moduleName}}</h1>
+      <{{pascalCase moduleName}}List items={items} />
+    </main>
+  );
+}

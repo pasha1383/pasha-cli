@@ -1,0 +1,10 @@
+// Feature-Sliced Design: Shared API client
+// Layers: shared → entities → features → widgets → pages → app
+
+export { Button } from './components/Button';
+export { Card } from './components/Card';
+export { Spinner } from './components/Spinner';
+
+// Re-export shared utilities
+export { cn } from './utils/cn';
+export { formatDate, formatCurrency, truncate } from './utils/format';

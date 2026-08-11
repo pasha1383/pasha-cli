@@ -1,0 +1,24 @@
+'use client';
+
+import type { {{pascalCase moduleName}} } from '../model/types';
+
+interface {{pascalCase moduleName}}ListProps {
+  items: {{pascalCase moduleName}}[];
+}
+
+export function {{pascalCase moduleName}}List({ items }: {{pascalCase moduleName}}ListProps) {
+  if (items.length === 0) {
+    return <p className="text-center text-gray-500 py-8">No {{moduleName}} items found.</p>;
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {items.map((item) => (
+        <div key={item.id} className="rounded-lg border bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
+          <h3 className="text-lg font-semibold">{item.name}</h3>
+          <p className="mt-1 text-sm text-gray-600">{item.description}</p>
+        </div>
+      ))}
+    </div>
+  );
+}

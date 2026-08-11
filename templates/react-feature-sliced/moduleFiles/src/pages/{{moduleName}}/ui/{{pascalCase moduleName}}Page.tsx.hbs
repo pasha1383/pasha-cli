@@ -1,0 +1,24 @@
+import { cn } from '../../shared/utils/cn';
+import { Button } from '../../shared/components/Button';
+import { Card } from '../../shared/components/Card';
+
+export function {{pascalCase moduleName}}Page() {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">{{pascalCase moduleName}}</h1>
+          <p className="mt-1 text-sm text-gray-500">This feature manages {{moduleName}} resources</p>
+        </div>
+        <Button>Create</Button>
+      </div>
+
+      <Card title="{{pascalCase moduleName}} Data">
+        <p className="text-sm text-gray-500">
+          Feature-Sliced Design: this page lives in <code>pages/{{moduleName}}/</code> and
+          composes entities/features/widgets from the shared and feature layers.
+        </p>
+      </Card>
+    </div>
+  );
+}

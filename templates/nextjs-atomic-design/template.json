@@ -1,0 +1,29 @@
+{
+  "name": "Next.js + Atomic Design (Atoms / Molecules / Organisms / Templates / Pages)",
+  "prerequisites": ["node", "npm", "git"],
+  "shared": "_shared/nextjs",
+  "stackFeatures": "nextjs",
+  "modules": {
+    "enabled": true,
+    "message": "Module/entity name (e.g. product, user, order)",
+    "default": "product"
+  },
+  "fileConditions": {
+    "tailwind.config.ts": "useTailwind",
+    "postcss.config.mjs.hbs": "useTailwind",
+    ".eslintrc.json.hbs": "useLint",
+    ".prettierrc": "usePrettier",
+    "jest.config.ts.hbs": "useTests",
+    "jest.setup.ts": "useTests",
+    "playwright.config.ts.hbs": "usePlaywright",
+    "e2e": "usePlaywright",
+    "Dockerfile.hbs": "useDockerfile",
+    ".dockerignore": "useDockerfile",
+    ".github": "useCI",
+    "src/i18n.ts.hbs": "useI18n",
+    "src/messages": "useI18n",
+    "src/app/page.spec.tsx.hbs": "useTests"
+  },
+  "postInstall": ["npm install"],
+  "gitInit": true
+}

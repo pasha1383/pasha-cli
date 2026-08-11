@@ -1,0 +1,79 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '@layouts/BaseLayout.astro';
+
+const posts = await getCollection('{{moduleName}}');
+---
+
+<BaseLayout title="{{pascalCase moduleName}}" description="Browse the {{moduleName}} collection">
+  <h1>{{pascalCase moduleName}}</h1>
+  <p class="collection-desc">{{posts.length}} post{posts.length !== 1 ? 's' : ''} in this collection</p>
+
+  {posts.length > 0 ? (
+    <div class="post-list">
+      {posts
+        .filter((p) => !p.data.draft)
+        .sort((a, b) => (b.data.date?.getTime() ?? 0) - (a.data.date?.getTime() ?? 0))
+        .map((post) => (
+          <article class="post-card">
+            <h2><a href={`/{{moduleName}}/${post.slug}`}>{post.data.title}</a></h2>
+            {post.data.description && <p>{post.data.description}</p>}
+            {post.data.date && (
+              <time datetime={post.data.date.toISOString()}>
+                {post.data.date.toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </time>
+            )}
+          </article>
+        ))}
+    </div>
+  ) : (
+    <p>No posts yet. Add <code>.md</code> files to <code>src/content/{{moduleName}}</code>.</p>
+  )}
+</BaseLayout>
+
+<style>
+  .collection-desc {
+    color: #718096;
+  }
+
+  .post-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .post-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1.5rem;
+  }
+
+  .post-card h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.25rem;
+  }
+
+  .post-card h2 a {
+    text-decoration: none;
+    color: #2b6cb0;
+  }
+
+  .post-card h2 a:hover {
+    text-decoration: underline;
+  }
+
+  .post-card p {
+    color: #4a5568;
+    margin: 0 0 0.5rem;
+  }
+
+  .post-card time {
+    color: #a0aec0;
+    font-size: 0.875rem;
+  }
+</style>

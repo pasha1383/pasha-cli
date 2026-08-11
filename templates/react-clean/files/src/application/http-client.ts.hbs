@@ -1,0 +1,52 @@
+import type { ILogger } from './logger';
+
+export interface IHttpClient {
+  get<T>(url: string): Promise<T>;
+  post<T>(url: string, body: unknown): Promise<T>;
+  put<T>(url: string, body: unknown): Promise<T>;
+  delete<T>(url: string): Promise<T>;
+}
+
+export class FetchHttpClient implements IHttpClient {
+  constructor(
+    private baseUrl: string,
+    private logger: ILogger,
+  ) {}
+
+  private async request<T>(url: string, options: RequestInit = {}): Promise<T> {
+    const fullUrl = `${this.baseUrl}${url}`;
+    this.logger.info(`HTTP ${options.method || 'GET'} ${fullUrl}`);
+
+    const response = await fetch(fullUrl, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Request failed' }));
+      this.logger.error(`HTTP ${response.status}: ${error.message}`);
+      throw new Error(error.message);
+    }
+
+    return response.json();
+  }
+
+  async get<T>(url: string): Promise<T> {
+    return this.request<T>(url, { method: 'GET' });
+  }
+
+  async post<T>(url: string, body: unknown): Promise<T> {
+    return this.request<T>(url, { method: 'POST', body: JSON.stringify(body) });
+  }
+
+  async put<T>(url: string, body: unknown): Promise<T> {
+    return this.request<T>(url, { method: 'PUT', body: JSON.stringify(body) });
+  }
+
+  async delete<T>(url: string): Promise<T> {
+    return this.request<T>(url, { method: 'DELETE' });
+  }
+}

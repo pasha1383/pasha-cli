@@ -1,0 +1,51 @@
+# {{projectName}}
+
+Built with Angular + Feature Modules (NgModules).
+
+## Stack
+- **Framework:** Angular (NgModules)
+- **Language:** TypeScript
+{{#if useMaterial}}
+- **UI:** Angular Material
+{{/if}}
+{{#if useTailwind}}
+- **Styling:** Tailwind CSS 4
+{{/if}}
+{{#if useTests}}
+- **Tests:** Jest + jest-preset-angular
+{{/if}}
+{{#if useE2E}}
+- **E2E:** Playwright
+{{/if}}
+
+## Commands
+```bash
+npm start        # Start dev server
+npm run build    # Production build
+{{#if useTests}}
+npm test         # Run tests
+{{/if}}
+{{#if useE2E}}
+npm run test:e2e # Run E2E tests
+{{/if}}
+{{#if useLint}}
+npm run lint     # Lint code
+npm run format   # Format code
+{{/if}}
+```
+
+## Project Structure
+```
+src/app/
+  app.component.ts      # Root component
+  app.routes.ts         # Route definitions (lazy-loaded modules)
+  home/                 # Home page (standalone)
+  {{#each modules}}
+  {{this}}/
+    {{this}}.module.ts         # NgModule
+    {{this}}.routes.ts         # Feature routes
+    {{this}}.component.ts      # Feature component
+    {{this}}.component.spec.ts # Tests
+    {{this}}.service.ts        # Feature service
+  {{/each}}
+```

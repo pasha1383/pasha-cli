@@ -1,0 +1,20 @@
+import { z, defineCollection } from 'astro:content';
+
+{{#each modules}}
+const {{camelCase this}} = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string(),
+    description: z.string().optional(),
+    date: z.date().optional(),
+    draft: z.boolean().default(false),
+    tags: z.array(z.string()).optional(),
+  }),
+});
+{{/each}}
+
+export const collections = {
+  {{#each modules}}
+  {{this}}: {{camelCase this}},
+  {{/each}}
+};

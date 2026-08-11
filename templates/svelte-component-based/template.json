@@ -1,0 +1,26 @@
+{
+  "name": "Svelte 5 + Component-Based Architecture",
+  "prerequisites": ["node", "npm", "git"],
+  "shared": null,
+  "stackFeatures": "svelte",
+  "modules": {
+    "enabled": true,
+    "message": "Component name (e.g. header, product-card, user-list)",
+    "default": "counter"
+  },
+  "fileConditions": {
+    "tailwind.config.js.hbs": "useTailwind",
+    "eslint.config.js": "useLint",
+    ".prettierrc": "useLint",
+    "vitest.config.ts.hbs": "useTests",
+    "playwright.config.ts.hbs": "useE2E",
+    "e2e": "useE2E",
+    ".github": "useCI",
+    "Dockerfile.hbs": "useAppDockerfile",
+    ".dockerignore.hbs": "useAppDockerfile",
+    "AGENT.md.hbs": "useAgentDocs",
+    "src/lib/__tests__": "useTests"
+  },
+  "postInstall": ["npm install"],
+  "gitInit": true
+}

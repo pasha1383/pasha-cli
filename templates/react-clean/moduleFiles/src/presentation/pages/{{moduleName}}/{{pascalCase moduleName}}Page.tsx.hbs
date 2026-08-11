@@ -1,0 +1,40 @@
+// Clean Architecture — This page belongs to the Presentation layer
+// It uses use cases from Application layer and components from Presentation/components
+// Domain entities are used for typing only
+
+import { PageHeader } from '../../components/PageHeader';
+import { Card } from '../../components/Card';
+import { Button } from '../../components/Button';
+
+export function {{pascalCase moduleName}}Page() {
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="{{pascalCase moduleName}}"
+        description="Clean Architecture: domain → application → infrastructure → presentation"
+        actions={<Button>Create {{pascalCase moduleName}}</Button>}
+      />
+
+      <Card title="{{pascalCase moduleName}} Data">
+        <div className="space-y-4 text-sm text-gray-600">
+          <p>
+            <strong>Domain layer</strong> (<code>src/domain/</code>): Entities, value objects,
+            and repository interfaces. Pure TypeScript — no React.
+          </p>
+          <p>
+            <strong>Application layer</strong> (<code>src/application/</code>): Use cases, DTOs,
+            ports. Orchestrates domain logic.
+          </p>
+          <p>
+            <strong>Infrastructure layer</strong> (<code>src/infrastructure/</code>): HTTP clients,
+            API services, external dependencies.
+          </p>
+          <p>
+            <strong>Presentation layer</strong> (<code>src/presentation/</code>): React components,
+            hooks, pages, layouts — the UI.
+          </p>
+        </div>
+      </Card>
+    </div>
+  );
+}

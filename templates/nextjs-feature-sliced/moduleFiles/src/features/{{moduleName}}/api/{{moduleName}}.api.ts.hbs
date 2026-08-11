@@ -1,0 +1,25 @@
+import type { {{pascalCase moduleName}}, {{pascalCase moduleName}}CreatePayload } from '../model/types';
+
+const BASE_URL = '/api/{{moduleName}}';
+
+export async function fetch{{pascalCase moduleName}}List(): Promise<{{pascalCase moduleName}}[]> {
+  const res = await fetch(BASE_URL);
+  if (!res.ok) throw new Error('Failed to fetch {{moduleName}}');
+  return res.json();
+}
+
+export async function fetch{{pascalCase moduleName}}ById(id: string): Promise<{{pascalCase moduleName}}> {
+  const res = await fetch(`${BASE_URL}/${id}`);
+  if (!res.ok) throw new Error(`Failed to fetch {{moduleName}} ${id}`);
+  return res.json();
+}
+
+export async function create{{pascalCase moduleName}}(payload: {{pascalCase moduleName}}CreatePayload): Promise<{{pascalCase moduleName}}> {
+  const res = await fetch(BASE_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error('Failed to create {{moduleName}}');
+  return res.json();
+}

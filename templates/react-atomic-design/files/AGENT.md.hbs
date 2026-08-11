@@ -1,0 +1,38 @@
+# {{projectName}}
+
+{{description}}
+
+## Project Context
+
+This is a **React (Vite SPA)** project using the **Component-Based architecture** (components/hooks/utils/patterns).
+
+## Development
+
+```bash
+npm run dev      # Start development server at http://localhost:5173
+npm run build    # Production build
+npm run preview  # Preview production build
+```
+
+## Architecture
+
+```
+src/
+├── components/   # Reusable UI components (Button, Card, Spinner, etc.)
+├── hooks/        # Custom React hooks (useToggle, useDebounce, useFetch, etc.)
+├── utils/        # Pure utility functions (format, cn, api-client, etc.)
+├── types/        # TypeScript interfaces and types
+├── pages/        # Page-level components (one per route)
+├── layouts/      # Layout components (MainLayout, AuthLayout, etc.)
+├── store/        # Global state management
+├── services/     # API service abstractions
+└── assets/       # Static files (images, fonts, etc.)
+```
+
+## Key Principles
+
+- **Components** are self-contained, reusable building blocks
+- **Hooks** encapsulate reusable stateful logic
+- **Utils** contain pure functions with no side effects
+- **Pages** compose components and hooks into full views
+- **Types** define shared TypeScript interfaces across the app

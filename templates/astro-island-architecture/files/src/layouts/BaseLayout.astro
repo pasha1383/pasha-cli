@@ -1,0 +1,79 @@
+---
+import '@styles/global.css';
+
+export interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'Built with Astro Islands' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title} — {{projectName}}</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container">
+        <a href="/" class="site-title">{{projectName}}</a>
+        <nav>
+          {{#each modules}}
+          <a href="/{{this}}">{{pascalCase this}}</a>
+          {{/each}}
+        </nav>
+      </div>
+    </header>
+    <main class="site-main">
+      <div class="container">
+        <slot />
+      </div>
+    </main>
+    <footer class="site-footer">
+      <div class="container">
+        <p>&copy; {new Date().getFullYear()} {{projectName}}</p>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style>
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+  .site-header {
+    padding: 1rem 0;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 2rem;
+  }
+  .site-header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .site-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+    text-decoration: none;
+    color: #1a202c;
+  }
+  nav { display: flex; gap: 1.5rem; }
+  nav a { text-decoration: none; color: #4a5568; font-weight: 500; }
+  nav a:hover { color: #2b6cb0; }
+  .site-main { min-height: 60vh; }
+  .site-footer {
+    margin-top: 4rem;
+    padding: 2rem 0;
+    border-top: 1px solid #e2e8f0;
+    color: #718096;
+    font-size: 0.875rem;
+    text-align: center;
+  }
+</style>

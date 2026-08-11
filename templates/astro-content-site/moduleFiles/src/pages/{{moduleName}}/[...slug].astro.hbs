@@ -1,0 +1,82 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import BaseLayout from '@layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('{{moduleName}}');
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await post.render();
+---
+
+<BaseLayout title={post.data.title} description={post.data.description}>
+  <article class="post">
+    <header class="post-header">
+      <h1>{post.data.title}</h1>
+      {post.data.description && <p class="post-desc">{post.data.description}</p>}
+      {post.data.date && (
+        <time datetime={post.data.date.toISOString()}>
+          {post.data.date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })}
+        </time>
+      )}
+    </header>
+
+    <div class="post-content">
+      <Content />
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .post {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .post-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .post-header h1 {
+    font-size: 2rem;
+    margin: 0 0 0.5rem;
+  }
+
+  .post-desc {
+    color: #718096;
+    font-size: 1.1rem;
+    margin: 0 0 0.5rem;
+  }
+
+  .post-header time {
+    color: #a0aec0;
+    font-size: 0.875rem;
+  }
+
+  .post-content :global(h2) {
+    margin-top: 2rem;
+    font-size: 1.5rem;
+  }
+
+  .post-content :global(p) {
+    line-height: 1.8;
+  }
+
+  .post-content :global(code) {
+    background: #edf2f7;
+    padding: 0.15rem 0.3rem;
+    border-radius: 3px;
+    font-size: 0.875em;
+  }
+</style>

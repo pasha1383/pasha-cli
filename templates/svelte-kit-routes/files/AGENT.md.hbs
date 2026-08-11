@@ -1,0 +1,50 @@
+# {{projectName}}
+
+Built with SvelteKit (File-Based Routing) + Svelte 5 runes.
+
+## Stack
+- **Framework:** SvelteKit
+- **Language:** TypeScript
+{{#if useTailwind}}
+- **Styling:** Tailwind CSS 4
+{{/if}}
+{{#if useTests}}
+- **Tests:** Vitest
+{{/if}}
+{{#if useE2E}}
+- **E2E:** Playwright
+{{/if}}
+
+## Commands
+```bash
+npm run dev      # Start dev server
+npm run build    # Production build
+npm run preview  # Preview production build
+{{#if useTests}}
+npm test         # Run tests
+{{/if}}
+{{#if useE2E}}
+npm run test:e2e # Run E2E tests
+{{/if}}
+{{#if useLint}}
+npm run lint     # Lint code
+npm run format   # Format code
+{{/if}}
+```
+
+## Project Structure
+```
+src/
+  routes/        # File-based routing
+    +page.svelte # Home page
+    +layout.svelte # Root layout
+    {{#each modules}}
+    {{this}}/
+      +page.svelte   # {{pascalCase this}} page
+      +page.ts       # {{pascalCase this}} loader
+    {{/each}}
+  lib/           # Shared utilities and components
+  app.html       # HTML shell
+  app.css        # Global styles
+  hooks/         # Server hooks
+```

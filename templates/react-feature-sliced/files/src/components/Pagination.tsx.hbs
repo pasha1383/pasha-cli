@@ -1,0 +1,45 @@
+import { useState } from 'react';
+
+interface PaginationProps {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}
+
+export function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
+  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+
+  if (totalPages <= 1) return null;
+
+  return (
+    <nav className="flex items-center justify-center gap-1" aria-label="Pagination">
+      <button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className="btn btn-secondary px-2 py-1 text-xs disabled:opacity-50"
+      >
+        Previous
+      </button>
+      {pages.map((page) => (
+        <button
+          key={page}
+          onClick={() => onPageChange(page)}
+          className={`px-3 py-1 text-sm font-medium rounded-md ${
+            page === currentPage
+              ? 'bg-primary-600 text-white'
+              : 'text-gray-600 hover:bg-gray-100'
+          }`}
+        >
+          {page}
+        </button>
+      ))}
+      <button
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className="btn btn-secondary px-2 py-1 text-xs disabled:opacity-50"
+      >
+        Next
+      </button>
+    </nav>
+  );
+}

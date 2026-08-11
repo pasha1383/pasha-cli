@@ -1,0 +1,68 @@
+# {{projectName}}
+
+{{description}}
+
+## Tech Stack
+
+- **Framework**: Vue 3 (Composition API)
+- **Language**: TypeScript
+- **Build Tool**: Vite
+{{#if useRouter}}
+- **Router**: Vue Router
+{{/if}}
+{{#if usePinia}}
+- **State**: Pinia
+{{/if}}
+{{#if useTailwind}}
+- **CSS**: Tailwind CSS
+{{/if}}
+{{#if useNaiveUi}}
+- **UI Library**: Naive UI
+{{/if}}
+{{#if usePrimevue}}
+- **UI Library**: PrimeVue
+{{/if}}
+{{#if useVueuse}}
+- **Utilities**: VueUse
+{{/if}}
+
+## Project Structure
+
+```
+src/
+├── components/     # Reusable components
+├── composables/    # Composition API hooks
+├── views/          # Page-level components
+├── router/         # Vue Router config
+├── stores/         # Pinia stores
+└── assets/         # Static assets
+```
+
+## Getting Started
+
+```bash
+npm install
+npm run dev
+```
+
+Open http://localhost:5173 in your browser.
+
+## Available Scripts
+
+- `npm run dev` — Start development server
+- `npm run build` — Build for production
+- `npm run preview` — Preview production build
+{{#if useLint}}
+- `npm run lint` — Lint with ESLint
+- `npm run format` — Format with Prettier
+{{/if}}
+{{#if useVitest}}
+- `npm run test` — Run unit tests
+- `npm run test:watch` — Run tests in watch mode
+{{/if}}
+{{#if usePlaywright}}
+- `npm run test:e2e` — Run E2E tests
+{{/if}}
+{{#if useStorybook}}
+- `npm run storybook` — Start Storybook
+{{/if}}

@@ -1,0 +1,20 @@
+interface CardProps {
+  children: React.ReactNode;
+  title?: string;
+  className?: string;
+  actions?: React.ReactNode;
+}
+
+export function Card({ children, title, className = '', actions }: CardProps) {
+  return (
+    <div className={`card ${className}`.trim()}>
+      {(title || actions) && (
+        <div className="mb-4 flex items-center justify-between">
+          {title && <h3 className="text-lg font-semibold text-gray-900">{title}</h3>}
+          {actions && <div className="flex items-center gap-2">{actions}</div>}
+        </div>
+      )}
+      {children}
+    </div>
+  );
+}

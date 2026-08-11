@@ -1,0 +1,22 @@
+import { defineConfig } from 'astro/config';
+import svelte from '@astrojs/svelte';
+{{#if useTailwind}}
+import tailwind from '@astrojs/tailwind';
+{{/if}}
+{{#if useMdx}}
+import mdx from '@astrojs/mdx';
+{{/if}}
+
+export default defineConfig({
+  integrations: [
+    svelte(),
+    {{#if useTailwind}}
+    tailwind(),
+    {{/if}}
+    {{#if useMdx}}
+    mdx(),
+    {{/if}}
+  ],
+  output: 'static',
+  site: 'https://example.com',
+});

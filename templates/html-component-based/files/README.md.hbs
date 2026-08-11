@@ -1,0 +1,52 @@
+# {{projectName}}
+
+{{description}}
+
+A component-based web application using native **Web Components** — zero framework dependencies.
+
+## Getting Started
+
+```bash
+npm install
+npm run dev
+```
+
+Open http://localhost:3000 in your browser.
+
+## Architecture
+
+```
+src/
+├── components/      # Web Components (app-header, feature-card, etc.)
+│   ├── app-header.js
+│   ├── feature-card.js
+│   ├── interactive-counter.js
+│   └── app-footer.js
+├── styles/
+│   ├── main.css           # Global styles, CSS custom properties
+│   └── components/        # Per-component stylesheets
+└── main.js                # App entry point (smooth scrolling)
+```
+
+## Key Concepts
+
+- **Shadow DOM** — Encapsulates styles and markup per component
+- **Custom Elements** — HTML tags defined via JavaScript (`app-header`, `feature-card`)
+- **CSS Custom Properties** — Global theming via `:root` variables
+- **HTML Templates** — Component markup defined in `<template>` elements
+
+## Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server |
+| `npm run build` | Build for production |
+| `npm run preview` | Preview production build |
+{{#if useLint}}
+| `npm run lint` | Run ESLint |
+| `npm run format` | Format with Prettier |
+{{/if}}
+
+## Author
+
+{{author}}

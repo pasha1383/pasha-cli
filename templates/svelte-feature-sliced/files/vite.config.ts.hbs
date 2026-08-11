@@ -1,0 +1,26 @@
+import { defineConfig } from 'vite';
+import { svelte } from '@sveltejs/vite-plugin-svelte';
+{{#if useTailwind}}
+import tailwindcss from '@tailwindcss/vite';
+{{/if}}
+import path from 'node:path';
+
+export default defineConfig({
+  plugins: [
+    svelte(),
+    {{#if useTailwind}}
+    tailwindcss(),
+    {{/if}}
+  ],
+  resolve: {
+    alias: {
+      '@app': path.resolve('./src/app'),
+      '@pages': path.resolve('./src/pages'),
+      '@widgets': path.resolve('./src/widgets'),
+      '@features': path.resolve('./src/features'),
+      '@entities': path.resolve('./src/entities'),
+      '@shared': path.resolve('./src/shared'),
+    },
+  },
+  server: { port: 5173 },
+});

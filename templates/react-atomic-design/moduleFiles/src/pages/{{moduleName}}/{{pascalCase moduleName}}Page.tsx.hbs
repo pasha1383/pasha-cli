@@ -1,0 +1,23 @@
+import { useParams } from 'react-router-dom';
+import { PageHeader } from '../../organisms/PageHeader';
+import { Card } from '../../organisms/Card';
+import { Button } from '../../atoms/Button';
+
+export function {{pascalCase moduleName}}Page() {
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="{{pascalCase moduleName}}"
+        description="Atomic Design: atoms → molecules → organisms → templates → pages"
+        actions={<Button>Create {{pascalCase moduleName}}</Button>}
+      />
+
+      <Card title="{{pascalCase moduleName}} Overview">
+        <p className="text-sm text-gray-500">
+          This page lives at <code>src/pages/{{moduleName}}/</code>. It composes organisms
+          (PageHeader), molecules (Card, FormField), and atoms (Button, Input, Badge).
+        </p>
+      </Card>
+    </div>
+  );
+}

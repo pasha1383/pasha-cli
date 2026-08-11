@@ -1,0 +1,45 @@
+# {{projectName}}
+
+{{description}}
+
+## Getting Started
+
+```bash
+npm install
+npm run dev
+```
+
+Open http://localhost:3000 in your browser.
+
+## Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server with HMR |
+| `npm run build` | Build for production |
+| `npm run preview` | Preview production build locally |
+{{#if useLint}}
+| `npm run lint` | Run ESLint |
+| `npm run format` | Format code with Prettier |
+{{/if}}
+{{#if useTests}}
+| `npm test` | Run unit tests |
+| `npm run test:cov` | Run tests with coverage |
+{{/if}}
+{{#if usePlaywright}}
+| `npm run test:e2e` | Run Playwright E2E tests |
+{{/if}}
+
+## Stack
+
+- **HTML5** — Semantic, accessible markup
+- **CSS3** — Custom properties, Grid, Flexbox
+{{#if useTailwind}}
+- **[Tailwind CSS](https://tailwindcss.com/)** — Utility-first CSS via CDN
+{{/if}}
+- **JavaScript (ES Modules)** — Modern vanilla JS, no framework
+- **[Vite](https://vitejs.dev/)** — Build tool and dev server
+
+## Author
+
+{{author}}

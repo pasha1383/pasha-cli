@@ -1,0 +1,25 @@
+{
+  "name": "Astro + Content-Focused Site",
+  "prerequisites": ["node", "npm", "git"],
+  "shared": null,
+  "stackFeatures": "astro",
+  "modules": {
+    "enabled": true,
+    "message": "Content collection name (e.g. blog, docs, projects)",
+    "default": "blog"
+  },
+  "fileConditions": {
+    "tailwind.config.mjs.hbs": "useTailwind",
+    "eslint.config.js": "useLint",
+    ".prettierrc": "useLint",
+    "vitest.config.ts.hbs": "useTests",
+    "playwright.config.ts.hbs": "useE2E",
+    "e2e": "useE2E",
+    ".github": "useCI",
+    "Dockerfile.hbs": "useAppDockerfile",
+    ".dockerignore.hbs": "useAppDockerfile",
+    "AGENT.md.hbs": "useAgentDocs"
+  },
+  "postInstall": ["npm install"],
+  "gitInit": true
+}

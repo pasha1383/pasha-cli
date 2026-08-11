@@ -1,0 +1,9 @@
+import { render, screen } from '@testing-library/react';
+import { {{pascalCase moduleName}}Card } from './{{pascalCase moduleName}}Card';
+
+describe('{{pascalCase moduleName}}Card', () => {
+  it('renders the card', () => {
+    render(<{{pascalCase moduleName}}Card {{moduleName}}={{ id: '1', name: 'Test', description: 'Desc' }} />);
+    expect(screen.getByText('Test')).toBeInTheDocument();
+  });
+});

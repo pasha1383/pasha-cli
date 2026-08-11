@@ -1,0 +1,42 @@
+import { createReducer, on } from '@ngrx/store';
+import { {{pascalCase moduleName}}Actions } from './{{moduleName}}.actions';
+import { {{pascalCase moduleName}} } from '../{{moduleName}}.model';
+
+export interface {{pascalCase moduleName}}State {
+  items: {{pascalCase moduleName}}[];
+  loading: boolean;
+  error: string | null;
+}
+
+export const initialState: {{pascalCase moduleName}}State = {
+  items: [],
+  loading: false,
+  error: null,
+};
+
+export const {{camelCase moduleName}}Reducer = createReducer(
+  initialState,
+  on({{pascalCase moduleName}}Actions.load{{pascalCase moduleName}}s, (state) => ({
+    ...state,
+    loading: true,
+    error: null,
+  })),
+  on({{pascalCase moduleName}}Actions.load{{pascalCase moduleName}}sSuccess, (state, { items }) => ({
+    ...state,
+    items,
+    loading: false,
+  })),
+  on({{pascalCase moduleName}}Actions.load{{pascalCase moduleName}}sFailure, (state, { error }) => ({
+    ...state,
+    error,
+    loading: false,
+  })),
+  on({{pascalCase moduleName}}Actions.add{{pascalCase moduleName}}, (state, { item }) => ({
+    ...state,
+    items: [...state.items, item],
+  })),
+  on({{pascalCase moduleName}}Actions.remove{{pascalCase moduleName}}, (state, { id }) => ({
+    ...state,
+    items: state.items.filter((i) => i.id !== id),
+  })),
+);

@@ -1,0 +1,58 @@
+# {{projectName}}
+
+Built with Astro Islands Architecture.
+
+## Stack
+- **Framework:** Astro (static HTML + interactive islands)
+- **Island UI:** Svelte 5
+- **Language:** TypeScript
+{{#if useTailwind}}
+- **Styling:** Tailwind CSS 4
+{{/if}}
+
+## Islands Architecture
+This project follows the **Islands Architecture** pattern:
+- Most of the page is **static HTML** (zero JavaScript shipped)
+- Interactive components are **islands** — they hydrate independently
+- Each island uses `client:load` / `client:idle` / `client:visible` directives
+
+### Interactive Islands
+{{#each modules}}
+- **{{pascalCase this}}** — `src/islands/{{pascalCase this}}.svelte`
+{{/each}}
+
+## Commands
+```bash
+npm run dev      # Start dev server
+npm run build    # Build static site
+npm run preview  # Preview production build
+{{#if useTests}}
+npm test         # Run tests
+{{/if}}
+{{#if useE2E}}
+npm run test:e2e # Run E2E tests
+{{/if}}
+{{#if useLint}}
+npm run lint     # Lint code
+npm run format   # Format code
+{{/if}}
+```
+
+## Project Structure
+```
+src/
+  islands/        # Interactive islands (Svelte components)
+    {{#each modules}}
+    {{pascalCase this}}.svelte  # {{pascalCase this}} island
+    {{/each}}
+  layouts/        # Astro page layouts
+    BaseLayout.astro
+  pages/          # Astro pages (static + islands)
+    index.astro   # Home page with island grid
+    {{#each modules}}
+    {{this}}.astro # {{pascalCase this}} page
+    {{/each}}
+  components/     # Static Astro components
+  content/        # Content collections
+  styles/         # Global CSS
+```

@@ -1,0 +1,74 @@
+# {{projectName}}
+
+{{description}}
+
+Built with **React**, **Vite**, and **TypeScript**.
+
+## Getting Started
+
+```bash
+npm install
+npm run dev
+```
+
+Open [http://localhost:5173](http://localhost:5173) in your browser.
+
+## Available Scripts
+
+| Command | Description |
+|---|---|
+| `npm run dev` | Start development server |
+| `npm run build` | Build for production |
+| `npm run preview` | Preview production build |
+{{#if useLint}}
+| `npm run lint` | Run ESLint |
+| `npm run format` | Format code with Prettier |
+{{/if}}
+{{#if useVitest}}
+| `npm test` | Run unit tests |
+| `npm run test:watch` | Run tests in watch mode |
+| `npm run test:cov` | Run tests with coverage |
+{{/if}}
+{{#if usePlaywright}}
+| `npm run test:e2e` | Run E2E tests |
+{{/if}}
+{{#if useStorybook}}
+| `npm run storybook` | Start Storybook |
+| `npm run build-storybook` | Build Storybook |
+{{/if}}
+
+## Project Structure
+
+```
+src/
+├── components/    # Shared UI components
+├── hooks/         # Custom React hooks
+├── utils/         # Utility functions
+├── types/         # TypeScript type definitions
+├── pages/         # Page components
+├── layouts/       # Layout components
+├── store/         # State management (Zustand)
+├── services/      # API service layer
+├── assets/        # Static assets
+├── App.tsx        # Root component
+└── main.tsx       # Entry point
+```
+
+## Tech Stack
+
+- **React 18** — UI library
+- **Vite** — Build tool
+- **TypeScript** — Type safety
+- **Tailwind CSS** — Utility-first CSS
+{{#if useReactRouter}}
+- **React Router** — Client-side routing
+{{/if}}
+{{#if useTanstackQuery}}
+- **TanStack Query** — Server state management
+{{/if}}
+{{#if useZustand}}
+- **Zustand** — Client state management
+{{/if}}
+{{#if useReduxToolkit}}
+- **Redux Toolkit** — State management
+{{/if}}

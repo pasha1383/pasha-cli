@@ -1,0 +1,10 @@
+import { describe, it, expect } from 'vitest';
+
+describe('{{pascalCase moduleName}} route', () => {
+  it('loads page data', async () => {
+    const { load } = await import('./+page.ts');
+    const data = await load();
+    expect(data.title).toBe('{{pascalCase moduleName}}');
+    expect(data.description).toBeTruthy();
+  });
+});

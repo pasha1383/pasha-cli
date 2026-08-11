@@ -1,0 +1,63 @@
+{{#if useReactRouter}}
+import { BrowserRouter } from 'react-router-dom';
+import { AppRouter } from './presentation/router';
+{{/if}}
+{{#if useTanstackQuery}}
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+{{/if}}
+{{#if useZustand}}
+import { StoreProvider } from './application/store';
+{{/if}}
+
+{{#if useTanstackQuery}}
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,
+      retry: 1,
+    },
+  },
+});
+{{/if}}
+
+function App() {
+  {{#if useReactRouter}}
+  return (
+    {{#if useTanstackQuery}}
+    <QueryClientProvider client={queryClient}>
+      {{#if useZustand}}
+      <StoreProvider>
+        <BrowserRouter>
+          <AppRouter />
+        </BrowserRouter>
+      </StoreProvider>
+      {{else}}
+      <BrowserRouter>
+        <AppRouter />
+      </BrowserRouter>
+      {{/if}}
+    </QueryClientProvider>
+    {{else}}
+    {{#if useZustand}}
+    <StoreProvider>
+      <BrowserRouter>
+        <AppRouter />
+      </BrowserRouter>
+    </StoreProvider>
+    {{else}}
+    <BrowserRouter>
+      <AppRouter />
+    </BrowserRouter>
+    {{/if}}
+    {{/if}}
+  );
+  {{else}}
+  return (
+    <div className="flex min-h-screen items-center justify-center">
+      <h1 className="text-3xl font-bold text-primary-600">{{projectName}}</h1>
+    </div>
+  );
+  {{/if}}
+}
+
+export default App;

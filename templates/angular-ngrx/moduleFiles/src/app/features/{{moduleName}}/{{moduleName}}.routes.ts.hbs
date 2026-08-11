@@ -1,0 +1,24 @@
+import { Routes } from '@angular/router';
+import { provideState } from '@ngrx/store';
+import { provideEffects } from '@ngrx/effects';
+import { {{camelCase moduleName}}Reducer } from './+state/{{moduleName}}.reducer';
+import { {{pascalCase moduleName}}Effects } from './+state/{{moduleName}}.effects';
+import { {{pascalCase moduleName}}Component } from './{{moduleName}}.component';
+import { {{pascalCase moduleName}}Service } from './{{moduleName}}.service';
+
+export const {{pascalCase moduleName}}Routes: Routes = [
+  {
+    path: '',
+    providers: [
+      provideState({ name: '{{camelCase moduleName}}', reducer: {{camelCase moduleName}}Reducer }),
+      provideEffects({{pascalCase moduleName}}Effects),
+      {{pascalCase moduleName}}Service,
+    ],
+    children: [
+      {
+        path: '',
+        component: {{pascalCase moduleName}}Component,
+      },
+    ],
+  },
+];

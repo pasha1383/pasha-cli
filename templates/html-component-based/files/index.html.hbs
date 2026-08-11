@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="{{description}}">
+  <title>{{projectName}}</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/components/header.css">
+  <link rel="stylesheet" href="styles/components/card.css">
+  <link rel="stylesheet" href="styles/components/footer.css">
+  <link rel="icon" type="image/svg+xml" href="/vite.svg">
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <app-header></app-header>
+
+  <main id="main-content">
+    <section class="hero" aria-labelledby="hero-heading">
+      <div class="container">
+        <h1 id="hero-heading" class="hero-title">Build With <span class="text-accent">Web Components</span></h1>
+        <p class="hero-subtitle">{{description}}</p>
+        <div class="hero-actions">
+          <a href="#features" class="btn btn-primary">Get Started</a>
+          <a href="#about" class="btn btn-secondary">Learn More</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="section" aria-labelledby="features-heading">
+      <div class="container">
+        <h2 id="features-heading" class="section-title">Features</h2>
+        <p class="section-subtitle">Reusable, encapsulated, standards-based components.</p>
+        <div class="card-grid">
+          <feature-card
+            icon="lightning"
+            title="Native Web Components"
+            description="Custom elements, shadow DOM, and HTML templates. No framework required."
+          ></feature-card>
+          <feature-card
+            icon="shield"
+            title="Encapsulated Styles"
+            description="Shadow DOM scopes styles to each component, preventing CSS leaks."
+          ></feature-card>
+          <feature-card
+            icon="devices"
+            title="Responsive Design"
+            description="CSS Grid, Flexbox, and container queries for all screen sizes."
+          ></feature-card>
+          <feature-card
+            icon="code"
+            title="Framework Agnostic"
+            description="Works with any stack. Drop these components into any project."
+          ></feature-card>
+          <feature-card
+            icon="palette"
+            title="CSS Custom Properties"
+            description="Themeable via CSS variables. Easy light/dark mode support."
+          ></feature-card>
+          <feature-card
+            icon="rocket"
+            title="Zero Dependencies"
+            description="Pure HTML, CSS, and JavaScript. No npm runtime dependencies."
+          ></feature-card>
+        </div>
+      </div>
+    </section>
+
+    <section id="demo" class="section section-alt" aria-labelledby="demo-heading">
+      <div class="container">
+        <h2 id="demo-heading" class="section-title">Interactive Counter</h2>
+        <p class="section-subtitle">A live Web Component demo — click to increment.</p>
+        <div class="demo-wrapper">
+          <interactive-counter></interactive-counter>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="section" aria-labelledby="about-heading">
+      <div class="container">
+        <h2 id="about-heading" class="section-title">About {{projectName}}</h2>
+        <div class="about-content">
+          <p>{{description}}</p>
+          <p>This project demonstrates modern component-based architecture using Web Components — a W3C standard supported natively by all modern browsers. Components are self-contained with encapsulated styles and behavior.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <app-footer author="{{author}}" github="{{github}}"></app-footer>
+
+  <script type="module" src="scripts/components/app-header.js"></script>
+  <script type="module" src="scripts/components/feature-card.js"></script>
+  <script type="module" src="scripts/components/interactive-counter.js"></script>
+  <script type="module" src="scripts/components/app-footer.js"></script>
+  <script type="module" src="scripts/main.js"></script>
+</body>
+</html>

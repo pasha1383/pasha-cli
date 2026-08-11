@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="{{description}}">
+  <title>{{projectName}}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="icon" type="image/svg+xml" href="/vite.svg">
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+  <a href="#main-content" class="visually-hidden-focusable position-absolute top-0 start-0 z-3 p-3 bg-primary text-white rounded">
+    Skip to main content
+  </a>
+
+  <header role="banner">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm" aria-label="Main navigation">
+      <div class="container">
+        <a class="navbar-brand fw-bold text-primary" href="/" aria-label="{{projectName}} home">
+          {{projectName}}
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+          aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNavbar">
+          <ul class="navbar-nav ms-auto mb-2 mb-lg-0" role="menubar">
+            <li class="nav-item" role="none"><a class="nav-link" href="#features" role="menuitem">Features</a></li>
+            <li class="nav-item" role="none"><a class="nav-link" href="#pricing" role="menuitem">Pricing</a></li>
+            <li class="nav-item" role="none"><a class="nav-link" href="#faq" role="menuitem">FAQ</a></li>
+            <li class="nav-item" role="none"><a class="nav-link" href="#contact" role="menuitem">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main-content" class="flex-grow-1">
+
+    <section class="py-5 bg-primary text-white" aria-labelledby="hero-heading">
+      <div class="container text-center py-5">
+        <h1 id="hero-heading" class="display-4 fw-bold">Build Better <span class="text-warning">Web Apps</span></h1>
+        <p class="lead mt-3 mx-auto" style="max-width:600px">{{description}}</p>
+        <div class="mt-4 d-flex justify-content-center gap-3 flex-wrap">
+          <a href="#features" class="btn btn-light btn-lg px-4 fw-semibold">Get Started</a>
+          <a href="#pricing" class="btn btn-outline-light btn-lg px-4 fw-semibold">Learn More</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="py-5" aria-labelledby="features-heading">
+      <div class="container">
+        <h2 id="features-heading" class="text-center fw-bold mb-3">Features</h2>
+        <p class="text-center text-muted mb-5 mx-auto" style="max-width:600px">Everything you need to build modern web applications.</p>
+        <div class="row g-4">
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-body text-center p-4">
+                <div class="bg-primary bg-opacity-10 rounded-3 d-inline-flex p-3 mb-3" aria-hidden="true">
+                  <i class="bi bi-lightning-charge-fill text-primary fs-4"></i>
+                </div>
+                <h3 class="card-title h5 fw-semibold">Lightning Fast</h3>
+                <p class="card-text text-muted">Built with Bootstrap 5 for rapid development and optimal performance.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-body text-center p-4">
+                <div class="bg-success bg-opacity-10 rounded-3 d-inline-flex p-3 mb-3" aria-hidden="true">
+                  <i class="bi bi-shield-check-fill text-success fs-4"></i>
+                </div>
+                <h3 class="card-title h5 fw-semibold">Secure by Default</h3>
+                <p class="card-text text-muted">Best practices for accessibility and security built right in.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-body text-center p-4">
+                <div class="bg-info bg-opacity-10 rounded-3 d-inline-flex p-3 mb-3" aria-hidden="true">
+                  <i class="bi bi-phone-fill text-info fs-4"></i>
+                </div>
+                <h3 class="card-title h5 fw-semibold">Fully Responsive</h3>
+                <p class="card-text text-muted">Mobile-first design with Bootstrap's responsive grid system.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="pricing" class="py-5 bg-light" aria-labelledby="pricing-heading">
+      <div class="container">
+        <h2 id="pricing-heading" class="text-center fw-bold mb-3">Pricing</h2>
+        <p class="text-center text-muted mb-5 mx-auto" style="max-width:500px">Choose the plan that works for you.</p>
+        <div class="row g-4 justify-content-center">
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-body p-4 text-center">
+                <h3 class="h5 fw-semibold text-uppercase text-muted mb-3">Starter</h3>
+                <p class="display-6 fw-bold text-primary mb-3">$0<span class="fs-6 text-muted fw-normal">/mo</span></p>
+                <ul class="list-unstyled text-muted mb-4">
+                  <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Up to 5 projects</li>
+                  <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Community support</li>
+                  <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>1 GB storage</li>
+                </ul>
+                <a href="#" class="btn btn-outline-primary w-100">Get Started</a>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="card border-primary border-2 shadow h-100 position-relative">
+              <span class="badge bg-primary position-absolute top-0 start-50 translate-middle px-3 py-1">Popular</span>
+              <div class="card-body p-4 text-center">
+                <h3 class="h5 fw-semibold text-uppercase text-muted mb-3">Pro</h3>
+                <p class="display-6 fw-bold text-primary mb-3">$29<span class="fs-6 text-muted fw-normal">/mo</span></p>
+                <ul class="list-unstyled text-muted mb-4">
+                  <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Unlimited projects</li>
+                  <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Priority support</li>
+                  <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>50 GB storage</li>
+                  <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Advanced analytics</li>
+                </ul>
+                <a href="#" class="btn btn-primary w-100">Get Started</a>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-body p-4 text-center">
+                <h3 class="h5 fw-semibold text-uppercase text-muted mb-3">Enterprise</h3>
+                <p class="display-6 fw-bold text-primary mb-3">$99<span class="fs-6 text-muted fw-normal">/mo</span></p>
+                <ul class="list-unstyled text-muted mb-4">
+                  <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Everything in Pro</li>
+                  <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Dedicated support</li>
+                  <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>500 GB storage</li>
+                  <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Custom integrations</li>
+                </ul>
+                <a href="#" class="btn btn-outline-primary w-100">Contact Sales</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq" class="py-5" aria-labelledby="faq-heading">
+      <div class="container">
+        <h2 id="faq-heading" class="text-center fw-bold mb-5">Frequently Asked Questions</h2>
+        <div class="accordion mx-auto" style="max-width:800px" id="faqAccordion">
+          <div class="accordion-item border-0 mb-3 shadow-sm rounded-3">
+            <h3 class="accordion-header" id="faqHeading1">
+              <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse1"
+                aria-expanded="false" aria-controls="faqCollapse1">
+                What is {{projectName}}?
+              </button>
+            </h3>
+            <div id="faqCollapse1" class="accordion-collapse collapse" aria-labelledby="faqHeading1" data-bs-parent="#faqAccordion">
+              <div class="accordion-body text-muted">
+                {{description}}. Built with modern web standards: HTML5, CSS3, JavaScript, and Bootstrap 5.
+              </div>
+            </div>
+          </div>
+          <div class="accordion-item border-0 mb-3 shadow-sm rounded-3">
+            <h3 class="accordion-header" id="faqHeading2">
+              <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse2"
+                aria-expanded="false" aria-controls="faqCollapse2">
+                How do I get started?
+              </button>
+            </h3>
+            <div id="faqCollapse2" class="accordion-collapse collapse" aria-labelledby="faqHeading2" data-bs-parent="#faqAccordion">
+              <div class="accordion-body text-muted">
+                Simply run <code>npm install && npm run dev</code> and open http://localhost:3000.
+              </div>
+            </div>
+          </div>
+          <div class="accordion-item border-0 mb-3 shadow-sm rounded-3">
+            <h3 class="accordion-header" id="faqHeading3">
+              <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse3"
+                aria-expanded="false" aria-controls="faqCollapse3">
+                Is this project open source?
+              </button>
+            </h3>
+            <div id="faqCollapse3" class="accordion-collapse collapse" aria-labelledby="faqHeading3" data-bs-parent="#faqAccordion">
+              <div class="accordion-body text-muted">
+                Yes! You can find the source code on <a href="https://github.com/{{github}}">GitHub</a>.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="py-5 bg-light" aria-labelledby="contact-heading">
+      <div class="container">
+        <h2 id="contact-heading" class="text-center fw-bold mb-3">Get In Touch</h2>
+        <p class="text-center text-muted mb-5">We'd love to hear from you.</p>
+        <form class="row g-3 mx-auto" style="max-width:600px" aria-label="Contact form" novalidate>
+          <div class="col-md-6">
+            <label for="name" class="form-label">Name</label>
+            <input type="text" class="form-control" id="name" name="name" required placeholder="Your name">
+          </div>
+          <div class="col-md-6">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" name="email" required placeholder="you@example.com">
+          </div>
+          <div class="col-12">
+            <label for="message" class="form-label">Message</label>
+            <textarea class="form-control" id="message" name="message" rows="4" required placeholder="Your message..."></textarea>
+          </div>
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary px-5">Send Message</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="bg-dark text-light py-4 mt-auto" role="contentinfo">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-md-6 text-center text-md-start mb-2 mb-md-0">
+          <p class="mb-0 small">&copy; <span id="current-year"></span> {{projectName}}. Built by {{author}}.</p>
+        </div>
+        <div class="col-md-6 text-center text-md-end">
+          <nav aria-label="Footer navigation">
+            <a href="#" class="text-light text-decoration-none small me-3">Privacy</a>
+            <a href="#" class="text-light text-decoration-none small me-3">Terms</a>
+            <a href="https://github.com/{{github}}" class="text-light text-decoration-none small" target="_blank" rel="noopener noreferrer">
+              <i class="bi bi-github"></i> GitHub
+            </a>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+  <script type="module" src="scripts/main.js"></script>
+</body>
+</html>

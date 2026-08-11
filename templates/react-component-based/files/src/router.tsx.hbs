@@ -1,0 +1,35 @@
+import { Routes, Route, Navigate } from 'react-router-dom';
+{{#if useReactRouter}}
+import { MainLayout } from './layouts/MainLayout';
+{{#each modules}}
+import { {{pascalCase this}}Page } from './pages/{{this}}/{{pascalCase this}}Page';
+{{/each}}
+
+export function AppRouter() {
+  return (
+    <Routes>
+      <Route element={<MainLayout />}>
+        <Route path="/" element={<Navigate to="/{{modules.[0]}}" replace />} />
+        {{#each modules}}
+        <Route path="/{{this}}" element={<{{pascalCase this}}Page />} />
+        {{/each}}
+      </Route>
+    </Routes>
+  );
+}
+{{else}}
+export function AppRouter() {
+  return (
+    <Routes>
+      <Route path="/" element={<MainLayout />}>
+        <Route index element={
+          <div className="p-8">
+            <h1 className="text-2xl font-bold">Welcome to {{projectName}}</h1>
+            <p className="mt-2 text-gray-600">Start building your application.</p>
+          </div>
+        } />
+      </Route>
+    </Routes>
+  );
+}
+{{/if}}

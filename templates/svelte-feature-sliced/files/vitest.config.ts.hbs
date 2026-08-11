@@ -1,0 +1,22 @@
+import { defineConfig } from 'vitest/config';
+import { svelte } from '@sveltejs/vite-plugin-svelte';
+import path from 'node:path';
+
+export default defineConfig({
+  plugins: [svelte({ compilerOptions: { runes: true } })],
+  test: {
+    environment: 'jsdom',
+    include: ['src/**/*.{test,spec}.{js,ts}'],
+    globals: true,
+  },
+  resolve: {
+    alias: {
+      '@app': path.resolve('./src/app'),
+      '@pages': path.resolve('./src/pages'),
+      '@widgets': path.resolve('./src/widgets'),
+      '@features': path.resolve('./src/features'),
+      '@entities': path.resolve('./src/entities'),
+      '@shared': path.resolve('./src/shared'),
+    },
+  },
+});

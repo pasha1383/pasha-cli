@@ -1,0 +1,12 @@
+import type { IHttpClient } from '../application/http-client';
+import type { ILogger } from '../application/logger';
+import { FetchHttpClient } from '../application/http-client';
+import { ConsoleLogger } from '../application/logger';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+
+const logger = new ConsoleLogger();
+const httpClient = new FetchHttpClient(API_BASE_URL, logger);
+
+export { httpClient, logger };
+export type { IHttpClient, ILogger };

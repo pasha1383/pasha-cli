@@ -1,0 +1,36 @@
+import { defineConfig } from 'vite';
+import { svelte } from '@sveltejs/vite-plugin-svelte';
+{{#if useTailwind}}
+import tailwindcss from '@tailwindcss/vite';
+{{/if}}
+import path from 'node:path';
+
+export default defineConfig({
+  plugins: [
+    svelte(),
+    {{#if useTailwind}}
+    tailwindcss(),
+    {{/if}}
+  ],
+  resolve: {
+    alias: {
+      '$lib': path.resolve('./src/lib'),
+      '$app': path.resolve('./src'),
+    },
+  },
+  {{#if useTests}}
+  test: {
+    environment: 'jsdom',
+    include: ['src/**/*.{test,spec}.{js,ts}'],
+    globals: true,
+  },
+  {{/if}}
+  server: {
+    port: 5173,
+    strictPort: false,
+  },
+  preview: {
+    port: 4173,
+    strictPort: false,
+  },
+});

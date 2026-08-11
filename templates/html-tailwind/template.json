@@ -1,0 +1,22 @@
+{
+  "name": "HTML5 + Tailwind CSS",
+  "prerequisites": ["node", "npm", "git"],
+  "shared": null,
+  "stackFeatures": "html",
+  "modules": {
+    "enabled": false
+  },
+  "fileConditions": {
+    ".eslintrc.json": "useLint",
+    ".prettierrc": "useLint",
+    "jest.config.js": "useTests",
+    "playwright.config.js": "usePlaywright",
+    "test": "useTests",
+    "e2e": "usePlaywright",
+    "Dockerfile": "useAppDockerfile",
+    ".dockerignore": "useAppDockerfile",
+    "styles/main.scss": "useSass"
+  },
+  "postInstall": ["npm install"],
+  "gitInit": true
+}

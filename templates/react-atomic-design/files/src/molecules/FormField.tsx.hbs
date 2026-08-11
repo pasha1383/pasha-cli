@@ -1,0 +1,25 @@
+import type { ReactNode } from 'react';
+import { Label } from '../../atoms/Label';
+import { Input } from '../../atoms/Input';
+
+interface FormFieldProps {
+  label: string;
+  name: string;
+  type?: string;
+  placeholder?: string;
+  error?: string;
+  required?: boolean;
+  children?: ReactNode;
+}
+
+export function FormField({ label, name, type = 'text', placeholder, error, required, children }: FormFieldProps) {
+  return (
+    <div className="space-y-1">
+      <Label htmlFor={name}>
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </Label>
+      {children || <Input id={name} name={name} type={type} placeholder={placeholder} error={error} />}
+    </div>
+  );
+}

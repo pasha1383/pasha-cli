@@ -1,0 +1,19 @@
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, of } from 'rxjs';
+import { delay } from 'rxjs/operators';
+import { {{pascalCase moduleName}} } from './{{moduleName}}.model';
+
+@Injectable()
+export class {{pascalCase moduleName}}Service {
+  private http = inject(HttpClient);
+  private apiBase = 'http://localhost:3000/api';
+
+  getAll(): Observable<{{pascalCase moduleName}}[]> {
+    return this.http.get<{{pascalCase moduleName}}[]>(`${this.apiBase}/{{moduleName}}`);
+  }
+
+  getById(id: string): Observable<{{pascalCase moduleName}}> {
+    return this.http.get<{{pascalCase moduleName}}>(`${this.apiBase}/{{moduleName}}/${id}`);
+  }
+}

@@ -1,0 +1,18 @@
+import { createRouter, createWebHistory } from 'vue-router';
+{{#each modules}}
+import { {{pascalCase this}}Page } from '@/pages/{{this}}';
+{{/each}}
+
+const routes = [
+  {{#each modules}}
+  { path: '/{{this}}', name: '{{pascalCase this}}', component: {{pascalCase this}}Page },
+  {{/each}}
+  { path: '/', redirect: '/{{modules.[0]}}' },
+];
+
+export const router = createRouter({
+  history: createWebHistory(),
+  routes,
+});
+
+export default router;

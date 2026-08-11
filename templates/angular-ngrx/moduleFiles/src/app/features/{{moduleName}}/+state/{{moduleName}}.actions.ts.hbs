@@ -1,0 +1,13 @@
+import { createActionGroup, props, emptyProps } from '@ngrx/store';
+import { {{pascalCase moduleName}} } from './{{moduleName}}.model';
+
+export const {{pascalCase moduleName}}Actions = createActionGroup({
+  source: '{{pascalCase moduleName}}',
+  events: {
+    'Load {{pascalCase moduleName}}s': emptyProps(),
+    'Load {{pascalCase moduleName}}s Success': props<{ items: {{pascalCase moduleName}}[] }>(),
+    'Load {{pascalCase moduleName}}s Failure': props<{ error: string }>(),
+    'Add {{pascalCase moduleName}}': props<{ item: {{pascalCase moduleName}} }>(),
+    'Remove {{pascalCase moduleName}}': props<{ id: string }>(),
+  },
+});

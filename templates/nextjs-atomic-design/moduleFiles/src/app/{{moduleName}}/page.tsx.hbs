@@ -1,0 +1,22 @@
+import { {{pascalCase moduleName}}Template } from '@/components/templates/{{moduleName}}Template/{{pascalCase moduleName}}Template';
+import { {{pascalCase moduleName}}List } from '@/components/organisms/{{moduleName}}List/{{pascalCase moduleName}}List';
+
+type {{pascalCase moduleName}}Item = {
+  id: string;
+  name: string;
+  description: string;
+};
+
+const items: {{pascalCase moduleName}}Item[] = [
+  { id: '1', name: '{{pascalCase moduleName}} One', description: 'First {{moduleName}} item.' },
+  { id: '2', name: '{{pascalCase moduleName}} Two', description: 'Second {{moduleName}} item.' },
+  { id: '3', name: '{{pascalCase moduleName}} Three', description: 'Third {{moduleName}} item.' },
+];
+
+export default function {{pascalCase moduleName}}Page() {
+  return (
+    <{{pascalCase moduleName}}Template title="{{moduleName}}">
+      <{{pascalCase moduleName}}List items={items} />
+    </{{pascalCase moduleName}}Template>
+  );
+}

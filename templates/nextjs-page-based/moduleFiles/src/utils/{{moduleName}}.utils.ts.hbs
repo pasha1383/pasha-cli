@@ -1,0 +1,13 @@
+export function format{{pascalCase moduleName}}Date(date: string): string {
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(new Date(date));
+}
+
+export function filter{{pascalCase moduleName}}ByName(items: Record<string, unknown>[], query: string) {
+  return items.filter((item) =>
+    String(item.name ?? '').toLowerCase().includes(query.toLowerCase()),
+  );
+}

@@ -1,0 +1,25 @@
+{
+  "name": "Svelte 5 + Feature-Sliced Design",
+  "prerequisites": ["node", "npm", "git"],
+  "shared": null,
+  "stackFeatures": "svelte",
+  "modules": {
+    "enabled": true,
+    "message": "Feature name (e.g. auth, products, dashboard)",
+    "default": "products"
+  },
+  "fileConditions": {
+    "tailwind.config.js.hbs": "useTailwind",
+    "eslint.config.js": "useLint",
+    ".prettierrc": "useLint",
+    "vitest.config.ts.hbs": "useTests",
+    "playwright.config.ts.hbs": "useE2E",
+    "e2e": "useE2E",
+    ".github": "useCI",
+    "Dockerfile.hbs": "useAppDockerfile",
+    ".dockerignore.hbs": "useAppDockerfile",
+    "AGENT.md.hbs": "useAgentDocs"
+  },
+  "postInstall": ["npm install"],
+  "gitInit": true
+}

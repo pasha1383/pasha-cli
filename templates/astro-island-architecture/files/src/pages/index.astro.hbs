@@ -1,0 +1,64 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+{{#each modules}}
+import {{pascalCase this}} from '@islands/{{pascalCase this}}.svelte';
+{{/each}}
+---
+
+<BaseLayout title="Home" description="Astro Islands Architecture demo">
+  <section class="hero">
+    <h1>{{projectName}}</h1>
+    <p class="tagline">Islands Architecture — static HTML + interactive islands</p>
+  </section>
+
+  <section class="islands-demo">
+    <h2>Interactive Islands</h2>
+    <p class="subtitle">Each island hydrates independently. Only the interactive parts ship JavaScript.</p>
+
+    <div class="island-grid">
+      {{#each modules}}
+      <div class="island-card">
+        <{{pascalCase this}} client:load />
+      </div>
+      {{/each}}
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    text-align: center;
+    padding: 3rem 0;
+  }
+
+  .hero h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .tagline {
+    color: #718096;
+    font-size: 1.1rem;
+  }
+
+  .islands-demo {
+    padding: 2rem 0;
+  }
+
+  .subtitle {
+    color: #718096;
+    margin-bottom: 2rem;
+  }
+
+  .island-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .island-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1.5rem;
+  }
+</style>

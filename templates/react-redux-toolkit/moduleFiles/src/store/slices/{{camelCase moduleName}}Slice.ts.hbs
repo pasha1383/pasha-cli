@@ -1,0 +1,60 @@
+import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
+import type { RootState } from '../index';
+
+interface {{pascalCase moduleName}} {
+  id: string;
+  title: string;
+  createdAt: string;
+}
+
+interface {{pascalCase moduleName}}State {
+  items: {{pascalCase moduleName}}[];
+  status: 'idle' | 'loading' | 'succeeded' | 'failed';
+  error: string | null;
+}
+
+const initialState: {{pascalCase moduleName}}State = {
+  items: [],
+  status: 'idle',
+  error: null,
+};
+
+export const fetch{{pascalCase moduleName}}s = createAsyncThunk(
+  '{{moduleName}}/fetchAll',
+  async () => {
+    const response = await fetch('/api/{{moduleName}}');
+    return response.json();
+  },
+);
+
+const {{camelCase moduleName}}Slice = createSlice({
+  name: '{{moduleName}}',
+  initialState,
+  reducers: {
+    clear{{pascalCase moduleName}}s(state) {
+      state.items = [];
+      state.status = 'idle';
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetch{{pascalCase moduleName}}s.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(fetch{{pascalCase moduleName}}s.fulfilled, (state, action: PayloadAction<{{pascalCase moduleName}}[]>) => {
+        state.status = 'succeeded';
+        state.items = action.payload;
+      })
+      .addCase(fetch{{pascalCase moduleName}}s.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message ?? 'Failed to fetch {{moduleName}}';
+      });
+  },
+});
+
+export const { clear{{pascalCase moduleName}}s } = {{camelCase moduleName}}Slice.actions;
+
+export const select{{pascalCase moduleName}}s = (state: RootState) => state.{{camelCase moduleName}}.items;
+export const select{{pascalCase moduleName}}Status = (state: RootState) => state.{{camelCase moduleName}}.status;
+
+export const {{camelCase moduleName}}Reducer = {{camelCase moduleName}}Slice.reducer;

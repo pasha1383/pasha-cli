@@ -169,4 +169,249 @@ module.exports = {
     bestFor: 'Micro-services with spiky traffic, event-driven pipelines, API gateways, cost-sensitive serverless deployments',
     files: 'functions/{createUser, getOrder, processPayment}/ + shared/lib/',
   },
+
+  // ── Languages ──────────────────────────────────────────────
+
+  go: {
+    title: 'Go',
+    description: 'Compiled, statically typed systems language by Google. Fast compile times, goroutines for lightweight concurrency, and single-binary deploys. Excellent standard library and growing cloud-native ecosystem.',
+    bestFor: 'High-performance APIs, microservices, CLI tools, cloud-native apps',
+    files: '\u2022 gin — Fast, featureful HTTP framework\n\u2022 echo — Minimalist, high-performance\n\u2022 fiber — Express-inspired, fasthttp-based\n\u2022 chi — Idiomatic, composable, lightweight\n\u2022 stdlib — net/http, zero dependencies',
+  },
+  java: {
+    title: 'Java',
+    description: 'Mature, statically typed JVM language with a vast enterprise ecosystem. Strong typing, battle-tested performance, and excellent tooling (IntelliJ, Maven, Gradle). Spring Boot dominates the web landscape.',
+    bestFor: 'Enterprise apps, banking/finance, large teams, complex business logic',
+    files: '\u2022 spring-boot — Comprehensive, auto-configuration, production-ready',
+  },
+  node: {
+    title: 'Node.js / TypeScript',
+    description: 'JavaScript runtime with optional TypeScript for type safety. Single language across frontend and backend. Massive npm ecosystem with 2M+ packages. Non-blocking I/O for high concurrency.',
+    bestFor: 'Full-stack apps, real-time services, rapid prototyping, REST/GraphQL APIs',
+    files: '\u2022 nestjs — Opinionated, Angular-inspired, modular\n\u2022 express — Minimal, unopinionated, middleware-based\n\u2022 fastify — Fast, schema-first, plugin architecture\n\u2022 koa — Async/await, lightweight, composable\n\u2022 hapi — Configuration-driven, enterprise-grade\n\u2022 adonis — Full-stack MVC, Laravel-inspired\n\u2022 serverless — AWS Lambda / Cloudflare Workers\n\u2022 microservices — Multi-service distributed system',
+  },
+  python: {
+    title: 'Python',
+    description: 'General-purpose, readable language. Excellent for data science, web backends, and APIs. Rich ecosystem for scientific computing, machine learning, and automation.',
+    bestFor: 'Data-heavy APIs, ML integration, rapid development, scripting',
+    files: '\u2022 django — Full-stack with admin, ORM, auth\n\u2022 fastapi — Modern async, auto-docs, Pydantic\n\u2022 flask — Minimal, flexible, great for APIs\n\u2022 litestar — Fast, typed, OpenAPI-native\n\u2022 tornado — Async, real-time web apps',
+  },
+  ruby: {
+    title: 'Ruby',
+    description: 'Elegant, developer-friendly language designed for programmer happiness. Convention over configuration philosophy. Known for readable syntax and rapid development speed.',
+    bestFor: 'Rapid prototyping, startups, convention-heavy teams, SaaS apps',
+    files: '\u2022 rails — Full-stack MVC, batteries included, mature ecosystem',
+  },
+  php: {
+    title: 'PHP',
+    description: 'Battle-tested server-side language powering over 75% of the web. Low barrier to entry, massive hosting support, and fast request/response lifecycle. Modern PHP is typed and performant.',
+    bestFor: 'Web apps, CMS-driven sites, quick deployment, shared hosting',
+    files: '\u2022 laravel — Elegant syntax, Artisan CLI, Eloquent ORM, rich ecosystem',
+  },
+  csharp: {
+    title: 'C# / .NET',
+    description: 'Cross-platform, statically typed language by Microsoft. Modern features: async/await, LINQ, pattern matching. First-class tooling with Visual Studio and JetBrains Rider.',
+    bestFor: 'Enterprise apps, Windows ecosystem, game dev (Unity), large-scale services',
+    files: '\u2022 aspnet — High-performance, dependency injection, minimal APIs',
+  },
+  rust: {
+    title: 'Rust',
+    description: 'Systems programming language with zero-cost abstractions and memory safety without garbage collection. Blazing fast execution and fearless concurrency. Steep learning curve but unmatched runtime guarantees.',
+    bestFor: 'Performance-critical systems, high-throughput APIs, embedded, WASM',
+    files: '\u2022 axum — Ergonomic, tower-based, async-first web framework',
+  },
+  frontend: {
+    title: 'Frontend',
+    description: 'Browser-side applications built with modern JavaScript frameworks. Component-based UI, client-side routing, state management, and build tooling. Ships to browsers as HTML, CSS, and JS bundles.',
+    bestFor: 'SPAs, dashboards, design systems, interactive UIs, Jamstack sites',
+    files: '\u2022 nextjs — React framework, SSR/SSG, App Router\n\u2022 react — Vite SPA, component-based, hooks\n\u2022 vue — Vite SPA, Composition API, reactive\n\u2022 svelte — Compiled framework, minimal runtime, SvelteKit\n\u2022 angular — Full-featured, TypeScript, RxJS\n\u2022 astro — Content-focused, islands, zero JS by default',
+  },
+  html: {
+    title: 'HTML5 / CSS3 / JavaScript',
+    description: 'Vanilla web technologies with zero build step, no npm, no framework. Use utility CSS (Tailwind) or component libraries (Bootstrap) via CDN. Add interactivity with vanilla JS, Alpine.js, or HTMX.',
+    bestFor: 'Static sites, landing pages, prototypes, minimal tooling projects',
+    files: '\u2022 tailwind — Utility-first CSS, rapid UI via classes\n\u2022 bootstrap — Pre-built components, responsive grid\n\u2022 web-components — Native custom elements\n\u2022 landing-page — Single-page marketing site\n\u2022 dashboard — Admin panel with charts and tables',
+  },
+
+  // ── Frameworks ─────────────────────────────────────────────
+
+  // Node.js
+  nestjs: {
+    title: 'NestJS',
+    description: 'Opinionated TypeScript framework built on Express/Fastify with an Angular-inspired module system. Decorators for controllers, providers, guards, pipes, and interceptors. Built-in support for GraphQL, WebSockets, and microservices.',
+    bestFor: 'Enterprise Node.js apps, complex APIs, teams familiar with Angular, GraphQL servers',
+    files: 'Controllers, Providers, Modules, Guards, Pipes, Interceptors',
+  },
+  express: {
+    title: 'Express',
+    description: 'Minimalist, unopinionated Node.js web framework. Middleware-based request pipeline with vast plugin ecosystem for auth, logging, CORS, and body parsing. The most popular Node.js framework.',
+    bestFor: 'REST APIs, microservices, rapid prototyping, middleware-heavy apps',
+    files: 'Routes, Middleware, Controllers, Services, Repositories',
+  },
+  fastify: {
+    title: 'Fastify',
+    description: 'High-performance Node.js framework focused on speed and low overhead. Schema-based request/response validation with JSON Schema. Plugin architecture with encapsulation. Automatic Swagger/OpenAPI generation.',
+    bestFor: 'Performance-sensitive APIs, schema-driven development, microservices',
+    files: 'Plugins, Routes, Schemas, Decorators, Hooks',
+  },
+  koa: {
+    title: 'Koa',
+    description: 'Lightweight, modern Node.js framework by the Express team. Uses async/await instead of callbacks for middleware. Minimal core — no bundled middleware or routing. You compose the stack you need.',
+    bestFor: 'Minimalist APIs, developers who want full control, lightweight services',
+    files: 'Middleware, Context, Routes, Services, Repositories',
+  },
+  hapi: {
+    title: 'Hapi',
+    description: 'Configuration-driven, enterprise-grade Node.js framework. Declarative route configuration with built-in input validation (Joi), caching, and authentication. Plugin-based architecture for modular decomposition.',
+    bestFor: 'Enterprise APIs, configuration-heavy teams, large plugin ecosystems',
+    files: 'Routes, Plugins, Services, Validators, Repositories',
+  },
+  adonis: {
+    title: 'AdonisJS',
+    description: 'Full-stack Node.js MVC framework inspired by Laravel. Ships with ORM (Lucid), auth, migrations, templating (Edge), and a powerful CLI. Convention over configuration. Batteries included for web applications.',
+    bestFor: 'Full-stack monoliths, Laravel developers moving to Node, convention-driven teams',
+    files: 'Controllers, Models, Services, Views, Middleware',
+  },
+
+  // Python
+  django: {
+    title: 'Django',
+    description: 'Full-stack Python web framework with batteries included. Built-in ORM, admin interface, authentication, forms, and templating. Follows convention over configuration. Mature and battle-tested.',
+    bestFor: 'Full-stack monoliths, admin-heavy apps, rapid prototyping with built-in admin',
+    files: 'Models, Views, Templates, Forms, Admin, URLs',
+  },
+  fastapi: {
+    title: 'FastAPI',
+    description: 'Modern async Python web framework built on Starlette and Pydantic. Automatic OpenAPI/Swagger docs from type hints. First-class async support. Fastest Python web framework by requests-per-second.',
+    bestFor: 'REST APIs, async microservices, OpenAPI-driven development, ML serving',
+    files: 'Routers, Services, Repositories, DTOs (Pydantic models)',
+  },
+  flask: {
+    title: 'Flask',
+    description: 'Minimalist, unopinionated Python micro-framework. Simple routing with decorators. No ORM or form validation built in — choose your tools. Jinja2 templating bundled. Lightweight and flexible.',
+    bestFor: 'Small APIs, microservices, prototyping, apps where simplicity matters',
+    files: 'Blueprints, Views, Services, Repositories',
+  },
+  litestar: {
+    title: 'Litestar',
+    description: 'Modern, typed Python web framework with first-class async support. OpenAPI-native with automatic docs. Plugin system, dependency injection, and layered architecture out of the box. Growing ecosystem.',
+    bestFor: 'Type-driven Python APIs, async services, OpenAPI-first teams',
+    files: 'Controllers, Services, Repositories, DTOs',
+  },
+  tornado: {
+    title: 'Tornado',
+    description: 'Python web framework and asynchronous networking library. Built on an event loop for thousands of concurrent connections. Non-blocking I/O for real-time web features and long-lived connections.',
+    bestFor: 'WebSockets, long-polling, real-time apps, async networking in Python',
+    files: 'Handlers, Services, Repositories, WebSocket handlers',
+  },
+
+  // Go
+  gin: {
+    title: 'Gin',
+    description: 'High-performance Go HTTP framework with a Martini-like API. Built-in request validation, JSON rendering, error management, and middleware support. The most popular Go web framework.',
+    bestFor: 'REST APIs, microservices, high-throughput Go backends',
+    files: 'Handlers, Services, Repositories, Middleware, DTOs',
+  },
+  echo: {
+    title: 'Echo',
+    description: 'Minimalist, high-performance Go web framework. Fast HTTP router with zero dynamic memory allocation. Built-in middleware for CORS, JWT, logging, and recovery. Clean API with context-based request handling.',
+    bestFor: 'Performance-focused Go APIs, microservices, lightweight backend services',
+    files: 'Handlers, Services, Repositories, Middleware, DTOs',
+  },
+  fiber: {
+    title: 'Fiber',
+    description: 'Express-inspired Go web framework built on fasthttp. Ultra-low memory footprint and high throughput. Familiar API for Node.js developers transitioning to Go. Strong middleware ecosystem.',
+    bestFor: 'Go developers coming from Express, high-performance APIs, microservices',
+    files: 'Handlers, Services, Repositories, Middleware, DTOs',
+  },
+  chi: {
+    title: 'Chi',
+    description: 'Idiomatic, composable Go HTTP router built on net/http. No external dependencies. Middleware stack fully compatible with standard library handlers. Lightweight and follows Go conventions closely.',
+    bestFor: 'Stdlib-compatible Go APIs, composable middleware, lightweight routing',
+    files: 'Handlers, Services, Repositories, Middleware, DTOs',
+  },
+  stdlib: {
+    title: 'net/http (stdlib)',
+    description: 'Go\'s built-in HTTP package — no third-party dependencies. Standard library ServeMux with middleware pattern. Zero external dependencies means zero supply-chain risk. Pragmatic and battle-tested.',
+    bestFor: 'Minimal-dependency projects, simple APIs, maximum control, stdlib purists',
+    files: 'Handlers, Services, Repositories, Middleware, DTOs',
+  },
+
+  // Java
+  'spring-boot': {
+    title: 'Spring Boot',
+    description: 'Comprehensive Java framework with auto-configuration, embedded servers, and production-ready features. Dependency injection, AOP, and vast ecosystem (Spring Data, Security, Cloud).',
+    bestFor: 'Enterprise Java apps, microservices, cloud-native Spring ecosystem, complex systems',
+    files: 'Controllers, Services, Repositories, Entities, DTOs, Config',
+  },
+
+  // Ruby
+  rails: {
+    title: 'Ruby on Rails',
+    description: 'Full-stack MVC web framework with convention over configuration. Built-in ORM (Active Record), migrations, mailers, WebSockets (Action Cable), and asset pipeline. Mature 20+ year ecosystem.',
+    bestFor: 'Full-stack monoliths, rapid prototyping, SaaS apps, startups',
+    files: 'Controllers, Models, Views, Helpers, Migrations, Services',
+  },
+
+  // PHP
+  laravel: {
+    title: 'Laravel',
+    description: 'Elegant PHP web framework with expressive syntax. Built-in ORM (Eloquent), migrations, queues, WebSockets, and Artisan CLI. Rich ecosystem with Forge, Vapor, and Nova.',
+    bestFor: 'Full-stack PHP apps, CMS-driven sites, rapid prototyping, artisan teams',
+    files: 'Controllers, Models, Views, Middleware, Services, Jobs',
+  },
+
+  // C# / .NET
+  aspnet: {
+    title: 'ASP.NET Core',
+    description: 'Cross-platform, high-performance .NET web framework. Minimal APIs for lightweight endpoints, controllers for MVC patterns. Built-in DI, middleware pipeline, and Entity Framework support.',
+    bestFor: 'Enterprise .NET apps, high-performance APIs, Windows/Linux cloud services',
+    files: 'Controllers, Services, Repositories, Entities, DTOs, Middleware',
+  },
+
+  // Rust
+  axum: {
+    title: 'Axum',
+    description: 'Ergonomic Rust web framework built on Tokio and Tower. Type-safe extractors for request parsing. Middleware via Tower layers. Async-first with zero-cost abstractions. The leading Rust web framework.',
+    bestFor: 'High-performance Rust APIs, type-safe web services, async Rust projects',
+    files: 'Handlers, Services, Repositories, Entities, DTOs',
+  },
+
+  // Frontend
+  nextjs: {
+    title: 'Next.js',
+    description: 'React meta-framework with SSR, SSG, and the App Router. React Server Components reduce client-side JS. Built-in routing, image optimization, API routes, and middleware.',
+    bestFor: 'Production React apps, SEO-critical sites, full-stack React, e-commerce',
+    files: 'app/ (layouts, pages, components) + lib/ + public/',
+  },
+  react: {
+    title: 'React (Vite SPA)',
+    description: 'Component-based UI library with hooks for state and effects. Vite provides fast HMR and optimized builds. Client-side routing via React Router. The de facto standard for interactive UIs.',
+    bestFor: 'Interactive SPAs, dashboards, design systems, component libraries',
+    files: 'src/components/ + hooks/ + utils/ + pages/',
+  },
+  vue: {
+    title: 'Vue 3 (Vite SPA)',
+    description: 'Approachable, performant UI framework with Composition API. Reactive state with ref() and reactive(). Single-file components with template, script, and style. Pinia for state management.',
+    bestFor: 'Progressive web apps, SPAs, teams wanting simplicity with power',
+    files: 'src/components/ + composables/ + views/ + stores/',
+  },
+  svelte: {
+    title: 'Svelte',
+    description: 'Compiler-first UI framework — components become vanilla JS at build time. No virtual DOM, minimal runtime. SvelteKit adds file-system routing, SSR, and API endpoints. Runes API in Svelte 5.',
+    bestFor: 'Performance-first SPAs, apps with minimal bundle size, SvelteKit full-stack',
+    files: 'src/routes/ + lib/ + components/ + stores/',
+  },
+  angular: {
+    title: 'Angular',
+    description: 'Full-featured, opinionated TypeScript framework with dependency injection, RxJS, and two-way binding. Standalone components in v17+. Signals for reactive state. Comprehensive CLI tooling.',
+    bestFor: 'Enterprise frontends, large teams, complex forms, long-lived applications',
+    files: 'src/app/ + components/ + services/ + models/ + pipes/',
+  },
+  astro: {
+    title: 'Astro',
+    description: 'Content-focused web framework shipping zero JavaScript by default. Islands architecture for interactive components. Use React, Vue, Svelte, or Solid components inside Astro pages. Perfect for content sites.',
+    bestFor: 'Blogs, documentation, marketing sites, content-heavy websites',
+    files: 'src/content/ + pages/ + components/ + layouts/ + islands/',
+  },
 };

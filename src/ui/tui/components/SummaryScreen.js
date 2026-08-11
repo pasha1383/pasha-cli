@@ -7,8 +7,6 @@ var e = React.createElement;
 var SUMMARY_KEYS = [
   ['Project', 'projectName'],
   ['Author', 'author'],
-  ['GitHub', 'github'],
-  ['Description', 'description'],
   ['Language', 'language'],
   ['Framework', 'framework'],
   ['Architecture', 'architectureLabel'],
@@ -20,14 +18,6 @@ var SUMMARY_KEYS = [
 
 var EXTRA_LABELS = {
   useRedis: 'Redis',
-  useSwagger: 'Swagger',
-  useLint: 'Lint',
-  useTests: 'Tests',
-  useCI: 'CI',
-  useAuth: 'Auth',
-  useHealthCheck: 'Health',
-  useDocker: 'Docker',
-  useRateLimit: 'Rate Limit',
   useAgentDocs: 'AGENT.md',
 };
 
@@ -40,6 +30,8 @@ function SummaryScreen(_a) {
   var onEdit = _a.onEdit;
   var onKey = _a.onKey;
   var onContinue = _a.onContinue;
+  var onGenerate = _a.onGenerate;
+  var onBack = _a.onBack;
 
   var { Text, Box, useInput } = getInk();
   var ctx = context || {};
@@ -50,18 +42,18 @@ function SummaryScreen(_a) {
     var key = entry[1];
     var val = ctx[key];
     if (val === undefined || val === null || val === '') return;
-    rows.push([label, String(val), entry]);
+    rows.push({ label: label, value: String(val), key: key, isBool: false });
   });
 
   Object.keys(EXTRA_LABELS).forEach(function (key) {
     if (ctx[key] !== undefined) {
-      rows.push([EXTRA_LABELS[key], fmtBool(ctx[key]), [EXTRA_LABELS[key], key]]);
+      rows.push({ label: EXTRA_LABELS[key], value: ctx[key], key: key, isBool: true });
     }
   });
 
   var mods = ctx.modules;
   if (Array.isArray(mods) && mods.length) {
-    rows.push(['Modules', String(mods.length) + ' (' + mods.join(', ') + ')', ['Modules', 'modules']]);
+    rows.push({ label: 'Modules', value: mods, key: 'modules', isBool: false });
   }
 
   var _b = React.useState(0);
@@ -78,52 +70,126 @@ function SummaryScreen(_a) {
       return;
     }
     if (key.return) {
-      if (onContinue) onContinue();
+      if (onEdit) onEdit();
+      else if (onGenerate) onGenerate();
+      else if (onContinue) onContinue();
       return;
     }
-    if (input === 'e' && onEdit) {
-      onEdit();
+    if (input === 'e') {
+      if (onEdit) onEdit();
       return;
     }
-
-    var num = parseInt(input, 10);
-    if (!isNaN(num) && num >= 1 && num <= rows.length && onEdit) {
-      if (typeof onEdit === 'function') {
-        onEdit(num - 1);
-      }
+    if (input === 'g') {
+      if (onGenerate) onGenerate();
       return;
     }
-
+    if (key.leftArrow) {
+      if (onBack) onBack();
+      return;
+    }
     if (onKey) onKey(input, key);
   });
 
-  var rowElements = rows.map(function (entry, idx) {
-    var label = entry[0];
-    var value = entry[1];
-    var isHighlighted = idx === highlighted;
-    var numLabel = rows.length > 1 ? (idx + 1) + '. ' : '  ';
-
-    return e(Box, { key: idx, flexDirection: 'row' },
-      e(Text, { dimColor: true, color: 'gray' }, '  ' + numLabel),
-      e(Text, { bold: isHighlighted, color: isHighlighted ? 'white' : 'white' }, label),
-      e(Text, { color: 'gray' }, ' '.repeat(Math.max(1, 22 - label.length))),
-      e(Text, { color: isHighlighted ? 'cyan' : undefined }, value),
-      isHighlighted && onEdit ? e(Text, { dimColor: true, color: 'cyan' }, '  [e edit]') : null
-    );
+  var maxLabelLen = 0;
+  rows.forEach(function (r) {
+    if (r.label.length > maxLabelLen) maxLabelLen = r.label.length;
   });
 
-  var editHelp = onEdit
-    ? e(Box, { marginTop: 1 }, e(Text, { dimColor: true, color: 'gray' }, '  Arrow keys to select, Enter to continue, e to edit, 1-' + rows.length + ' to jump'))
-    : null;
+  var maxValueLen = 0;
+  rows.forEach(function (r) {
+    var vs = r.isBool ? fmtBool(r.value) : String(r.value);
+    var len = (r.key === 'modules' && Array.isArray(r.value))
+      ? String(r.value.length) + ' (' + r.value.join(', ') + ')'
+      : vs;
+    if (len.length > maxValueLen) maxValueLen = len.length;
+  });
 
-  return e(Box, { flexDirection: 'column', paddingTop: 1 },
-    e(Box, { flexDirection: 'row' },
-      e(Text, { bold: true, color: 'white' }, '  Configuration Summary'),
-      e(Text, { dimColor: true, color: 'gray' }, '  (' + rows.length + ' items)')
-    ),
-    e(Box, { flexDirection: 'column', marginTop: 1 }, ...rowElements),
-    editHelp
+  var titleStr = 'Configuration Summary';
+  var footerStr = '  \u2191\u2193 navigate \u00b7 Enter/e edit \u00b7 g generate \u00b7 \u2190 back  ';
+
+  var contentWidth = 2 + maxLabelLen + 1 + 2 + maxValueLen + 2;
+  var innerWidth = Math.max(titleStr.length + 4, footerStr.length, contentWidth);
+  if (innerWidth < 53) innerWidth = 53;
+
+  var boxWidth = innerWidth + 2;
+
+  var top_ = '\u250C' + '\u2500'.repeat(boxWidth - 2) + '\u2510';
+  var mid_ = '\u251C' + '\u2500'.repeat(boxWidth - 2) + '\u2524';
+  var bottom_ = '\u2514' + '\u2500'.repeat(boxWidth - 2) + '\u2518';
+  var sep = '\u2502';
+
+  var titlePad = Math.max(0, innerWidth - titleStr.length);
+  var titleLeft = Math.floor(titlePad / 2);
+  var titleRight = titlePad - titleLeft;
+
+  var labelColonWidth = maxLabelLen + 1;
+
+  var elements = [];
+
+  elements.push(e(Text, { color: 'gray' }, top_));
+
+  elements.push(
+    e(Box, { key: 'title', flexDirection: 'row' },
+      e(Text, { color: 'gray' }, sep),
+      e(Text, { bold: true, color: 'white' }, ' '.repeat(titleLeft) + titleStr + ' '.repeat(titleRight)),
+      e(Text, { color: 'gray' }, sep)
+    )
   );
+
+  elements.push(e(Text, { color: 'gray' }, mid_));
+
+  rows.forEach(function (row, idx) {
+    var label = row.label;
+    var valDisplay = row.isBool
+      ? fmtBool(row.value)
+      : (row.key === 'modules' && Array.isArray(row.value))
+        ? String(row.value.length) + ' (' + row.value.join(', ') + ')'
+        : String(row.value);
+    var isHighlighted = idx === highlighted;
+
+    var labelColon = label + ':';
+    var labelPart = labelColon + ' '.repeat(labelColonWidth - labelColon.length) + '  ';
+    var contentPrefix = '  ' + labelPart;
+    var rightPad = innerWidth - contentPrefix.length - valDisplay.length;
+
+    if (rightPad < 0) rightPad = 0;
+
+    if (isHighlighted) {
+      var rowContent = contentPrefix + valDisplay + ' '.repeat(rightPad);
+      elements.push(e(Text, { key: 'r-' + idx, backgroundColor: 'cyan', color: 'black' },
+        sep + rowContent + sep
+      ));
+    } else {
+      var isYes = row.isBool && row.value === true;
+      var isNo = row.isBool && row.value === false;
+      var valColor = isYes ? 'green' : 'white';
+      var valDim = isNo;
+
+      elements.push(
+        e(Box, { key: 'r-' + idx, flexDirection: 'row' },
+          e(Text, { color: 'gray' }, sep),
+          e(Text, { color: 'white' }, contentPrefix),
+          e(Text, { color: valColor, dimColor: valDim }, valDisplay + ' '.repeat(rightPad)),
+          e(Text, { color: 'gray' }, sep)
+        )
+      );
+    }
+  });
+
+  elements.push(e(Text, { color: 'gray' }, mid_));
+
+  var footerPad = Math.max(0, innerWidth - footerStr.length);
+  elements.push(
+    e(Box, { key: 'footer', flexDirection: 'row' },
+      e(Text, { color: 'gray' }, sep),
+      e(Text, { dimColor: true, color: 'gray' }, footerStr + ' '.repeat(footerPad)),
+      e(Text, { color: 'gray' }, sep)
+    )
+  );
+
+  elements.push(e(Text, { color: 'gray' }, bottom_));
+
+  return e(Box, { flexDirection: 'column', paddingTop: 1, paddingBottom: 1 }, ...elements);
 }
 
 module.exports = { SummaryScreen };

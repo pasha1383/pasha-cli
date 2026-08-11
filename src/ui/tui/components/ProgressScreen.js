@@ -8,7 +8,7 @@ var e = React.createElement;
 var CHECK = '\u2713';
 var HOLLOW = '\u25CB';
 var FILL = '\u2588';
-var EMPTY = '\u2591';
+var UNFILLED = '\u2593';
 
 function ProgressScreen(_a) {
   var phases = _a.phases;
@@ -35,31 +35,21 @@ function ProgressScreen(_a) {
   var known = total > 0;
   var pct = known ? Math.min(100, Math.round((done / total) * 100)) : 0;
   var barWidth = 30;
-  var exactFilled = known ? (done / Math.max(1, total)) * barWidth : 0;
-  var filled = Math.floor(exactFilled);
-  var frac = exactFilled - filled;
-  var partialBlock = frac >= 0.3 && filled < barWidth;
-  var remaining = barWidth - filled - (partialBlock ? 1 : 0);
+  var filled = known ? Math.round((done / Math.max(1, total)) * barWidth) : 0;
+  var remaining = barWidth - filled;
 
   var bar = known
-    ? FILL.repeat(filled) + (partialBlock ? '\u2593' : '') + EMPTY.repeat(Math.max(0, remaining))
+    ? FILL.repeat(filled) + UNFILLED.repeat(Math.max(0, remaining))
     : null;
 
   var pctText = known ? ' ' + pct + '%' : '';
-  var fileProgress = known ? done + '/' + total + ' files' : '';
+  var fileProgress = known ? '(' + done + '/' + total + ' files)' : '';
   if (failed > 0) fileProgress += '  ' + failed + ' failed';
 
   var phaseElements = ph.map(function (phase, idx) {
     var label = phase.label || phase;
 
-    if (comp[idx]) {
-      return e(Box, { key: idx, flexDirection: 'row' },
-        e(Text, { color: 'green' }, '  ' + CHECK + ' '),
-        e(Text, { color: 'green' }, label)
-      );
-    }
-
-    if (idx < cur) {
+    if (comp[idx] || idx < cur) {
       return e(Box, { key: idx, flexDirection: 'row' },
         e(Text, { color: 'green' }, '  ' + CHECK + ' '),
         e(Text, { color: 'green' }, label)
@@ -82,18 +72,27 @@ function ProgressScreen(_a) {
 
   var barEl = null;
   if (known && cur >= 0) {
-    barEl = e(Box, { flexDirection: 'column', marginTop: 0 },
+    barEl = e(Box, { flexDirection: 'column', marginTop: 1 },
       e(Box, { flexDirection: 'row' },
-        e(Text, { color: 'cyan' }, '  ['),
-        e(Text, { color: 'cyan' }, bar),
-        e(Text, { color: 'cyan' }, ']'),
+        e(Text, { color: 'gray' }, '  ['),
+        e(Text, { color: 'cyan' }, bar.slice(0, filled)),
+        e(Text, { color: 'gray' }, bar.slice(filled)),
+        e(Text, { color: 'gray' }, ']'),
         e(Text, { bold: true, color: 'white' }, pctText)
       ),
       e(Text, { dimColor: true, color: 'gray' }, '  ' + fileProgress)
     );
   }
 
-  var fileEl = fp && !known ? e(Box, { marginTop: 0 },
+  var spinnerBarEl = null;
+  if (!known && cur >= 0) {
+    spinnerBarEl = e(Box, { flexDirection: 'row', marginTop: 1 },
+      e(Text, { color: 'cyan' }, '  '),
+      e(Spinner, { color: 'cyan' })
+    );
+  }
+
+  var fileEl = fp ? e(Box, { marginTop: 1 },
     e(Text, { dimColor: true, color: 'gray' }, '  \u2514 ' + fp)
   ) : null;
 
@@ -103,10 +102,10 @@ function ProgressScreen(_a) {
 
   return e(Box, { flexDirection: 'column', paddingTop: 2 },
     e(Box, { flexDirection: 'row' },
-      e(Text, { bold: true, color: 'white' }, '  Generating project'),
-      cur >= 0 && ph[cur] ? e(Text, { dimColor: true, color: 'gray' }, '  \u00B7  ' + (ph[cur].label || ph[cur])) : null
+      e(Text, { bold: true, color: 'white' }, '  Generating project...')
     ),
     barEl,
+    spinnerBarEl,
     e(Box, { flexDirection: 'column', marginTop: 1 }, ...phaseElements),
     fileEl,
     msgEl

@@ -2,10 +2,10 @@
 
 const React = require('react');
 const { getInk } = require('../ink-proxy');
-const { useAnimation, isAnimationEnabled } = require('../hooks/useAnimation');
 const e = React.createElement;
 
-const COMPLETED = '\u25CF';
+const COMPLETED = '\u2713';
+const ACTIVE = '\u25CF';
 const PENDING = '\u25CB';
 const CONNECTOR = '\u2501';
 
@@ -14,43 +14,63 @@ function StepRail({ steps, currentIndex, width, compact }) {
   const allSteps = steps || [];
   const idx = currentIndex || 0;
   const maxWidth = width || 80;
-  const usable = maxWidth - 4;
-  const stepCount = allSteps.length || 1;
-  const slotWidth = Math.max(9, Math.floor(usable / stepCount));
-  const padding = Math.max(0, Math.floor((maxWidth - stepCount * slotWidth - 2) / 2));
+  const stepCount = allSteps.length;
 
-  const animate = useAnimation({ fps: 30 });
-  const enabled = isAnimationEnabled();
+  if (stepCount === 0) return null;
 
-  if (allSteps.length === 0) return null;
+  const counter = `${idx + 1}/${stepCount}`;
+  const counterWidth = counter.length + 1;
 
-  var items = allSteps.map(function (step, i) {
+  var labelLen = Math.max(1, Math.floor((maxWidth - counterWidth - 5 * stepCount + 1) / stepCount));
+  if (compact) labelLen = Math.min(labelLen, 3);
+
+  var items = [];
+
+  for (var i = 0; i < stepCount; i++) {
+    var step = allSteps[i];
     var isCompleted = i < idx;
     var isActive = i === idx;
-    var isPending = i > idx;
+    var isFuture = i > idx;
+    var isLast = i === stepCount - 1;
 
     var color = 'gray';
     if (isCompleted) color = 'green';
     else if (isActive) color = 'cyan';
 
-    var marker = isCompleted ? COMPLETED : (isActive ? COMPLETED : PENDING);
-    var connectorLen = Math.max(1, slotWidth - 7);
-    var label = step.label || step.name || '?';
-    var shortLabel;
+    var marker = isFuture ? PENDING : (isCompleted ? COMPLETED : ACTIVE);
+    var rawLabel = step.label || step.name || '?';
+    var numStr = String(i + 1) + '.';
+
+    var label;
     if (compact) {
-      shortLabel = label.length > 3 ? label.slice(0, 3) : label;
+      label = rawLabel.slice(0, 3);
+    } else if (rawLabel.length > labelLen) {
+      label = rawLabel.slice(0, labelLen);
     } else {
-      shortLabel = label.length > slotWidth - 5 ? label.slice(0, slotWidth - 6) : label;
+      label = rawLabel;
     }
+    label = label.padEnd(labelLen);
 
-    return e(React.Fragment, { key: step.name || i },
-      e(Text, { color: color, bold: isActive }, marker),
-      e(Text, { color: color, dimColor: isPending }, ' ' + shortLabel + ' '),
-      e(Text, { color: 'gray', dimColor: true }, CONNECTOR.repeat(connectorLen))
+    items.push(
+      e(Text, { key: step.name || i, color: color, bold: isActive, dimColor: isFuture },
+        marker + ' ' + numStr + ' ' + label + ' ')
     );
-  });
 
-  return e(Box, { flexDirection: 'row', paddingLeft: padding, paddingRight: 1, width: maxWidth }, ...items);
+    if (!isLast) {
+      var nextIsFuture = i + 1 > idx;
+      var connectorChar = (nextIsFuture && !isActive) ? ' ' : CONNECTOR;
+      var connectorColor = isCompleted ? 'green' : (isActive ? 'cyan' : 'gray');
+      items.push(
+        e(Text, { key: 'c-' + i, color: connectorColor, dimColor: nextIsFuture }, connectorChar)
+      );
+    }
+  }
+
+  items.push(
+    e(Text, { key: 'counter', color: 'gray', dimColor: true }, ' ' + counter)
+  );
+
+  return e(Box, { flexDirection: 'row', width: maxWidth }, ...items);
 }
 
 module.exports = { StepRail };

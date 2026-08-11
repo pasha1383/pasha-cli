@@ -116,12 +116,7 @@ function SelectPrompt(_a) {
     return e(Box, { flexDirection: 'column', paddingTop: 1 },
       e(Text, { bold: true, color: 'white' }, message),
       filter || filterActive
-        ? e(Box, { flexDirection: 'row' },
-            e(Text, { color: 'yellow' }, '  Filter: '),
-            e(Text, { color: 'white' }, filter),
-            e(Text, { color: 'yellow' }, filterActive ? '_' : ''),
-            e(Text, { dimColor: true, color: 'gray' }, '  (Esc to clear)')
-          )
+        ? e(Text, { color: 'yellow' }, '  Filter: ' + filter + (filterActive ? '_' : '') + (filterActive ? '  (Esc to clear)' : ''))
         : null,
       e(Box, { flexDirection: 'column', marginTop: 1 },
         e(Text, { dimColor: true, color: 'gray' }, '  No matches found.')
@@ -138,16 +133,12 @@ function SelectPrompt(_a) {
     transitionFrom = transitionRef.current.from;
   }
 
+  var cols = 80;
+  try { cols = process.stdout.columns || 80; } catch (_) {}
+
   var filterEl = null;
-  if (!compact) {
-    if (filter || filterActive) {
-      filterEl = e(Box, { flexDirection: 'row', marginTop: 0 },
-        e(Text, { color: 'yellow' }, '  Filter: '),
-        e(Text, { color: 'white' }, filter),
-        e(Text, { color: 'yellow' }, filterActive ? '_' : ''),
-        e(Text, { dimColor: true, color: 'gray' }, '  (Esc to clear)')
-      );
-    }
+  if (!compact && filterActive) {
+    filterEl = e(Text, { color: 'yellow' }, '  Filter: ' + filter + '_  (Esc to clear)');
   }
 
   var choiceElements = filtered.map(function (choice, idx) {
@@ -158,31 +149,34 @@ function SelectPrompt(_a) {
     var arrowChar = isHighlighted ? ARROW : ' ';
     var arrowColor = isHighlighted ? 'cyan' : undefined;
 
-    return e(Box, { key: choice.value || idx, flexDirection: 'row' },
-      e(Text, {}, '  '),
-      e(Text, { color: arrowColor, bold: isHighlighted }, arrowChar),
-      e(Text, { color: 'white', bold: isHighlighted }, ' ' + label),
-      desc ? e(Text, { dimColor: true, color: 'gray' }, '  ' + desc) : null
+    return e(Box, { key: choice.value || idx, flexDirection: 'row', justifyContent: 'space-between' },
+      e(Box, { flexDirection: 'row' },
+        e(Text, {}, '  '),
+        e(Text, { color: arrowColor, bold: isHighlighted }, arrowChar),
+        e(Text, { color: 'white', bold: isHighlighted }, ' ' + label)
+      ),
+      desc ? e(Text, { dimColor: true, color: 'gray' }, desc) : null
     );
   });
 
+  var scrollEl = null;
   if (filtered.length > 8) {
-    choiceElements.push(
-      e(Box, { key: 'scroll-info', flexDirection: 'row' },
-        e(Text, { dimColor: true, color: 'gray' }, '  (' + (clampedHighlight + 1) + '/' + filtered.length + ')')
-      )
+    scrollEl = e(Box, { flexDirection: 'row', justifyContent: 'flex-end' },
+      e(Text, { dimColor: true, color: 'gray' }, '(' + (clampedHighlight + 1) + '/' + filtered.length + ')')
     );
   }
 
-  var headerSep = e(Box, { flexDirection: 'row' },
-    e(Text, { color: 'gray' }, '  ' + '\u2500'.repeat(40))
-  );
+  var sepWidth = Math.max(0, Math.min(cols, 100) - 2);
+  var headerSep = e(Text, { color: 'gray' }, '  ' + '\u2500'.repeat(sepWidth));
 
   return e(Box, { flexDirection: 'column', paddingTop: 1 },
-    e(Text, { bold: true, color: 'white' }, message),
+    e(Box, { flexDirection: 'row', justifyContent: 'center' },
+      e(Text, { bold: true, color: 'white' }, message)
+    ),
     filterEl,
     headerSep,
-    e(Box, { flexDirection: 'column', marginTop: 1 }, ...choiceElements)
+    e(Box, { flexDirection: 'column', marginTop: 1 }, ...choiceElements),
+    scrollEl
   );
 }
 

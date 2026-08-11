@@ -47,7 +47,7 @@ function InputPrompt(_a) {
       if (onKey) onKey(input, key);
       return;
     }
-    if (key.escape) {
+    if (key.escape || key.leftArrow) {
       if (onKey) onKey(input, key);
       return;
     }

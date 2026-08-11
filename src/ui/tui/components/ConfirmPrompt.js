@@ -4,7 +4,7 @@ const React = require('react');
 const { getInk } = require('../ink-proxy');
 const e = React.createElement;
 
-function ConfirmPrompt({ message, defaultValue, onConfirm }) {
+function ConfirmPrompt({ message, defaultValue, onConfirm, onKey }) {
   const { Text, Box, useInput } = getInk();
   const def = defaultValue !== undefined ? defaultValue : true;
   const [selected, setSelected] = React.useState(def);
@@ -26,6 +26,7 @@ function ConfirmPrompt({ message, defaultValue, onConfirm }) {
       if (onConfirm) onConfirm(selected);
       return;
     }
+    if (onKey) onKey(input, key);
   });
 
   var arrowChar = '\u276F';

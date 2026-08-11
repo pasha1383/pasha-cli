@@ -14,11 +14,10 @@ function visualLength(str) {
   return stripAnsi(str).length;
 }
 
-var BASE_WIDTH = 46;
-var WIDE_THRESHOLD = 120;
+var BASE_WIDTH = 40;
+var WIDE_THRESHOLD = 100;
 var CROSSFADE_FRAMES = 10;
 
-var SECTION_TITLE = 'title';
 var SECTION_HEADER = 'header';
 var SECTION_DESC = 'desc';
 var SECTION_CONTENT = 'content';
@@ -32,7 +31,7 @@ function getPanelWidth() {
 
 function getMaxVisibleLines() {
   var rows = process.stdout.rows || 24;
-  return Math.max(8, rows - 6);
+  return Math.max(10, rows - 4);
 }
 
 function wrapLines(text, maxLen) {
@@ -54,34 +53,31 @@ function wrapLines(text, maxLen) {
   return lines.length > 0 ? lines : [''];
 }
 
-function buildTaggedLines(boxInfo, innerWidth) {
+function buildTaggedLines(info, innerWidth) {
   var lines = [];
-
-  lines.push({ text: boxInfo.title, section: SECTION_TITLE });
-  lines.push({ text: '', section: SECTION_BLANK });
 
   lines.push({ text: 'What is this?', section: SECTION_HEADER });
 
-  var descBody = wrapLines(boxInfo.description, innerWidth);
-  for (var di = 0; di < descBody.length; di++) {
-    lines.push({ text: descBody[di], section: SECTION_DESC });
+  var desc = wrapLines(info.description, innerWidth);
+  for (var di = 0; di < desc.length; di++) {
+    lines.push({ text: desc[di], section: SECTION_DESC });
   }
   lines.push({ text: '', section: SECTION_BLANK });
 
-  if (boxInfo.bestFor) {
-    var bestBody = wrapLines(boxInfo.bestFor, innerWidth);
-    lines.push({ text: 'Best for:', section: SECTION_HEADER });
-    for (var bi = 0; bi < bestBody.length; bi++) {
-      lines.push({ text: bestBody[bi], section: SECTION_DESC });
+  if (info.bestFor) {
+    var best = wrapLines(info.bestFor, innerWidth);
+    lines.push({ text: '\uD83C\uDFAF Best for:', section: SECTION_HEADER });
+    for (var bi = 0; bi < best.length; bi++) {
+      lines.push({ text: best[bi], section: SECTION_DESC });
     }
     lines.push({ text: '', section: SECTION_BLANK });
   }
 
-  if (boxInfo.files) {
-    var fileBody = wrapLines(boxInfo.files, innerWidth);
-    lines.push({ text: 'File structure:', section: SECTION_HEADER });
-    for (var fi = 0; fi < fileBody.length; fi++) {
-      lines.push({ text: fileBody[fi], section: SECTION_CONTENT });
+  if (info.files) {
+    var files = wrapLines(info.files, innerWidth);
+    lines.push({ text: '\uD83D\uDCC1 File structure:', section: SECTION_HEADER });
+    for (var fi = 0; fi < files.length; fi++) {
+      lines.push({ text: files[fi], section: SECTION_CONTENT });
     }
     lines.push({ text: '', section: SECTION_BLANK });
   }
@@ -89,81 +85,113 @@ function buildTaggedLines(boxInfo, innerWidth) {
   return lines;
 }
 
-function renderPanelFrame(boxInfo, isOld, crossfadeT, animEnabled, boxWidth) {
+function renderPanel(boxInfo, isDimmed, scrollOffset, boxWidth) {
   if (!boxInfo) return null;
 
   var ink = getInk();
   var Text = ink.Text;
   var Box = ink.Box;
 
-  var innerWidth = Math.max(10, boxWidth - 5);
-  var taggedLines = buildTaggedLines(boxInfo, innerWidth);
+  var innerWidth = boxWidth - 4;
+  if (innerWidth < 4) innerWidth = 4;
 
-  var isDimmed;
-  if (isOld) {
-    isDimmed = true;
-  } else if (animEnabled && crossfadeT < 1) {
-    isDimmed = crossfadeT < 0.6;
-  } else {
-    isDimmed = false;
+  var title = boxInfo.title || '';
+  var titleDashMin = 4;
+  var availableTitle = boxWidth - 2 - titleDashMin;
+  var displayTitle = title;
+  if (displayTitle.length > availableTitle) {
+    displayTitle = displayTitle.substring(0, availableTitle);
+  }
+  var titleSpace = displayTitle.length + 2;
+  var dashes = boxWidth - 2 - titleSpace;
+  if (dashes < 0) dashes = 0;
+  var topBorder = '\u250C ' + displayTitle + ' ' + '\u2500'.repeat(dashes) + '\u2510';
+  var bottomBorder = '\u2514' + '\u2500'.repeat(boxWidth - 2) + '\u2518';
+
+  var maxVisible = getMaxVisibleLines();
+  var viewHeight = maxVisible - 2;
+  if (viewHeight < 1) viewHeight = 1;
+
+  var taggedLines = buildTaggedLines(boxInfo, innerWidth);
+  var totalLines = taggedLines.length;
+  var maxScroll = Math.max(0, totalLines - viewHeight);
+  var scroll = Math.max(0, Math.min(scrollOffset, maxScroll));
+
+  var visibleLines = taggedLines.slice(scroll, scroll + viewHeight);
+  while (visibleLines.length < viewHeight) {
+    visibleLines.push({ text: '', section: SECTION_BLANK });
   }
 
-  var borderColor = isOld ? 'gray' : 'cyan';
-  var dimDefault = isDimmed;
+  var hasUp = scroll > 0;
+  var hasDown = scroll < maxScroll;
+  var borderColor = isDimmed ? 'gray' : 'cyan';
 
   var lineElements = [];
 
-  for (var i = 0; i < taggedLines.length; i++) {
-    var item = taggedLines[i];
+  for (var i = 0; i < visibleLines.length; i++) {
+    var item = visibleLines[i];
     var line = item.text;
     var section = item.section;
 
     var color;
     var bold = false;
-    var dim = dimDefault;
+    var dim = false;
 
-    if (section === SECTION_TITLE) {
-      color = dimDefault ? 'gray' : 'cyan';
-      bold = true;
-    } else if (section === SECTION_HEADER) {
-      color = dimDefault ? 'gray' : 'yellow';
+    if (section === SECTION_HEADER) {
+      color = isDimmed ? 'gray' : 'yellow';
       bold = true;
     } else if (section === SECTION_CONTENT) {
-      color = dimDefault ? 'gray' : undefined;
+      color = isDimmed ? 'gray' : undefined;
       dim = true;
     } else if (section === SECTION_BLANK || section === SECTION_DESC) {
-      color = dimDefault ? 'gray' : undefined;
+      color = isDimmed ? 'gray' : undefined;
     }
 
     var isBlank = line.length === 0;
     var pad = Math.max(0, innerWidth - visualLength(line));
     var content = isBlank ? '' : '  ' + line + ' '.repeat(pad);
 
+    if (i === 0 && hasUp) {
+      var upPad = Math.max(0, innerWidth - 1);
+      var upContent = '  ' + '\u2191' + ' '.repeat(upPad);
+      lineElements.push(
+        e(Box, { key: 'up-' + i, flexDirection: 'row', width: boxWidth },
+          e(Text, { color: borderColor }, '\u2502'),
+          e(Text, { bold: true, color: borderColor }, upContent),
+          e(Text, { color: borderColor }, '\u2502')
+        )
+      );
+    }
+
     lineElements.push(
       e(Box, { key: i, flexDirection: 'row', width: boxWidth },
-        e(Text, { color: borderColor, dimColor: dimDefault }, '\u2502'),
+        e(Text, { color: borderColor }, '\u2502'),
         e(Text, { dimColor: dim, bold: bold, color: color }, content),
-        e(Text, { color: borderColor, dimColor: dimDefault }, '\u2502')
+        e(Text, { color: borderColor }, '\u2502')
       )
     );
+
+    if (i === visibleLines.length - 1 && hasDown) {
+      var downPad = Math.max(0, innerWidth - 1);
+      var downContent = '  ' + '\u2193' + ' '.repeat(downPad);
+      lineElements.push(
+        e(Box, { key: 'down-' + i, flexDirection: 'row', width: boxWidth },
+          e(Text, { color: borderColor }, '\u2502'),
+          e(Text, { bold: true, color: borderColor }, downContent),
+          e(Text, { color: borderColor }, '\u2502')
+        )
+      );
+    }
   }
-
-  var topBorder = '\u250C' + '\u2500'.repeat(boxWidth - 2) + '\u2510';
-  var bottomBorder = '\u2514' + '\u2500'.repeat(boxWidth - 2) + '\u2518';
-
-  var maxLines = getMaxVisibleLines();
-  var panelHeight = Math.min(maxLines, taggedLines.length + 2);
 
   return e(Box, {
     flexDirection: 'column',
     width: boxWidth,
     flexShrink: 0,
-    height: panelHeight,
-    overflow: 'hidden',
   },
-    e(Text, { color: borderColor, dimColor: dimDefault }, topBorder),
+    e(Text, { color: borderColor }, topBorder),
     ...lineElements,
-    e(Text, { color: borderColor, dimColor: dimDefault }, bottomBorder)
+    e(Text, { color: borderColor }, bottomBorder)
   );
 }
 
@@ -184,6 +212,14 @@ function SidePanel(_a) {
 
   var transitionRef = React.useRef({ startFrame: 0, prevArch: null });
   var prevArchRef = React.useRef(architecture);
+
+  var _scroll = React.useState(0);
+  var scrollOffset = _scroll[0];
+  var setScrollOffset = _scroll[1];
+
+  React.useEffect(function () {
+    setScrollOffset(0);
+  }, [architecture]);
 
   if (architecture !== prevArchRef.current && animEnabled) {
     if (prevArchRef.current !== null && prevArchRef.current !== undefined) {
@@ -215,11 +251,10 @@ function SidePanel(_a) {
   var boxWidth = getPanelWidth();
 
   if (!info) {
-    var innerW = Math.max(10, boxWidth - 5);
+    var innerW = Math.max(10, boxWidth - 4);
     var msg = 'Select an option to see details';
     var padTotal = Math.max(0, innerW - msg.length);
     var padLeft = Math.floor(padTotal / 2);
-    var padRight = padTotal - padLeft;
 
     var phTop = '\u250C' + '\u2500'.repeat(boxWidth - 2) + '\u2510';
     var phBottom = '\u2514' + '\u2500'.repeat(boxWidth - 2) + '\u2518';
@@ -228,7 +263,7 @@ function SidePanel(_a) {
       e(Text, { color: 'cyan' }, phTop),
       e(Box, { flexDirection: 'row', width: boxWidth },
         e(Text, { color: 'cyan' }, '\u2502'),
-        e(Text, { dimColor: true }, '  ' + ' '.repeat(padLeft) + msg + ' '.repeat(padRight)),
+        e(Text, { dimColor: true }, '  ' + ' '.repeat(padLeft) + msg),
         e(Text, { color: 'cyan' }, '\u2502')
       ),
       e(Text, { color: 'cyan' }, phBottom)
@@ -236,10 +271,12 @@ function SidePanel(_a) {
   }
 
   var oldPanel = showOld && oldInfo
-    ? renderPanelFrame(oldInfo, true, crossfadeT, animEnabled, boxWidth)
+    ? renderPanel(oldInfo, true, scrollOffset, boxWidth)
     : null;
 
-  var newPanel = renderPanelFrame(info, false, crossfadeT, animEnabled, boxWidth);
+  var isDimmed = animEnabled && crossfadeT < 1 ? crossfadeT < 0.6 : false;
+
+  var newPanel = renderPanel(info, isDimmed, scrollOffset, boxWidth);
 
   return e(Box, { flexDirection: 'column', marginLeft: 2 },
     oldPanel,

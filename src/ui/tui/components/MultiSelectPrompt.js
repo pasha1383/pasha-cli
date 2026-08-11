@@ -4,6 +4,7 @@ var React = require('react');
 var { getInk } = require('../ink-proxy');
 var e = React.createElement;
 
+var ARROW = '\u276F';
 var CHECKBOX_ON = '\u25C9';
 var CHECKBOX_OFF = '\u25CB';
 
@@ -124,25 +125,9 @@ function MultiSelectPrompt(_a) {
   });
 
   var checkedCount = allChoices.filter(function (c) { return checked.has(c.value); }).length;
+  var totalAll = allChoices.length;
   var totalItems = filtered.length;
   var pos = totalItems > 0 ? clampedHighlight + 1 : 0;
-
-  if (filtered.length === 0) {
-    return e(Box, { flexDirection: 'column', paddingTop: 1 },
-      e(Text, { bold: true, color: 'white' }, message),
-      filter || filterActive
-        ? e(Box, { flexDirection: 'row' },
-            e(Text, { color: 'yellow' }, '  Filter: '),
-            e(Text, { color: 'white' }, filter),
-            e(Text, { color: 'yellow' }, filterActive ? '_' : ''),
-            e(Text, { dimColor: true, color: 'gray' }, '  (Esc to clear)')
-          )
-        : null,
-      e(Box, { flexDirection: 'column', marginTop: 1 },
-        e(Text, { dimColor: true, color: 'gray' }, '  No matches found.')
-      )
-    );
-  }
 
   var filterEl = null;
   if (filter || filterActive) {
@@ -154,7 +139,30 @@ function MultiSelectPrompt(_a) {
     );
   }
 
-  var totalAll = allChoices.length;
+  var headerSep = e(Box, { flexDirection: 'row' },
+    e(Text, { color: 'gray' }, '  ' + '\u2500'.repeat(48))
+  );
+
+  var counterEl = e(Box, { flexDirection: 'row' },
+    e(Text, { dimColor: true, color: 'gray' }, '  [' + checkedCount + '/' + totalAll + ' selected]')
+  );
+
+  var hintsEl = e(Box, { flexDirection: 'row' },
+    e(Text, { dimColor: true, color: 'gray' }, '  Space=toggle, a=all, n=none, Enter=confirm')
+  );
+
+  if (filtered.length === 0) {
+    return e(Box, { flexDirection: 'column', paddingTop: 1 },
+      e(Text, { bold: true, color: 'white' }, message),
+      filterEl,
+      headerSep,
+      e(Box, { flexDirection: 'column', marginTop: 1 },
+        e(Text, { dimColor: true, color: 'gray' }, '  No matches found.')
+      ),
+      counterEl,
+      hintsEl
+    );
+  }
 
   var choiceElements = filtered.map(function (choice, idx) {
     var isHighlighted = idx === clampedHighlight;
@@ -163,36 +171,74 @@ function MultiSelectPrompt(_a) {
     var desc = choice.description;
 
     var checkbox = isChecked ? CHECKBOX_ON : CHECKBOX_OFF;
-    var checkColor = isChecked ? 'green' : 'gray';
 
-    return e(Box, { key: choice.value || idx, flexDirection: 'row' },
-      e(Text, {}, '  '),
-      e(Text, { color: checkColor }, checkbox),
-      e(Text, { color: 'white', bold: isHighlighted }, ' ' + label),
-      desc ? e(Text, { dimColor: true, color: 'gray' }, '  ' + desc) : null
-    );
+    var rowChildren = [
+      e(Text, { key: 'ptr', color: isHighlighted ? 'cyan' : undefined }, '  ' + (isHighlighted ? ARROW : ' ')),
+      e(Text, { key: 'cb', color: isChecked ? 'green' : 'gray' }, ' ' + checkbox),
+      e(Text, { key: 'label', color: 'white', bold: isHighlighted }, ' ' + label),
+    ];
+
+    if (desc) {
+      rowChildren.push(e(Text, { key: 'desc', dimColor: true, color: 'gray' }, '  ' + desc));
+    }
+
+    return e(Box, { key: choice.value || idx, flexDirection: 'row' }, ...rowChildren);
   });
 
+  var itemsChildren = [];
+
   if (filtered.length > 8) {
-    choiceElements.push(
-      e(Box, { key: 'scroll-info', flexDirection: 'row' },
-        e(Text, { dimColor: true, color: 'gray' }, '  (' + pos + '/' + totalItems + ')')
-      )
-    );
+    var startIdx = Math.max(0, clampedHighlight - 4);
+    var endIdx = Math.min(filtered.length, startIdx + 8);
+    if (endIdx - startIdx < 8) {
+      startIdx = Math.max(0, endIdx - 8);
+    }
+    var visible = filtered.slice(startIdx, endIdx);
+
+    var scrollUp = startIdx > 0
+      ? e(Box, { key: 'scroll-up', flexDirection: 'row' },
+          e(Text, { dimColor: true, color: 'gray' }, '  \u2191 ' + startIdx + ' more')
+        )
+      : null;
+    var scrollDown = endIdx < filtered.length
+      ? e(Box, { key: 'scroll-down', flexDirection: 'row' },
+          e(Text, { dimColor: true, color: 'gray' }, '  \u2193 ' + (filtered.length - endIdx) + ' more')
+        )
+      : null;
+
+    if (scrollUp) itemsChildren.push(scrollUp);
+
+    visible.forEach(function (choice, i) {
+      var isHighlighted = (startIdx + i) === clampedHighlight;
+      var isChecked = checked.has(choice.value);
+      var label = choice.name || choice.label || choice.value || '?';
+      var desc = choice.description;
+      var checkbox = isChecked ? CHECKBOX_ON : CHECKBOX_OFF;
+
+      var rowChildren = [
+        e(Text, { key: 'ptr', color: isHighlighted ? 'cyan' : undefined }, '  ' + (isHighlighted ? ARROW : ' ')),
+        e(Text, { key: 'cb', color: isChecked ? 'green' : 'gray' }, ' ' + checkbox),
+        e(Text, { key: 'label', color: 'white', bold: isHighlighted }, ' ' + label),
+      ];
+      if (desc) {
+        rowChildren.push(e(Text, { key: 'desc', dimColor: true, color: 'gray' }, '  ' + desc));
+      }
+
+      itemsChildren.push(e(Box, { key: choice.value || (startIdx + i), flexDirection: 'row' }, ...rowChildren));
+    });
+
+    if (scrollDown) itemsChildren.push(scrollDown);
+  } else {
+    itemsChildren = choiceElements;
   }
 
-  var headerSep = e(Box, { flexDirection: 'row' },
-    e(Text, { color: 'gray' }, '  ' + '\u2500'.repeat(48))
-  );
-
   return e(Box, { flexDirection: 'column', paddingTop: 1 },
-    e(Box, { flexDirection: 'row' },
-      e(Text, { bold: true, color: 'white' }, message),
-      e(Text, { dimColor: true, color: 'gray' }, '  [' + checkedCount + '/' + totalAll + ' selected]')
-    ),
+    e(Text, { bold: true, color: 'white' }, message),
     filterEl,
     headerSep,
-    e(Box, { flexDirection: 'column', marginTop: 1 }, ...choiceElements)
+    e(Box, { flexDirection: 'column', marginTop: 1 }, ...itemsChildren),
+    counterEl,
+    hintsEl
   );
 }
 

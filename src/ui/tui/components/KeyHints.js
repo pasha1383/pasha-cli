@@ -4,17 +4,21 @@ const React = require('react');
 const { getInk } = require('../ink-proxy');
 const e = React.createElement;
 
-function KeyHints({ hints, compact }) {
+function KeyHints({ hints, compact, stepIndex }) {
   if (!hints || !hints.length) return null;
 
   const { Text, Box } = getInk();
 
+  var filtered = stepIndex === 0
+    ? hints.filter(function (h) { return h.label !== 'Back'; })
+    : hints;
+
   var essentialLabels = ['Select', 'Confirm', 'Submit', 'Quit', 'Exit', 'Start',
-    'Back', 'Close', 'Cancel', 'Continue', 'Toggle', 'Toggle all'];
+    'Close', 'Cancel', 'Continue', 'Toggle', 'Toggle all'];
 
   var source = compact
-    ? hints.filter(function (h) { return essentialLabels.indexOf(h.label) >= 0; }).slice(0, 6)
-    : hints;
+    ? filtered.filter(function (h) { return essentialLabels.indexOf(h.label) >= 0; }).slice(0, 6)
+    : filtered;
 
   if (!source.length) source = hints.slice(0, 4);
 

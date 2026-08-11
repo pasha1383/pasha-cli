@@ -7,6 +7,7 @@ let _restoring = false;
 let _exitHandlersRegistered = false;
 let _handlersRef = null;
 let _forceMode = false;
+let _savedSummary = null;
 
 function setForceMode(val) {
   _forceMode = !!val;
@@ -129,12 +130,21 @@ function registerExitHandlers(restoreFn) {
   return _handlersRef;
 }
 
+function saveSummary(summary) {
+  _savedSummary = summary;
+}
+
+function getSummary() {
+  return _savedSummary;
+}
+
 function reset() {
   _saved = null;
   _restoring = false;
   _exitHandlersRegistered = false;
   _handlersRef = null;
   _forceMode = false;
+  _savedSummary = null;
 }
 
-module.exports = { setup, restore, onResize, registerExitHandlers, reset, setForceMode };
+module.exports = { setup, restore, onResize, registerExitHandlers, reset, setForceMode, saveSummary, getSummary };

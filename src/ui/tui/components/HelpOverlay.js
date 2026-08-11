@@ -67,8 +67,8 @@ function HelpOverlay({ visible, context, hints, onClose }) {
     rows.push(
       e(Box, { key: 'h-' + j, flexDirection: 'row' },
         e(Text, { color: 'cyan' }, sep),
-        e(Text, { bold: true, color: 'cyan' }, '  ' + keyStr),
-        e(Text, { color: 'white' }, '  \u2014  ' + descStr + ' '.repeat(rightPad)),
+        e(Text, { bold: true, color: 'white' }, '  ' + keyStr),
+        e(Text, { dimColor: true, color: 'gray' }, '  \u2014  ' + descStr + ' '.repeat(rightPad)),
         e(Text, { color: 'cyan' }, sep)
       )
     );

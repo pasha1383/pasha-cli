@@ -59,7 +59,7 @@ var BINDINGS = {
   ],
   input: [
     { keys: ['enter'], label: 'Submit', action: 'confirm' },
-    { keys: ['backspace'], label: 'Back', action: 'back' },
+    { keys: ['left', 'backspace'], label: 'Back', action: 'back' },
     { keys: ['s'], label: 'Skip to summary', action: 'summary' },
     { keys: ['?'], label: 'Help', action: 'help' },
     { keys: ['ctrl+c'], label: 'Quit', action: 'quit' },
@@ -84,6 +84,11 @@ var BINDINGS = {
   ],
   progress: [
     { keys: ['ctrl+c'], label: 'Quit', action: 'quit' },
+  ],
+  prereqs: [
+    { keys: ['enter'], label: 'Confirm', action: 'confirm' },
+    { keys: ['y', 'n'], label: 'Toggle', action: 'toggle' },
+    { keys: ['ctrl+c'], label: 'Skip', action: 'quit' },
   ],
   done: [
     { keys: ['enter'], label: 'Exit', action: 'exit' },

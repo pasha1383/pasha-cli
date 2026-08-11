@@ -1,6 +1,7 @@
 'use strict';
 
 var React = require('react');
+var pkg = require('../../../package.json');
 var { getInk } = require('./ink-proxy');
 var { StepRail } = require('./components/StepRail');
 var { KeyHints } = require('./components/KeyHints');
@@ -11,9 +12,10 @@ var { InputPrompt } = require('./components/InputPrompt');
 var { ConfirmPrompt } = require('./components/ConfirmPrompt');
 var { SummaryScreen } = require('./components/SummaryScreen');
 var { ProgressScreen } = require('./components/ProgressScreen');
+var { PrereqsScreen } = require('./components/PrereqsScreen');
 var { HelpOverlay } = require('./components/HelpOverlay');
 var { hintsForContext, mapKey } = require('./keymap');
-var { onResize, restore: restoreTerminal } = require('./terminal');
+var { onResize, restore: restoreTerminal, saveSummary: terminalSaveSummary } = require('./terminal');
 var e = React.createElement;
 
 var COMPACT_COLS = 60;
@@ -25,6 +27,7 @@ var _onStateChange = null;
 var _appState = null;
 var _previousView = null;
 var _answerHistory = [];
+var _navigator = null;
 
 function getState() {
   return _appState;
@@ -108,30 +111,27 @@ function _answer(value) {
 function _goBack() {
   if (_queue.length === 0) return;
 
-  _resolve = null;
-  _queue.shift();
-
-  var prev = _answerHistory.length >= 2 ? _answerHistory[_answerHistory.length - 2] : null;
-  if (prev) {
-    _answerHistory.pop();
-    _answerHistory.pop();
-    _queue.unshift({ question: prev.question, resolve: prev.resolve });
-    _showCurrentQuestion();
-  } else {
-    _answerHistory.pop();
-    if (_queue.length > 0) {
-      _showCurrentQuestion();
-    } else {
-      setState({
-        view: 'idle',
-        questionType: null,
-        message: '',
-        choices: [],
-        answers: getState().answers || {},
-        summaryContext: null,
-      });
-    }
+  if (_navigator && !_navigator.goBack()) {
+    return;
   }
+
+  var item = _queue.shift();
+  _resolve = null;
+  if (item && item.resolve) {
+    item.resolve('__back__');
+  }
+
+  _queue = [];
+  _answerHistory = [];
+  _previousView = null;
+  setState({
+    view: 'idle',
+    questionType: null,
+    message: '',
+    choices: [],
+    answers: getState().answers || {},
+    summaryContext: null,
+  });
 }
 
 function showProgress(phases, currentPhase, message) {
@@ -149,11 +149,14 @@ function updateProgress(update) {
   setState(merged);
 }
 
-function showSummary(context, onEditCallback) {
+function showSummary(context, opts) {
+  var callbacks = typeof opts === 'function' ? { onEdit: opts } : (opts || {});
   setState({
     view: 'summary',
     summaryContext: context,
-    onEdit: onEditCallback || null,
+    onEdit: callbacks.onEdit || null,
+    onGenerate: callbacks.onGenerate || null,
+    onBack: callbacks.onBack || null,
   });
 }
 
@@ -161,6 +164,21 @@ function _showSummaryFromCurrent() {
   var state = getState();
   if (state.view === 'summary') return;
   showSummary(state.answers || {});
+}
+
+var _prereqsProps = null;
+
+function showPrereqsScreen(tools, installTool, onResolve) {
+  _prereqsProps = {
+    initialResults: tools,
+    installTool: installTool,
+    onDone: function (allOk) {
+      _prereqsProps = null;
+      setState({ view: 'idle' });
+      if (onResolve) onResolve(allOk);
+    },
+  };
+  setState({ view: 'prereqs' });
 }
 
 function showDone(message, outPath, ctx) {
@@ -190,7 +208,12 @@ function cancelAll() {
   });
 }
 
+function setNavigator(nav) {
+  _navigator = nav;
+}
+
 var STEPS = [
+  { name: 'mode', label: 'Mode' },
   { name: 'language', label: 'Language' },
   { name: 'framework', label: 'Framework' },
   { name: 'architecture', label: 'Architecture' },
@@ -381,6 +404,7 @@ function App() {
     if (helpVisible) return 'help';
     if (state.view === 'done') return 'done';
     if (state.view === 'progress') return 'progress';
+    if (state.view === 'prereqs') return 'prereqs';
     if (state.view === 'summary') return 'summary';
     if (state.view === 'welcome') return 'welcome';
     if (state.view === 'idle') return null;
@@ -411,7 +435,9 @@ function App() {
         return;
       }
       if (action === 'back') {
-        _goBack();
+        if (state.stepIndex > 0) {
+          _answer('__back__');
+        }
         return;
       }
       if (action === 'quit') {
@@ -420,6 +446,7 @@ function App() {
           return;
         }
         if (state.view === 'done') {
+          terminalSaveSummary({ outPath: state.doneOutPath, ctx: state.doneCtx });
           exit();
           return;
         }
@@ -484,44 +511,14 @@ function App() {
 
     if (state.view === 'done') {
       if (key.return) {
+        terminalSaveSummary({ outPath: state.doneOutPath, ctx: state.doneCtx });
         exit();
         return;
       }
       var ctrlC = key.ctrl && !key.meta && (input === 'c' || input === '\x03');
       if (ctrlC) {
+        terminalSaveSummary({ outPath: state.doneOutPath, ctx: state.doneCtx });
         exit();
-        return;
-      }
-      return;
-    }
-
-    if (state.view === 'progress') {
-      var ctrlC2 = key.ctrl && !key.meta && (input === 'c' || input === '\x03');
-      if (ctrlC2) {
-        setQuitConfirmVisible(true);
-        return;
-      }
-      return;
-    }
-
-    if (state.view === 'summary') {
-      var ctrlC3 = key.ctrl && !key.meta && (input === 'c' || input === '\x03');
-      if (ctrlC3) {
-        if (hasAnswers(state.answers)) {
-          setQuitConfirmVisible(true);
-        } else {
-          exit();
-        }
-        return;
-      }
-      if (key.escape) {
-        setLocalState(Object.assign({}, state, { view: 'idle' }));
-        _showCurrentQuestion();
-        return;
-      }
-      if (key.return || input === 's') {
-        setLocalState(Object.assign({}, state, { view: 'idle' }));
-        _showCurrentQuestion();
         return;
       }
       return;
@@ -529,30 +526,34 @@ function App() {
 
     if (state.view === 'idle') return;
 
-    if (state.view === 'question') {
-      var ctrlC4 = key.ctrl && !key.meta && (input === 'c' || input === '\x03');
-      if (ctrlC4) {
-        if (hasAnswers(state.answers)) {
-          setQuitConfirmVisible(true);
-        } else {
-          exit();
-        }
-        return;
-      }
-      if (key.ctrl && !key.meta && (input === 'l' || input === '\x0c')) {
-        setRenderKey(function (k) { return k + 1; });
-        return;
-      }
+    var ctrlL = key.ctrl && !key.meta && (input === 'l' || input === '\x0c');
+    if (ctrlL) {
+      setRenderKey(function (k) { return k + 1; });
+      return;
+    }
+
+    if (state.view === 'progress') {
+      onKey(input, key);
+      return;
+    }
+
+    if (state.view === 'prereqs') {
       return;
     }
   });
 
   function headerBreadcrumb() {
-    var entries = Object.entries(state.answers || {});
-    var parts = entries
-      .filter(function (e) { return e[1] && typeof e[1] === 'string' && e[1].length > 0; })
-      .slice(0, 3)
-      .map(function (e) { return e[1]; });
+    var answers = state.answers || {};
+    var parts = [];
+    if (answers.languageLabel || answers.language) {
+      parts.push(answers.languageLabel || answers.language);
+    }
+    if (answers.frameworkLabel || answers.framework) {
+      parts.push(answers.frameworkLabel || answers.framework);
+    }
+    if (answers.architectureLabel || answers.architecture) {
+      parts.push(answers.architectureLabel || answers.architecture);
+    }
     return parts.length > 0 ? parts.join(' \u00B7 ') : '';
   }
 
@@ -560,21 +561,28 @@ function App() {
     var cols = 80;
     try { cols = process.stdout.columns || 80; } catch (_) {}
 
-    var title = 'pasha v3.0.0';
+    var title = 'pasha';
+    var version = 'v' + pkg.version;
     var bread = headerBreadcrumb();
     var maxWidth = Math.min(cols, 100);
+    var innerWidth = maxWidth - 2;
 
     var topBorder = '\u250C' + '\u2500'.repeat(maxWidth - 2) + '\u2510';
+    var leftText = '  ' + title + ' ' + version;
+    var rightText = bread ? '  ' + bread + ' ' : '';
+    var padCount = Math.max(0, innerWidth - leftText.length - rightText.length);
 
     return e(Box, { flexDirection: 'column' },
       e(Text, { color: 'gray' }, topBorder),
-      e(Box, { flexDirection: 'row', paddingTop: 0, paddingBottom: 0 },
-        e(Text, { bold: true, color: 'magenta' }, '  ' + title),
-        e(Text, { color: 'gray' }, ' \u2500 '),
-        e(Text, { dimColor: true, color: 'gray' }, bread),
-        e(Text, { color: 'gray' }, ' \u2500'.repeat(Math.max(0, maxWidth - title.length - bread.length - 10)))
+      e(Box, { flexDirection: 'row', width: innerWidth, paddingLeft: 1, paddingRight: 0 },
+        e(Text, { bold: true, color: 'magenta' }, title),
+        e(Text, { dimColor: true, color: 'gray' }, ' ' + version),
+        padCount > 0 ? e(Text, { dimColor: true }, ' '.repeat(padCount)) : null,
+        bread
+          ? e(Text, { dimColor: true }, bread)
+          : null
       ),
-      e(Text, { color: 'gray' }, '\u251C' + '\u2500'.repeat(maxWidth - 2) + '\u2524')
+      e(Text, { color: 'gray' }, '\u2514' + '\u2500'.repeat(maxWidth - 2) + '\u2518')
     );
   }
 
@@ -619,10 +627,20 @@ function App() {
       });
     }
 
+    if (state.view === 'prereqs' && _prereqsProps) {
+      return e(PrereqsScreen, {
+        initialResults: _prereqsProps.initialResults,
+        installTool: _prereqsProps.installTool,
+        onDone: _prereqsProps.onDone,
+      });
+    }
+
     if (state.view === 'summary') {
       return e(SummaryScreen, {
         context: state.summaryContext || state.answers,
         onEdit: state.onEdit || null,
+        onGenerate: state.onGenerate || null,
+        onBack: state.onBack || null,
         onContinue: function () {
           setLocalState(Object.assign({}, state, { view: 'idle' }));
           _showCurrentQuestion();
@@ -639,18 +657,26 @@ function App() {
 
       var doneLines = [];
 
-      doneLines.push(
-        e(Box, {},
-          e(Text, { bold: true, color: isSuccess ? 'green' : 'red', dimColor: dimmed },
-            (isSuccess ? '\u2713 ' : '\u2717 ') + (state.doneMessage || 'Done!')
-          )
-        )
-      );
-
-      if (outPath && isSuccess) {
+      if (isSuccess) {
         doneLines.push(
-          e(Box, { marginTop: 1 },
-            e(Text, { bold: true, color: 'white' }, outPath)
+          e(Box, {},
+            e(Text, { color: 'green', bold: true, dimColor: dimmed }, '\u2713  Project Ready')
+          )
+        );
+
+        if (outPath) {
+          doneLines.push(
+            e(Box, { marginTop: 1 },
+              e(Text, { bold: true, color: 'white', dimColor: dimmed }, '  ' + outPath)
+            )
+          );
+        }
+      } else {
+        doneLines.push(
+          e(Box, {},
+            e(Text, { bold: true, color: 'red', dimColor: dimmed },
+              '\u2717 ' + (state.doneMessage || 'Done!')
+            )
           )
         );
       }
@@ -662,7 +688,7 @@ function App() {
 
         doneLines.push(
           e(Box, { marginTop: 1, flexDirection: 'column' },
-            e(Text, { bold: true }, 'Next steps:'),
+            e(Text, { bold: true, color: 'white' }, 'Next steps:'),
             e(Text, { dimColor: true }, '  cd ' + ctx.projectName)
           )
         );
@@ -852,6 +878,7 @@ function App() {
     : state.questionType === 'confirm' ? 'confirm'
     : state.view === 'summary' ? 'summary'
     : state.view === 'progress' ? 'progress'
+    : state.view === 'prereqs' ? 'prereqs'
     : state.view === 'done' ? 'done'
     : 'select';
 
@@ -873,7 +900,7 @@ function App() {
 
   return e(Box, { flexDirection: 'column', paddingLeft: 1, paddingRight: 1, minHeight: 24, key: 'r-' + renderKey },
     isWelcome || state.view === 'done' ? null : headerBar,
-    isWelcome ? null : e(StepRail, { steps: STEPS, currentIndex: state.stepIndex, width: compact ? process.stdout.columns : 78, compact: compact }),
+    isWelcome || state.view === 'done' ? null : e(StepRail, { steps: STEPS, currentIndex: state.stepIndex, width: compact ? process.stdout.columns : 78, compact: compact }),
     e(Box, { flexDirection: 'column', flexGrow: 1, minHeight: 14 },
       helpVisible
         ? e(HelpOverlay, { visible: true, context: helpCtx, hints: hintsForContext(helpCtx), onClose: function () { setHelpVisible(false); } })
@@ -881,7 +908,7 @@ function App() {
           ? quitOverlayEl
           : e(React.Fragment, null, renderBody(), quitOverlayEl)
     ),
-    isWelcome || state.view === 'done' ? null : e(KeyHints, { hints: hints, compact: compact })
+    isWelcome || state.view === 'done' ? null : e(KeyHints, { hints: hints, compact: compact, stepIndex: state.stepIndex })
   );
 }
 
@@ -898,9 +925,11 @@ module.exports = {
   showProgress: showProgress,
   updateProgress: updateProgress,
   showSummary: showSummary,
+  showPrereqsScreen: showPrereqsScreen,
   showDone: showDone,
   getState: getState,
   setState: setState,
   cancelAll: cancelAll,
+  setNavigator: setNavigator,
   _queue: _queue,
 };

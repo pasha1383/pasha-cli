@@ -5,15 +5,15 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${DB_USER:{{dbName}}}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:postgres}
-      POSTGRES_DB: ${DB_NAME:{{dbName}}}
+      POSTGRES_USER: {{shellDefault "DB_USER" dbName}}
+      POSTGRES_PASSWORD: {{shellDefault "DB_PASSWORD" "postgres"}}
+      POSTGRES_DB: {{shellDefault "DB_NAME" dbName}}
     ports:
       - '${DB_PORT:-5432}:5432'
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:{{dbName}}}']
+      test: ['CMD-SHELL', 'pg_isready -U {{shellDefault "DB_USER" dbName}}']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -23,8 +23,8 @@ services:
     image: mysql:8
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:root}
-      MYSQL_DATABASE: ${DB_NAME:{{dbName}}}
+      MYSQL_ROOT_PASSWORD: {{shellDefault "DB_PASSWORD" "root"}}
+      MYSQL_DATABASE: {{shellDefault "DB_NAME" dbName}}
     ports:
       - '${DB_PORT:-3306}:3306'
     volumes:

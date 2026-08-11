@@ -31,7 +31,7 @@ async function add(opts) {
     process.exit(1);
   }
 
-  const fm = resolveFeatures(stackFlavor);
+  const fm = stackFlavor ? resolveFeatures(stackFlavor) : null;
 
   let moduleName = opts.args[0];
   if (!moduleName) {

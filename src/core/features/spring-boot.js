@@ -116,64 +116,78 @@ function deriveFlags(answers) {
   return flags;
 }
 
-function resolveDependencies(flags) {
-  const deps = [];
+function formatMavenDep(dep) {
+  let xml = '        <dependency>\n            <groupId>' + dep.groupId + '</groupId>\n            <artifactId>' + dep.artifactId + '</artifactId>';
+  if (dep.version) xml += '\n            <version>' + dep.version + '</version>';
+  if (dep.scope) xml += '\n            <scope>' + dep.scope + '</scope>';
+  xml += '\n        </dependency>';
+  return xml;
+}
 
-  deps.push({ groupId: 'org.springframework.boot', artifactId: 'spring-boot-starter-web', scope: null });
-  deps.push({ groupId: 'org.springframework.boot', artifactId: 'spring-boot-starter-validation', scope: null });
-  deps.push({ groupId: 'org.springframework.boot', artifactId: 'spring-boot-starter-actuator', scope: null });
-  deps.push({ groupId: 'me.paulschwarz', artifactId: 'spring-dotenv', version: '4.0.0', scope: null });
+function formatMavenPlugin(dep) {
+  return '            <plugin>\n                <groupId>' + dep.groupId + '</groupId>\n                <artifactId>' + dep.artifactId + '</artifactId>\n                <version>' + dep.version + '</version>\n            </plugin>';
+}
+
+function resolveDependencies(flags) {
+  const dependencies = [];
+  const devDependencies = [];
+  const plugins = [];
+
+  dependencies.push(formatMavenDep({ groupId: 'org.springframework.boot', artifactId: 'spring-boot-starter-web', scope: null }));
+  dependencies.push(formatMavenDep({ groupId: 'org.springframework.boot', artifactId: 'spring-boot-starter-validation', scope: null }));
+  dependencies.push(formatMavenDep({ groupId: 'org.springframework.boot', artifactId: 'spring-boot-starter-actuator', scope: null }));
+  dependencies.push(formatMavenDep({ groupId: 'me.paulschwarz', artifactId: 'spring-dotenv', version: '4.0.0', scope: null }));
 
   if (flags.ormJpa) {
-    deps.push({ groupId: 'org.springframework.boot', artifactId: 'spring-boot-starter-data-jpa', scope: null });
-    if (flags.dbPostgres) deps.push({ groupId: 'org.postgresql', artifactId: 'postgresql', scope: 'runtime' });
-    if (flags.dbMysql) deps.push({ groupId: 'com.mysql', artifactId: 'mysql-connector-j', scope: 'runtime' });
-    if (flags.dbH2) deps.push({ groupId: 'com.h2database', artifactId: 'h2', scope: 'runtime' });
+    dependencies.push(formatMavenDep({ groupId: 'org.springframework.boot', artifactId: 'spring-boot-starter-data-jpa', scope: null }));
+    if (flags.dbPostgres) dependencies.push(formatMavenDep({ groupId: 'org.postgresql', artifactId: 'postgresql', scope: 'runtime' }));
+    if (flags.dbMysql) dependencies.push(formatMavenDep({ groupId: 'com.mysql', artifactId: 'mysql-connector-j', scope: 'runtime' }));
+    if (flags.dbH2) dependencies.push(formatMavenDep({ groupId: 'com.h2database', artifactId: 'h2', scope: 'runtime' }));
   }
 
   if (flags.ormMybatis) {
-    deps.push({ groupId: 'org.mybatis.spring.boot', artifactId: 'mybatis-spring-boot-starter', version: '3.0.3', scope: null });
-    if (flags.dbPostgres) deps.push({ groupId: 'org.postgresql', artifactId: 'postgresql', scope: 'runtime' });
-    if (flags.dbMysql) deps.push({ groupId: 'com.mysql', artifactId: 'mysql-connector-j', scope: 'runtime' });
-    if (flags.dbH2) deps.push({ groupId: 'com.h2database', artifactId: 'h2', scope: 'runtime' });
+    dependencies.push(formatMavenDep({ groupId: 'org.mybatis.spring.boot', artifactId: 'mybatis-spring-boot-starter', version: '3.0.3', scope: null }));
+    if (flags.dbPostgres) dependencies.push(formatMavenDep({ groupId: 'org.postgresql', artifactId: 'postgresql', scope: 'runtime' }));
+    if (flags.dbMysql) dependencies.push(formatMavenDep({ groupId: 'com.mysql', artifactId: 'mysql-connector-j', scope: 'runtime' }));
+    if (flags.dbH2) dependencies.push(formatMavenDep({ groupId: 'com.h2database', artifactId: 'h2', scope: 'runtime' }));
   }
 
   if (flags.useRedis) {
-    deps.push({ groupId: 'org.springframework.boot', artifactId: 'spring-boot-starter-data-redis', scope: null });
+    dependencies.push(formatMavenDep({ groupId: 'org.springframework.boot', artifactId: 'spring-boot-starter-data-redis', scope: null }));
   }
 
   if (flags.useKafka) {
-    deps.push({ groupId: 'org.springframework.kafka', artifactId: 'spring-kafka', scope: null });
+    dependencies.push(formatMavenDep({ groupId: 'org.springframework.kafka', artifactId: 'spring-kafka', scope: null }));
   }
 
   if (flags.useRabbitmq) {
-    deps.push({ groupId: 'org.springframework.boot', artifactId: 'spring-boot-starter-amqp', scope: null });
+    dependencies.push(formatMavenDep({ groupId: 'org.springframework.boot', artifactId: 'spring-boot-starter-amqp', scope: null }));
   }
 
   if (flags.useSwagger) {
-    deps.push({ groupId: 'org.springdoc', artifactId: 'springdoc-openapi-starter-webmvc-ui', version: '2.6.0', scope: null });
+    dependencies.push(formatMavenDep({ groupId: 'org.springdoc', artifactId: 'springdoc-openapi-starter-webmvc-ui', version: '2.6.0', scope: null }));
   }
 
   if (flags.useAuth) {
-    deps.push({ groupId: 'org.springframework.boot', artifactId: 'spring-boot-starter-security', scope: null });
-    deps.push({ groupId: 'io.jsonwebtoken', artifactId: 'jjwt-api', version: '0.12.6', scope: null });
-    deps.push({ groupId: 'io.jsonwebtoken', artifactId: 'jjwt-impl', version: '0.12.6', scope: 'runtime' });
-    deps.push({ groupId: 'io.jsonwebtoken', artifactId: 'jjwt-jackson', version: '0.12.6', scope: 'runtime' });
+    dependencies.push(formatMavenDep({ groupId: 'org.springframework.boot', artifactId: 'spring-boot-starter-security', scope: null }));
+    dependencies.push(formatMavenDep({ groupId: 'io.jsonwebtoken', artifactId: 'jjwt-api', version: '0.12.6', scope: null }));
+    dependencies.push(formatMavenDep({ groupId: 'io.jsonwebtoken', artifactId: 'jjwt-impl', version: '0.12.6', scope: 'runtime' }));
+    dependencies.push(formatMavenDep({ groupId: 'io.jsonwebtoken', artifactId: 'jjwt-jackson', version: '0.12.6', scope: 'runtime' }));
   }
 
   if (flags.useTests) {
-    deps.push({ groupId: 'org.springframework.boot', artifactId: 'spring-boot-starter-test', scope: 'test' });
-    deps.push({ groupId: 'org.testcontainers', artifactId: 'testcontainers', version: '1.20.0', scope: 'test' });
-    deps.push({ groupId: 'org.testcontainers', artifactId: 'junit-jupiter', version: '1.20.0', scope: 'test' });
-    if (flags.dbPostgres) deps.push({ groupId: 'org.testcontainers', artifactId: 'postgresql', version: '1.20.0', scope: 'test' });
-    if (flags.dbMysql) deps.push({ groupId: 'org.testcontainers', artifactId: 'mysql', version: '1.20.0', scope: 'test' });
+    devDependencies.push(formatMavenDep({ groupId: 'org.springframework.boot', artifactId: 'spring-boot-starter-test', scope: 'test' }));
+    devDependencies.push(formatMavenDep({ groupId: 'org.testcontainers', artifactId: 'testcontainers', version: '1.20.0', scope: 'test' }));
+    devDependencies.push(formatMavenDep({ groupId: 'org.testcontainers', artifactId: 'junit-jupiter', version: '1.20.0', scope: 'test' }));
+    if (flags.dbPostgres) devDependencies.push(formatMavenDep({ groupId: 'org.testcontainers', artifactId: 'postgresql', version: '1.20.0', scope: 'test' }));
+    if (flags.dbMysql) devDependencies.push(formatMavenDep({ groupId: 'org.testcontainers', artifactId: 'mysql', version: '1.20.0', scope: 'test' }));
   }
 
   if (flags.useCheckstyle) {
-    deps.push({ groupId: 'org.apache.maven.plugins', artifactId: 'maven-checkstyle-plugin', version: '3.5.0', scope: null, plugin: true });
+    plugins.push(formatMavenPlugin({ groupId: 'org.apache.maven.plugins', artifactId: 'maven-checkstyle-plugin', version: '3.5.0' }));
   }
 
-  return { deps };
+  return { dependencies, devDependencies, plugins };
 }
 
 function resolveScripts(flags) {

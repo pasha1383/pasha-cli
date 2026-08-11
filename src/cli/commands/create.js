@@ -351,36 +351,47 @@ async function askModules(ctx, nav) {
 
 function buildContext(flags, modules, baseAnswers, ctx) {
   const flavor = ctx._templateConfig.stackFeatures;
-  const fm = resolveFeatures(flavor);
 
   const fullCtx = Object.assign({}, baseAnswers, ctx, flags, {
     modules,
     dbName: String(baseAnswers.projectName).replace(/-/g, '_').toLowerCase(),
   });
 
-  if (flavor === 'go' || flavor === 'chi' || flavor === 'go-stdlib') {
-    const deps = fm.resolveDependencies(flags);
-    fullCtx.goModules = deps.goModules;
-  } else if (flavor === 'python' || flavor === 'flask' || flavor === 'litestar' || flavor === 'tornado') {
-    const deps = fm.resolveDependencies(flags);
-    fullCtx.requirementsTxt = deps.requirements.join('\n') + '\n';
-    if (deps.devRequirements && deps.devRequirements.length > 0)
-      fullCtx.devRequirementsTxt = deps.devRequirements.join('\n') + '\n';
-  } else if (flavor === 'laravel') {
-    const deps = fm.resolveDependencies(flags);
-    fullCtx.composerRequire = deps.composerRequire;
-    fullCtx.composerRequireDev = deps.composerRequireDev;
-  } else if (flavor) {
-    const deps = fm.resolveDependencies(flags);
-    if (deps.cargoDeps) {
-      fullCtx.cargoDeps = deps.cargoDeps;
-    } else if (deps.dependencies) {
-      fullCtx.dependenciesJson = JSON.stringify(deps.dependencies, null, 4).replace(/\n/g, '\n  ');
-      fullCtx.devDependenciesJson = JSON.stringify(deps.devDependencies, null, 4).replace(/\n/g, '\n  ');
+  if (flavor) {
+    const fm = resolveFeatures(flavor);
+
+    if (flavor === 'go' || flavor === 'chi' || flavor === 'go-stdlib') {
+      const deps = fm.resolveDependencies(flags);
+      fullCtx.goModules = deps.goModules;
+    } else if (flavor === 'python' || flavor === 'flask' || flavor === 'litestar' || flavor === 'tornado') {
+      const deps = fm.resolveDependencies(flags);
+      fullCtx.requirementsTxt = deps.requirements.join('\n') + '\n';
+      if (deps.devRequirements && deps.devRequirements.length > 0)
+        fullCtx.devRequirementsTxt = deps.devRequirements.join('\n') + '\n';
+    } else if (flavor === 'laravel') {
+      const deps = fm.resolveDependencies(flags);
+      fullCtx.composerRequire = deps.composerRequire;
+      fullCtx.composerRequireDev = deps.composerRequireDev;
+    } else {
+      const deps = fm.resolveDependencies(flags);
+      if (deps.cargoDeps) {
+        fullCtx.cargoDeps = deps.cargoDeps;
+      } else if (deps.dependencies) {
+        if (Array.isArray(deps.dependencies)) {
+          fullCtx.dependenciesXml = deps.dependencies.join('\n');
+          if (deps.devDependencies && deps.devDependencies.length)
+            fullCtx.devDependenciesXml = deps.devDependencies.join('\n');
+          if (deps.plugins && deps.plugins.length)
+            fullCtx.pluginsXml = deps.plugins.join('\n');
+        } else {
+          fullCtx.dependenciesJson = JSON.stringify(deps.dependencies, null, 4).replace(/\n/g, '\n  ');
+          fullCtx.devDependenciesJson = JSON.stringify(deps.devDependencies, null, 4).replace(/\n/g, '\n  ');
+        }
+      }
+      fullCtx.scriptsJson = JSON.stringify(fm.resolveScripts(flags), null, 4).replace(/\n/g, '\n  ');
+      if (flags.useTests && fm.resolveJestConfig)
+        fullCtx.jestConfigJson = JSON.stringify(fm.resolveJestConfig(), null, 4).replace(/\n/g, '\n  ');
     }
-    fullCtx.scriptsJson = JSON.stringify(fm.resolveScripts(flags), null, 4).replace(/\n/g, '\n  ');
-    if (flags.useTests && fm.resolveJestConfig)
-      fullCtx.jestConfigJson = JSON.stringify(fm.resolveJestConfig(), null, 4).replace(/\n/g, '\n  ');
   }
 
   return fullCtx;
@@ -641,8 +652,7 @@ async function stepModules(ctx, nav) {
 async function stepReview(ctx, nav) {
   progressHeader(nav.currentIndex + 1, nav.totalSteps, nav.currentStep.label);
   const flavor = ctx._stackFlavor;
-  const fm = resolveFeatures(flavor);
-  const flags = flavor ? fm.deriveFlags(Object.assign(
+  const flags = flavor ? resolveFeatures(flavor).deriveFlags(Object.assign(
     {},
     ctx.orm ? { orm: ctx.orm, database: ctx.database, validation: ctx.validation,
       broker: ctx.broker, useRedis: ctx.useRedis, useAgentDocs: ctx.useAgentDocs,
@@ -719,8 +729,7 @@ async function runMicroservices(ctx) {
     });
 
     const flavor = svcCtx._stackFlavor;
-    const fm = resolveFeatures(flavor);
-    const flags = flavor ? fm.deriveFlags(Object.assign(
+    const flags = flavor ? resolveFeatures(flavor).deriveFlags(Object.assign(
       {}, svcCtx,
       svcCtx.orm ? { orm: svcCtx.orm, database: svcCtx.database,
         validation: svcCtx.validation, broker: svcCtx.broker,
@@ -792,29 +801,43 @@ async function createNonInteractive(opts) {
 
   const ti = await resolveTemplateInfo(lang, fw, arch);
   const flavor = ti._stackFlavor;
-  const fm = resolveFeatures(flavor);
 
-  const orm = opts.orm || (fm.ormChoices(fw)[0] && fm.ormChoices(fw)[0].value) || 'none';
-  let database = opts.database || 'none';
-  if (orm !== 'none' && database === 'none') {
-    const dbChoices = fm.databaseChoices(orm);
-    if (dbChoices.length > 0) database = dbChoices[0].value;
+  let orm, database, validation, useRedis, broker, useAgentDocs, extras, flags, stackAnswers;
+
+  if (flavor) {
+    const fm = resolveFeatures(flavor);
+
+    orm = opts.orm || (fm.ormChoices(fw)[0] && fm.ormChoices(fw)[0].value) || 'none';
+    database = opts.database || 'none';
+    if (orm !== 'none' && database === 'none') {
+      const dbChoices = fm.databaseChoices(orm);
+      if (dbChoices.length > 0) database = dbChoices[0].value;
+    }
+    validation = opts.validation || (fm.validationChoices()[0] && fm.validationChoices()[0].value) || 'none';
+    useRedis = opts.redis !== undefined ? Boolean(opts.redis) : false;
+    broker = opts.broker || 'none';
+    useAgentDocs = opts.agentDocs !== undefined ? Boolean(opts.agentDocs) : true;
+    extras = opts.extras ? opts.extras.split(',').map((s) => s.trim()).filter(Boolean) : ['swagger', 'lint', 'tests', 'health'];
+
+    stackAnswers = { orm, database, validation, useRedis, broker, useAgentDocs, extras };
+    flags = fm.deriveFlags(stackAnswers);
+  } else {
+    orm = 'none';
+    database = 'none';
+    validation = 'none';
+    useRedis = false;
+    broker = 'none';
+    useAgentDocs = true;
+    extras = [];
+    flags = {};
+    stackAnswers = { orm, database, validation, useRedis, broker, useAgentDocs, extras };
   }
-  const validation = opts.validation || (fm.validationChoices()[0] && fm.validationChoices()[0].value) || 'none';
-  const useRedis = opts.redis !== undefined ? Boolean(opts.redis) : false;
-  const broker = opts.broker || 'none';
-  const useAgentDocs = opts.agentDocs !== undefined ? Boolean(opts.agentDocs) : true;
-  const extras = opts.extras ? opts.extras.split(',').map((s) => s.trim()).filter(Boolean) : ['swagger', 'lint', 'tests', 'health'];
-  const modules = opts.modules ? opts.modules.split(',').map((s) => s.trim()).filter(Boolean) : ['product'];
 
+  const modules = opts.modules ? opts.modules.split(',').map((s) => s.trim()).filter(Boolean) : ['product'];
   const projectName = opts.projectName || 'my-project';
   const author = opts.author || process.env.USER || process.env.USERNAME || 'Developer';
   const github = opts.github || 'developer';
   const description = opts.description || 'Built with pasha CLI';
-
-  const stackAnswers = { orm, database, validation, useRedis, broker, useAgentDocs, extras };
-
-  const flags = flavor ? fm.deriveFlags(stackAnswers) : {};
 
   const ctx = Object.assign(
     {

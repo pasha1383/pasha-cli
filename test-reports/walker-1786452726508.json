@@ -1,0 +1,2311 @@
+{
+  "timestamp": "2026-08-11T12:52:06.507Z",
+  "mode": "smoke",
+  "duration": 36138,
+  "summary": {
+    "total": 140,
+    "passed": 122,
+    "failed": 18,
+    "errors": 0
+  },
+  "results": [
+    {
+      "id": "go-gin-layered-gorm-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 229,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "go-gin-clean-gorm-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 240,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "go-gin-hexagonal-gorm-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 236,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "go-gin-onion-gorm-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 238,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "go-echo-layered-gorm-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 237,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "go-echo-clean-gorm-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 250,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "go-echo-hexagonal-gorm-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 281,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "go-echo-onion-gorm-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 269,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "go-fiber-layered-gorm-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 253,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "go-fiber-clean-gorm-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 264,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "go-fiber-hexagonal-gorm-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 263,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "go-fiber-onion-gorm-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 249,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "go-chi-layered-gorm-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 276,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "go-chi-onion-gorm-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 281,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "go-stdlib-layered-gorm-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 313,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "java-spring-boot-layered-jpa-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 273,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "java-spring-boot-clean-jpa-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 285,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "java-spring-boot-hexagonal-jpa-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 266,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "java-spring-boot-modular-jpa-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 246,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "java-spring-boot-cqrs-jpa-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 281,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "node-nestjs-layered-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 252,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-nestjs-clean-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 253,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-nestjs-hexagonal-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 243,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-nestjs-modular-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 255,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-nestjs-cqrs-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 274,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-nestjs-vertical-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 260,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-nestjs-microservices-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 234,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-nestjs-serverless-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 237,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-express-layered-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 233,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-express-clean-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 243,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-express-hexagonal-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 232,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-express-modular-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 227,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-express-cqrs-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 248,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-express-event-driven-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 247,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-express-onion-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 230,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-koa-layered-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 229,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-koa-clean-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 243,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-koa-modular-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 232,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-koa-hexagonal-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 238,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-koa-vertical-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 239,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-koa-cqrs-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 253,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-koa-event-driven-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 243,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-microservices-microservices-none-none",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 204,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-fastify-layered-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 263,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-fastify-modular-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 248,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-fastify-clean-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 232,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-fastify-hexagonal-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 228,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-fastify-cqrs-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 257,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-fastify-event-driven-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 240,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-fastify-onion-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 252,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-hapi-layered-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 234,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-hapi-clean-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 242,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-hapi-hexagonal-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 242,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-hapi-vertical-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 227,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-hapi-modular-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 226,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-hapi-cqrs-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 252,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-hapi-event-driven-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 261,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-hapi-onion-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 251,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-hapi-microservices-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 245,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-serverless-function-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 221,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-adonis-mvc-lucid-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 203,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-adonis-layered-lucid-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 177,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-adonis-clean-lucid-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 186,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-adonis-modular-lucid-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 204,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-adonis-hexagonal-lucid-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 200,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "node-adonis-vertical-lucid-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 251,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 3,
+        "failed": 0,
+        "warnings": 0,
+        "total": 3
+      }
+    },
+    {
+      "id": "python-django-mvc-django-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 256,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "python-django-layered-django-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 270,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "python-django-clean-django-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 281,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "python-django-hexagonal-django-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 270,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "python-django-vertical-django-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 237,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "python-django-onion-django-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 240,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "python-fastapi-layered-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 250,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "python-fastapi-modular-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 249,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "python-fastapi-hexagonal-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 248,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "python-fastapi-clean-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 233,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "python-fastapi-vertical-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 257,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "python-fastapi-onion-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 275,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "python-flask-layered-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 285,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "python-flask-modular-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 258,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "python-flask-clean-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 282,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "python-flask-hexagonal-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 257,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "python-flask-vertical-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 242,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "python-flask-onion-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 264,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "python-litestar-layered-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 191,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "python-litestar-hexagonal-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 185,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "python-litestar-clean-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 186,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "python-litestar-modular-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 186,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "python-litestar-vertical-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 177,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "python-tornado-layered-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 171,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "python-tornado-clean-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 180,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "python-tornado-hexagonal-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 183,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 4,
+        "failed": 0,
+        "warnings": 0,
+        "total": 4
+      }
+    },
+    {
+      "id": "ruby-rails-mvc-activerecord-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 252,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "ruby-rails-layered-activerecord-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 257,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "ruby-rails-clean-activerecord-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 268,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "ruby-rails-modular-activerecord-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 251,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "ruby-rails-vertical-activerecord-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 245,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "php-laravel-mvc-eloquent-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 265,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "php-laravel-layered-eloquent-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 267,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "php-laravel-clean-eloquent-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 268,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "php-laravel-hexagonal-eloquent-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 276,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "php-laravel-modular-eloquent-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 262,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "csharp-aspnet-layered-efcore-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 271,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "csharp-aspnet-clean-efcore-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 259,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "csharp-aspnet-hexagonal-efcore-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 259,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "csharp-aspnet-onion-efcore-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 245,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "csharp-aspnet-cqrs-efcore-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 278,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "html-html-tailwind-none-none",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 198,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "html-html-bootstrap-none-none",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 195,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "html-html-component-based-none-none",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 208,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "html-html-landing-page-none-none",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 194,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "html-html-dashboard-none-none",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 194,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "rust-axum-layered-sqlx-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 244,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "rust-axum-clean-sqlx-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 226,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "rust-axum-hexagonal-sqlx-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 234,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "rust-axum-vertical-sqlx-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 217,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "rust-axum-modular-sqlx-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 246,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "frontend-nextjs-component-based-none-none",
+      "status": "failed",
+      "exitCode": 1,
+      "duration": 222,
+      "errorCount": 1,
+      "errors": [
+        {
+          "type": "exit-code",
+          "message": "Exit code 1",
+          "output": "  … Generating files...\r\n  ✗ Parse error on line 6:\r\n...uleName}}={{ id: '1', name: 'Test', desc\r\n-----------------------^\r\nExpecting 'CLOSE_RAW_BLOCK', 'CLOSE', 'CLOSE_UNESCAPED', 'OPEN_SEXPR', 'CLOSE_SEXPR', 'ID', 'OPEN_BLOCK_PARAMS', 'STRING', 'NUMBER', 'BOOLEAN', 'UNDEFINED', 'NULL', 'DATA', got 'INVALID'\r\n"
+        }
+      ],
+      "validationSummary": null
+    },
+    {
+      "id": "frontend-nextjs-feature-sliced-none-none",
+      "status": "failed",
+      "exitCode": 0,
+      "duration": 225,
+      "errorCount": 5,
+      "errors": [
+        {
+          "type": "handlebarsRemnants",
+          "message": ".gitignore: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": ".gitignore: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": ".gitignore: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": ".gitignore: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/app/globals.css: "
+        }
+      ],
+      "validationSummary": {
+        "passed": 1,
+        "failed": 1,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "frontend-nextjs-atomic-design-none-none",
+      "status": "failed",
+      "exitCode": 0,
+      "duration": 239,
+      "errorCount": 5,
+      "errors": [
+        {
+          "type": "handlebarsRemnants",
+          "message": ".gitignore: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": ".gitignore: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": ".gitignore: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": ".gitignore: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/app/globals.css: "
+        }
+      ],
+      "validationSummary": {
+        "passed": 1,
+        "failed": 1,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "frontend-nextjs-page-based-none-none",
+      "status": "failed",
+      "exitCode": 0,
+      "duration": 232,
+      "errorCount": 5,
+      "errors": [
+        {
+          "type": "handlebarsRemnants",
+          "message": ".gitignore: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": ".gitignore: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": ".gitignore: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": ".gitignore: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/app/globals.css: "
+        }
+      ],
+      "validationSummary": {
+        "passed": 1,
+        "failed": 1,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "frontend-nextjs-app-router-none-none",
+      "status": "failed",
+      "exitCode": 0,
+      "duration": 227,
+      "errorCount": 5,
+      "errors": [
+        {
+          "type": "handlebarsRemnants",
+          "message": ".gitignore: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": ".gitignore: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": ".gitignore: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": ".gitignore: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/app/globals.css: "
+        }
+      ],
+      "validationSummary": {
+        "passed": 1,
+        "failed": 1,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "frontend-vue-component-based-none-none",
+      "status": "failed",
+      "exitCode": 0,
+      "duration": 251,
+      "errorCount": 5,
+      "errors": [
+        {
+          "type": "handlebarsRemnants",
+          "message": "index.html: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/App.vue: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/App.vue: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/App.vue: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/App.vue: "
+        }
+      ],
+      "validationSummary": {
+        "passed": 1,
+        "failed": 1,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "frontend-vue-feature-sliced-none-none",
+      "status": "failed",
+      "exitCode": 0,
+      "duration": 240,
+      "errorCount": 5,
+      "errors": [
+        {
+          "type": "handlebarsRemnants",
+          "message": "index.html: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/app/App.vue: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/app/App.vue: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/app/App.vue: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/app/App.vue: "
+        }
+      ],
+      "validationSummary": {
+        "passed": 1,
+        "failed": 1,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "frontend-vue-atomic-design-none-none",
+      "status": "failed",
+      "exitCode": 0,
+      "duration": 246,
+      "errorCount": 5,
+      "errors": [
+        {
+          "type": "handlebarsRemnants",
+          "message": "index.html: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/App.vue: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/App.vue: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/App.vue: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/App.vue: "
+        }
+      ],
+      "validationSummary": {
+        "passed": 1,
+        "failed": 1,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "frontend-vue-pinia-store-none-none",
+      "status": "failed",
+      "exitCode": 0,
+      "duration": 246,
+      "errorCount": 5,
+      "errors": [
+        {
+          "type": "handlebarsRemnants",
+          "message": "index.html: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/App.vue: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/App.vue: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/App.vue: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/App.vue: "
+        }
+      ],
+      "validationSummary": {
+        "passed": 1,
+        "failed": 1,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "frontend-vue-modular-none-none",
+      "status": "failed",
+      "exitCode": 0,
+      "duration": 259,
+      "errorCount": 5,
+      "errors": [
+        {
+          "type": "handlebarsRemnants",
+          "message": "index.html: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/App.vue: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/App.vue: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/App.vue: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/App.vue: "
+        }
+      ],
+      "validationSummary": {
+        "passed": 1,
+        "failed": 1,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "frontend-react-component-based-none-none",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 255,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "frontend-react-feature-sliced-none-none",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 283,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "frontend-react-atomic-design-none-none",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 284,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "frontend-react-redux-toolkit-none-none",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 268,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "frontend-react-clean-none-none",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 297,
+      "errorCount": 0,
+      "errors": [],
+      "validationSummary": {
+        "passed": 2,
+        "failed": 0,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "frontend-svelte-component-based-none-none",
+      "status": "failed",
+      "exitCode": 0,
+      "duration": 286,
+      "errorCount": 5,
+      "errors": [
+        {
+          "type": "handlebarsRemnants",
+          "message": "index.html: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/App.svelte: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/App.svelte: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/App.svelte: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/App.svelte: "
+        }
+      ],
+      "validationSummary": {
+        "passed": 1,
+        "failed": 1,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "frontend-svelte-feature-sliced-none-none",
+      "status": "failed",
+      "exitCode": 0,
+      "duration": 384,
+      "errorCount": 5,
+      "errors": [
+        {
+          "type": "handlebarsRemnants",
+          "message": "index.html: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/app/App.svelte: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/app/App.svelte: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/app/App.svelte: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/app/App.svelte: "
+        }
+      ],
+      "validationSummary": {
+        "passed": 1,
+        "failed": 1,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "frontend-svelte-kit-routes-none-none",
+      "status": "failed",
+      "exitCode": 0,
+      "duration": 525,
+      "errorCount": 5,
+      "errors": [
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/app.css: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/app.css: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/routes/+layout.svelte: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/routes/+layout.svelte: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/routes/+layout.svelte: "
+        }
+      ],
+      "validationSummary": {
+        "passed": 1,
+        "failed": 1,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "frontend-angular-component-based-none-none",
+      "status": "failed",
+      "exitCode": 1,
+      "duration": 312,
+      "errorCount": 1,
+      "errors": [
+        {
+          "type": "exit-code",
+          "message": "Exit code 1",
+          "output": "  … Generating files...\r\n  ✗ Parse error on line 10:\r\n...<p class=\"count\">{{ count() }}</p>     \r\n-----------------------^\r\nExpecting 'ID', 'STRING', 'NUMBER', 'BOOLEAN', 'UNDEFINED', 'NULL', 'DATA', got 'INVALID'\r\n"
+        }
+      ],
+      "validationSummary": null
+    },
+    {
+      "id": "frontend-angular-feature-modules-none-none",
+      "status": "failed",
+      "exitCode": 0,
+      "duration": 305,
+      "errorCount": 5,
+      "errors": [
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/app/app.component.ts: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/app/app.component.ts: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/app/app.component.ts: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/app/app.component.ts: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/app/app.component.ts: "
+        }
+      ],
+      "validationSummary": {
+        "passed": 1,
+        "failed": 1,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "frontend-angular-ngrx-none-none",
+      "status": "failed",
+      "exitCode": 0,
+      "duration": 292,
+      "errorCount": 5,
+      "errors": [
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/app/app.component.ts: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/app/app.component.ts: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/app/app.component.ts: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/app/app.component.ts: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/app/app.component.ts: "
+        }
+      ],
+      "validationSummary": {
+        "passed": 1,
+        "failed": 1,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "frontend-astro-content-site-none-none",
+      "status": "failed",
+      "exitCode": 0,
+      "duration": 241,
+      "errorCount": 5,
+      "errors": [
+        {
+          "type": "handlebarsRemnants",
+          "message": "astro.config.mjs: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "astro.config.mjs: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "astro.config.mjs: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "astro.config.mjs: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "astro.config.mjs: "
+        }
+      ],
+      "validationSummary": {
+        "passed": 1,
+        "failed": 1,
+        "warnings": 0,
+        "total": 2
+      }
+    },
+    {
+      "id": "frontend-astro-island-architecture-none-none",
+      "status": "failed",
+      "exitCode": 0,
+      "duration": 294,
+      "errorCount": 5,
+      "errors": [
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/layouts/BaseLayout.astro: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/layouts/BaseLayout.astro: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/layouts/BaseLayout.astro: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/layouts/BaseLayout.astro: "
+        },
+        {
+          "type": "handlebarsRemnants",
+          "message": "src/layouts/BaseLayout.astro: "
+        }
+      ],
+      "validationSummary": {
+        "passed": 1,
+        "failed": 1,
+        "warnings": 0,
+        "total": 2
+      }
+    }
+  ]
+}

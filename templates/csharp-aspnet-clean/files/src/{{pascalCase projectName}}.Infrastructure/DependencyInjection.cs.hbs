@@ -2,8 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 {{#each modules}}
-using {{../pascalCase projectName}}.Application.Interfaces;
-using {{../pascalCase projectName}}.Infrastructure.Repositories;
+using {{pascalCase ../projectName}}.Application.Interfaces;
+using {{pascalCase ../projectName}}.Infrastructure.Repositories;
 {{/each}}
 
 namespace {{pascalCase projectName}}.Infrastructure;

@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 {{#each modules}}
-using {{../pascalCase projectName}}.Application.Ports.In;
-using {{../pascalCase projectName}}.Application.Services;
+using {{pascalCase ../projectName}}.Application.Ports.In;
+using {{pascalCase ../projectName}}.Application.Services;
 {{/each}}
 
 namespace {{pascalCase projectName}}.Application;

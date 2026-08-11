@@ -1,7 +1,7 @@
 {{#if ormEfcore}}
 using Microsoft.EntityFrameworkCore;
 {{#each modules}}
-using {{../pascalCase projectName}}.Models;
+using {{pascalCase ../projectName}}.Models;
 {{/each}}
 
 namespace {{pascalCase projectName}}.Data;

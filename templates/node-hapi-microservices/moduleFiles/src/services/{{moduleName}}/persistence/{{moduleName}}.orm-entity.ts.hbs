@@ -1,0 +1,10 @@
+import { Column, Entity, PrimaryColumn } from 'typeorm';
+
+@Entity('{{snakeCase moduleName}}')
+export class {{pascalCase moduleName}}OrmEntity {
+  @PrimaryColumn('varchar')
+  id!: string;
+
+  @Column('varchar')
+  name!: string;
+}

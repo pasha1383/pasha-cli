@@ -1,0 +1,103 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository. Read this before
+generating or editing code. Each significant directory has its own `AGENT.md`
+with rules specific to that layer.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Framework:** Express (TypeScript, strict mode) — no DI container. Wiring
+  is manual in `src/app.ts` (the composition root).
+- **Architecture:** {{architectureLabel}}
+- **Data layer:** {{#if ormNone}}in-memory repositories (no ORM){{else}}{{orm}}{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+- **Validation:** {{#if hasValidation}}{{validation}}{{else}}none{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis (via `ioredis`)
+{{/if}}
+{{#if hasBroker}}
+- **Message broker:** {{broker}}
+{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/api/docs` (swagger-jsdoc)
+{{/if}}
+{{#if useAuth}}
+- **Auth:** JWT + passport (POST /auth/login, Bearer token)
+{{/if}}
+{{#if useHealthCheck}}
+- **Health:** `GET /health` reports liveness/readiness
+{{/if}}
+{{#if useRateLimit}}
+- **Rate limiting:** express-rate-limit (configurable via env)
+{{/if}}
+
+## Modules
+
+{{#each modules}}
+- `{{this}}`
+{{/each}}
+
+## Commands
+
+```bash
+npm run start:dev      # watch mode (tsx)
+npm run build           # tsc
+{{#if useDocker}}
+npm run infra:up        # start databases/brokers via docker compose
+npm run infra:down
+{{/if}}
+{{#if ormPrisma}}
+npm run prisma:migrate  # create and apply a migration
+npm run prisma:generate
+{{/if}}
+{{#if useLint}}
+npm run lint            # ESLint with auto-fix
+npm run format          # Prettier
+{{/if}}
+{{#if useTests}}
+npm run test            # unit tests (Jest)
+npm run test:watch
+npm run test:cov        # with coverage
+npm run test:e2e        # e2e tests (supertest)
+{{/if}}
+```
+
+## Hard rules
+
+1. **No DI container.** `src/app.ts` is the composition root and the only file
+   that calls `new` on constructors. Every other file receives its
+   dependencies through the constructor. Do not introduce a framework-level
+   injector to "simplify" this.
+2. **Dependency rule.** `core/` has zero knowledge of `adapters/` or Express.
+   Adapters implement core ports. The arrow always points inward.
+3. **TypeScript is strict.** No `any`, no non-null assertions to silence the
+   compiler.{{#if ormTypeorm}} TypeORM entity fields use `!:` because the ORM
+   populates them, not a constructor — that's the one sanctioned exception.{{/if}}
+4. **Adding a module means adding every file.** entity (core), port (core),
+   use-cases (core), controller, routes, presenter, DTO, and repository
+   (adapters). A new feature gets its full slice.
+5. **Mount new controllers** in `src/app.ts` by adding a wiring block for the
+   new module, or the route will not be reachable.
+6. **Controllers never touch the repository directly.** Always go through
+   the use case — that's what keeps the dependency rule intact.
+7. **Every controller method calls `next(err)` on failure**, never lets an
+   error escape unhandled — Express does not catch async rejections for you
+   without it landing in the error middleware.
+{{#if hasValidation}}
+8. **Every request body needs validation** before it reaches a controller.
+{{/if}}
+9. **`config/env.ts` is the only file that reads `process.env`** directly.
+   Everywhere else imports `env` from there.
+{{#if useAuth}}
+10. **Protected routes** use `authenticate` from `shared/auth/auth.middleware`.
+    Inject `req.user` — it carries `{ sub, username }` after successful validation.
+{{/if}}
+
+## When you are unsure
+
+Prefer asking over guessing. Generating a plausible-looking file in the wrong
+layer costs more to unpick than a clarifying question costs to answer.

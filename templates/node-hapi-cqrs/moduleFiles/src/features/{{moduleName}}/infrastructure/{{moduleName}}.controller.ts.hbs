@@ -1,0 +1,52 @@
+import { Request, ResponseToolkit } from '@hapi/hapi';
+import { CommandBus } from './bus';
+import { QueryBus } from './bus';
+import { Create{{pascalCase moduleName}}Command } from '../commands/create-{{moduleName}}.command';
+import { Update{{pascalCase moduleName}}Command } from '../commands/update-{{moduleName}}.command';
+import { Delete{{pascalCase moduleName}}Command } from '../commands/delete-{{moduleName}}.handler';
+import { Get{{pascalCase moduleName}}Query } from '../queries/get-{{moduleName}}.query';
+import { List{{pascalCase moduleName}}sQuery } from '../queries/list-{{moduleName}}s.query';
+import { {{pascalCase moduleName}}ResponseDto } from '../dto/{{moduleName}}.response';
+
+export class {{pascalCase moduleName}}Controller {
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
+
+  create = async (request: Request, h: ResponseToolkit) => {
+    const { name } = request.payload as { name: string };
+    const command = new Create{{pascalCase moduleName}}Command(name);
+    const event = await this.commandBus.execute<{ {{camelCase moduleName}}: { id: string } }>(command);
+    return h.response({ id: event.{{camelCase moduleName}}.id }).code(201);
+  };
+
+  findAll = async (request: Request, h: ResponseToolkit) => {
+    const limit = request.query.limit ? parseInt(request.query.limit as string, 10) : undefined;
+    const offset = request.query.offset ? parseInt(request.query.offset as string, 10) : undefined;
+    const query = new List{{pascalCase moduleName}}sQuery(limit, offset);
+    const results = await this.queryBus.execute<{{pascalCase moduleName}}ResponseDto[]>(query);
+    return h.response(results).code(200);
+  };
+
+  findOne = async (request: Request, h: ResponseToolkit) => {
+    const query = new Get{{pascalCase moduleName}}Query(request.params.id);
+    const result = await this.queryBus.execute<{{pascalCase moduleName}}ResponseDto>(query);
+    return h.response(result).code(200);
+  };
+
+  update = async (request: Request, h: ResponseToolkit) => {
+    const { name } = request.payload as { name: string };
+    const command = new Update{{pascalCase moduleName}}Command(request.params.id, name);
+    await this.commandBus.execute(command);
+    const query = new Get{{pascalCase moduleName}}Query(request.params.id);
+    const result = await this.queryBus.execute<{{pascalCase moduleName}}ResponseDto>(query);
+    return h.response(result).code(200);
+  };
+
+  remove = async (request: Request, h: ResponseToolkit) => {
+    const command = new Delete{{pascalCase moduleName}}Command(request.params.id);
+    const event = await this.commandBus.execute<{ id: string }>(command);
+    return h.response({ id: event.id }).code(200);
+  };
+}

@@ -1,0 +1,64 @@
+import Fastify, { FastifyInstance } from 'fastify';
+import cors from '@fastify/cors';
+import helmet from '@fastify/helmet';
+import { AppError } from './errors/app-error';
+{{#if useSwagger}}
+import { setupSwagger } from './config/swagger';
+{{/if}}
+{{#if useRateLimit}}
+import { env } from './config/env';
+{{/if}}
+{{#if useAuth}}
+import { authPlugin } from './shared/auth/auth.plugin';
+{{/if}}
+{{#if useHealthCheck}}
+import { healthRoutes } from './shared/health/health.routes';
+{{/if}}
+{{#each modules}}
+import {{camelCase this}}Routes from './presentation/{{this}}/{{this}}.routes';
+{{/each}}
+
+export async function buildApp(): Promise<FastifyInstance> {
+  const fastify = Fastify({ logger: true });
+
+  await fastify.register(cors);
+  await fastify.register(helmet, { contentSecurityPolicy: false });
+
+{{#if useRateLimit}}
+  await fastify.register(import('@fastify/rate-limit'), {
+    max: env.rateLimitMax,
+    timeWindow: env.rateLimitWindowMs,
+  });
+{{/if}}
+
+{{#if useSwagger}}
+  await setupSwagger(fastify);
+{{/if}}
+
+{{#if useAuth}}
+  await fastify.register(authPlugin);
+{{/if}}
+
+{{#if useHealthCheck}}
+  await fastify.register(healthRoutes, { prefix: '/health' });
+{{/if}}
+
+{{#each modules}}
+  await fastify.register({{camelCase this}}Routes, { prefix: '/{{this}}' });
+{{/each}}
+
+  fastify.setErrorHandler((error, _request, reply) => {
+    if (error instanceof AppError) {
+      reply.status(error.statusCode).send({ error: error.message });
+      return;
+    }
+    fastify.log.error(error);
+    reply.status(500).send({ error: 'Internal server error' });
+  });
+
+  fastify.setNotFoundHandler((_request, reply) => {
+    reply.status(404).send({ error: 'Not found' });
+  });
+
+  return fastify;
+}

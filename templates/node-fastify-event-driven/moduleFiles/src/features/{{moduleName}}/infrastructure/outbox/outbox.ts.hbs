@@ -1,0 +1,24 @@
+import { StoredEvent } from '../../event-store/event-store';
+
+export class Outbox {
+  private readonly queue: StoredEvent[] = [];
+
+  async enqueue(event: StoredEvent): Promise<void> {
+    this.queue.push(event);
+  }
+
+  async getPending(): Promise<StoredEvent[]> {
+    const pending = [...this.queue];
+    this.queue.length = 0;
+    return pending;
+  }
+
+  async publishPending(): Promise<void> {
+    const pending = await this.getPending();
+    for (const event of pending) {
+      console.log(
+        `[Outbox] Publishing event: ${event.eventType} for ${event.aggregateType}#${event.aggregateId}`,
+      );
+    }
+  }
+}

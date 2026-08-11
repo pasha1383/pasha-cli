@@ -1,0 +1,31 @@
+import { Router } from 'express';
+{{#if useExpressValidator}}
+import { create{{pascalCase moduleName}}Validation } from '../../../application/dto/create-{{moduleName}}.dto';
+import { handleValidationErrors } from '../../../middlewares/handle-validation-errors.middleware';
+{{/if}}
+{{#if useZod}}
+import { create{{pascalCase moduleName}}Schema } from '../../../application/dto/create-{{moduleName}}.dto';
+import { validateBody } from '../../../middlewares/validate-body.middleware';
+{{/if}}
+import { {{pascalCase moduleName}}Controller } from './{{moduleName}}.controller';
+
+export function {{camelCase moduleName}}Routes(controller: {{pascalCase moduleName}}Controller): Router {
+  const router = Router();
+
+{{#if useExpressValidator}}
+  router.post('/', create{{pascalCase moduleName}}Validation, handleValidationErrors, controller.create);
+{{/if}}
+{{#if useZod}}
+  router.post('/', validateBody(create{{pascalCase moduleName}}Schema), controller.create);
+{{/if}}
+{{#if useClassValidator}}
+  router.post('/', controller.create);
+{{/if}}
+{{#unless hasValidation}}
+  router.post('/', controller.create);
+{{/unless}}
+  router.get('/', controller.findAll);
+  router.get('/:id', controller.findOne);
+
+  return router;
+}

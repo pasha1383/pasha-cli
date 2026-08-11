@@ -1,0 +1,97 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository. Read this before
+generating or editing code.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Framework:** Hapi (TypeScript, strict mode) — microservices pattern.
+  Each module is a self-contained service that mounts its own routes onto
+  a shared Hapi gateway.
+- **Architecture:** {{architectureLabel}}
+- **Data layer:** {{#if ormNone}}in-memory repositories (no ORM){{else}}{{orm}}{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+- **Validation:** {{#if hasValidation}}{{validation}}{{else}}none{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis (via `ioredis`)
+{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/docs` (hapi-swagger)
+{{/if}}
+{{#if useAuth}}
+- **Auth:** JWT (POST /auth/login, Bearer token)
+{{/if}}
+{{#if useHealthCheck}}
+- **Health:** `GET /health` reports liveness/readiness
+{{/if}}
+{{#if useRateLimit}}
+- **Rate limiting:** hapi-rate-limit (configurable via env)
+{{/if}}
+
+## Modules / Services
+
+{{#each modules}}
+- `{{this}}`
+{{/each}}
+
+## Commands
+
+```bash
+npm run start:dev      # watch mode (tsx)
+npm run build           # tsc
+{{#if useDocker}}
+npm run infra:up        # start databases/brokers via docker compose
+npm run infra:down
+{{/if}}
+{{#if ormPrisma}}
+npm run prisma:migrate  # create and apply a migration
+npm run prisma:generate
+{{/if}}
+{{#if useLint}}
+npm run lint            # ESLint with auto-fix
+npm run format          # Prettier
+{{/if}}
+{{#if useTests}}
+npm run test            # unit tests (Jest)
+npm run test:watch
+npm run test:cov        # with coverage
+npm run test:e2e        # e2e tests (server.inject())
+{{/if}}
+```
+
+## Architecture
+
+Each service lives under `src/services/<name>/` and exports an async
+`init<Name>Service()` function that returns `{ routes }`. The gateway
+(`src/server.ts`) calls each service's init function and mounts the
+returned routes via `server.route(service.routes)`.
+
+A service is fully self-contained — it owns its routes, persistence,
+and entity definitions. Services do not import from other services.
+Cross-cutting concerns (auth, swagger, health) live in `src/plugins/`
+and `src/shared/`.
+
+## Hard rules
+
+1. **Each service is isolated.** A service's routes, entities, and
+   persistence files live under `src/services/<name>/`. Do not import
+   entity types from one service into another.
+2. **No DI container.** Services export factory functions that return
+   route arrays. Wiring is manual and visible in `server.ts`.
+3. **TypeScript is strict.** No `any`, no non-null assertions.
+{{#if ormTypeorm}} TypeORM entity fields use `!:` because the ORM
+   populates them. That's the one sanctioned exception.{{/if}}
+4. **Mount new services** in `src/server.ts` via
+   `server.route(service.routes)`.
+5. **Hapi handlers use `h.response(data).code(status)`.** Throwing an
+   `AppError` subclass is caught by `onPreResponse` and turned into a
+   JSON error response.
+6. **`config/env.ts`** is the only file that reads `process.env`.
+
+## When you are unsure
+
+Prefer asking over guessing.

@@ -1,0 +1,13 @@
+import { {{pascalCase moduleName}} } from './{{moduleName}}.entity';
+
+export class {{pascalCase moduleName}}CreatedEvent {
+  constructor(public readonly {{camelCase moduleName}}: {{pascalCase moduleName}}) {}
+}
+
+export class {{pascalCase moduleName}}UpdatedEvent {
+  constructor(public readonly {{camelCase moduleName}}: {{pascalCase moduleName}}) {}
+}
+
+export class {{pascalCase moduleName}}DeletedEvent {
+  constructor(public readonly id: string) {}
+}

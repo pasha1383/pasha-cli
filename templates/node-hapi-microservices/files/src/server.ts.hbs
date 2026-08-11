@@ -1,0 +1,77 @@
+import Hapi from '@hapi/hapi';
+{{#if useRateLimit}}
+import HapiRateLimit from 'hapi-rate-limit';
+{{/if}}
+import { env } from './config/env';
+{{#if useSwagger}}
+import { inertPlugin, visionPlugin, swaggerPlugin } from './plugins/swagger';
+{{/if}}
+{{#if useAuth}}
+import { authPlugin } from './plugins/auth';
+{{/if}}
+{{#if useHealthCheck}}
+import { healthRoutes } from './shared/health/health.routes';
+{{/if}}
+{{#each modules}}
+import { init{{pascalCase this}}Service } from './services/{{this}}/{{this}}.service';
+{{/each}}
+
+export async function initGateway(): Promise<Hapi.Server> {
+  const server = Hapi.server({
+    port: env.port,
+    host: 'localhost',
+    routes: {
+      cors: true,
+      validate: {
+        failAction: async (request, h, err) => {
+          throw err;
+        },
+      },
+    },
+  });
+
+{{#if useRateLimit}}
+  await server.register({
+    plugin: HapiRateLimit,
+    options: {
+      enabled: true,
+      userLimit: env.rateLimitMax,
+    },
+  });
+{{/if}}
+
+{{#if useSwagger}}
+  await server.register([inertPlugin, visionPlugin, swaggerPlugin]);
+{{/if}}
+
+{{#if useAuth}}
+  await server.register([authPlugin]);
+{{/if}}
+
+{{#if useHealthCheck}}
+  server.route(healthRoutes);
+{{/if}}
+
+{{#each modules}}
+  const {{camelCase this}}Service = await init{{pascalCase this}}Service();
+  server.route({{camelCase this}}Service.routes);
+{{/each}}
+
+  server.ext('onPreResponse', (request, h) => {
+    const response = request.response;
+
+    if (response.isBoom) {
+      const statusCode = response.output.statusCode;
+      if (statusCode >= 500) {
+        console.error(response);
+        const message = env.nodeEnv === 'production' ? 'Internal server error' : response.message;
+        return h.response({ error: message }).code(statusCode);
+      }
+    }
+
+    return h.continue;
+  });
+
+  await server.initialize();
+  return server;
+}

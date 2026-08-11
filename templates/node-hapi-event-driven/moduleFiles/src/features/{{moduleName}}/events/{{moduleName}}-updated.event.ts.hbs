@@ -1,0 +1,7 @@
+export class {{pascalCase moduleName}}UpdatedEvent {
+  constructor(
+    public readonly aggregateId: string,
+    public readonly name: string,
+    public readonly updatedAt: Date = new Date(),
+  ) {}
+}

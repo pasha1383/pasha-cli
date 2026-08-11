@@ -1,0 +1,71 @@
+# {{projectName}}
+
+{{description}}
+
+Built with pasha CLI — **Microservices** architecture on Hapi.
+
+## Stack
+
+- **Framework:** Hapi (configuration-centric)
+- **Architecture:** Microservices (each module is a self-contained service)
+- **Data layer:** {{#if ormNone}}in-memory repositories{{else}}{{orm}}{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+- **Validation:** {{#if hasValidation}}{{validation}}{{else}}none{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis
+{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/docs`
+{{/if}}
+
+## Architecture
+
+```
+src/
+├── main.ts                  ← starts the gateway
+├── server.ts                ← builds the Hapi gateway, initializes all services
+├── config/env.ts
+├── plugins/                  ← shared Hapi plugins (swagger, auth)
+├── errors/                   ← AppError base class
+├── shared/                   ← shared database/cache clients
+└── services/<name>/          ← one directory per microservice
+    ├── <name>.service.ts     ← service init function → { routes }
+    ├── dto/                   ← request validation (Joi/Zod)
+    └── persistence/           ← entity + repository (ORM-specific)
+```
+
+Each service is isolated — it exports an async `init<Name>Service()` function
+that the gateway calls. Services do not import from each other.
+
+## Run
+
+```bash
+cp .env.example .env
+{{#if useDocker}}
+npm run infra:up          # start docker services
+{{/if}}
+npm install
+{{#if ormPrisma}}
+npm run prisma:migrate    # create the database schema
+{{/if}}
+npm run start:dev
+```
+
+## Services
+
+{{#each modules}}
+- `{{this}}` → `http://localhost:3000/{{this}}`
+{{/each}}
+
+## Key Hapi Patterns
+
+- Services export `initXService() → Promise<{ routes: ServerRoute[] }>` factories
+- Gateway calls each service and mounts `service.routes` via `server.route()`
+- Plugins (swagger, auth) registered once in `server.ts`
+- Error handling: `onPreResponse` ext catches all errors
+- No middleware — use `server.ext()` lifecycle hooks and plugins instead
+
+---
+Made with {{author}}

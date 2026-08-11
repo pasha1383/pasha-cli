@@ -1,0 +1,28 @@
+import { {{pascalCase moduleName}} } from '../domain/{{moduleName}}.entity';
+import { I{{pascalCase moduleName}}Repository } from '../domain/{{moduleName}}.repository.interface';
+import { {{pascalCase moduleName}}Model } from './{{moduleName}}.schema';
+
+export class {{pascalCase moduleName}}MongooseRepository implements I{{pascalCase moduleName}}Repository {
+  async save(entity: {{pascalCase moduleName}}): Promise<void> {
+    await {{pascalCase moduleName}}Model.findOneAndUpdate(
+      { _id: entity.id },
+      { name: entity.name, _id: entity.id },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    ).exec();
+  }
+
+  async findById(id: string): Promise<{{pascalCase moduleName}} | null> {
+    const doc = await {{pascalCase moduleName}}Model.findById(id).exec();
+    if (!doc) return null;
+    return new {{pascalCase moduleName}}(doc.id, doc.name, doc.createdAt, doc.updatedAt);
+  }
+
+  async findAll(): Promise<{{pascalCase moduleName}}[]> {
+    const docs = await {{pascalCase moduleName}}Model.find().exec();
+    return docs.map((doc) => new {{pascalCase moduleName}}(doc.id, doc.name, doc.createdAt, doc.updatedAt));
+  }
+
+  async delete(id: string): Promise<void> {
+    await {{pascalCase moduleName}}Model.findByIdAndDelete(id).exec();
+  }
+}

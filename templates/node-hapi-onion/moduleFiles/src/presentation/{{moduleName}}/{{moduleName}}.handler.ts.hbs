@@ -1,0 +1,56 @@
+import { Request, ResponseToolkit } from '@hapi/hapi';
+{{#if useZod}}
+import { create{{pascalCase moduleName}}Schema } from '../../../application/dto/create-{{moduleName}}.dto';
+{{/if}}
+import { AppError } from '../../../errors/app-error';
+import { {{pascalCase moduleName}}Service } from '../../../application/services/{{moduleName}}.service';
+
+export class {{pascalCase moduleName}}Handler {
+  constructor(private readonly {{camelCase moduleName}}Service: {{pascalCase moduleName}}Service) {}
+
+  create = async (request: Request, h: ResponseToolkit) => {
+    try {
+{{#if useZod}}
+      const payload = create{{pascalCase moduleName}}Schema.parse(request.payload);
+      const entity = await this.{{camelCase moduleName}}Service.create(payload.name);
+{{else}}
+      const entity = await this.{{camelCase moduleName}}Service.create(
+        (request.payload as { name: string }).name,
+      );
+{{/if}}
+      return h.response(entity).code(201);
+    } catch (err) {
+      if (err instanceof AppError) {
+        return h.response({ error: err.message }).code(err.statusCode);
+      }
+      throw err;
+    }
+  };
+
+  findAll = async (_request: Request, h: ResponseToolkit) => {
+    try {
+      const entities = await this.{{camelCase moduleName}}Service.findAll();
+      return h.response(entities).code(200);
+    } catch (err) {
+      if (err instanceof AppError) {
+        return h.response({ error: err.message }).code(err.statusCode);
+      }
+      throw err;
+    }
+  };
+
+  findOne = async (request: Request, h: ResponseToolkit) => {
+    try {
+      const entity = await this.{{camelCase moduleName}}Service.findById(request.params.id);
+      if (!entity) {
+        return h.response({ error: '{{pascalCase moduleName}} not found' }).code(404);
+      }
+      return h.response(entity).code(200);
+    } catch (err) {
+      if (err instanceof AppError) {
+        return h.response({ error: err.message }).code(err.statusCode);
+      }
+      throw err;
+    }
+  };
+}

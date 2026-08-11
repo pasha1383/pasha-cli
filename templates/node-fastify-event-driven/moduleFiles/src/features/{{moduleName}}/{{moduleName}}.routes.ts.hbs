@@ -1,0 +1,26 @@
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { {{pascalCase moduleName}}Controller } from './infrastructure/{{moduleName}}.controller';
+import { Create{{pascalCase moduleName}}Handler } from './commands/create-{{moduleName}}.command-handler';
+import { {{pascalCase moduleName}}Projection } from './projections/{{moduleName}}.projection';
+import { EventStore } from './event-store/event-store';
+import { Outbox } from './infrastructure/outbox/outbox';
+
+// ---- DI: wire up shared infrastructure ----
+const eventStore = new EventStore();
+const outbox = new Outbox();
+const projection = new {{pascalCase moduleName}}Projection();
+
+// ---- DI: wire up handlers ----
+const createHandler = new Create{{pascalCase moduleName}}Handler(eventStore, outbox, projection);
+
+// ---- Controller ----
+const controller = new {{pascalCase moduleName}}Controller(createHandler, projection, eventStore);
+
+// ---- Plugin ----
+export default async function {{camelCase moduleName}}Routes(fastify: FastifyInstance) {
+  fastify.post('/', controller.create);
+  fastify.get('/', controller.findAll);
+  fastify.get('/:id', controller.findOne);
+  fastify.patch('/:id', controller.update);
+  fastify.delete('/:id', controller.remove);
+}

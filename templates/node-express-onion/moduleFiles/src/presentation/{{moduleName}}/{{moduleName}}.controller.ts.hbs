@@ -1,0 +1,37 @@
+import { Request, Response } from 'express';
+import { {{pascalCase moduleName}}Service } from '../../../application/services/{{moduleName}}.service';
+
+export class {{pascalCase moduleName}}Controller {
+  constructor(private readonly {{camelCase moduleName}}Service: {{pascalCase moduleName}}Service) {}
+
+  create = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const entity = await this.{{camelCase moduleName}}Service.create(req.body.name);
+      res.status(201).json(entity);
+    } catch (err) {
+      res.status(400).json({ error: (err as Error).message });
+    }
+  };
+
+  findAll = async (_req: Request, res: Response): Promise<void> => {
+    try {
+      const entities = await this.{{camelCase moduleName}}Service.findAll();
+      res.json(entities);
+    } catch (err) {
+      res.status(400).json({ error: (err as Error).message });
+    }
+  };
+
+  findOne = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const entity = await this.{{camelCase moduleName}}Service.findById(req.params.id);
+      if (!entity) {
+        res.status(404).json({ error: '{{pascalCase moduleName}} not found' });
+        return;
+      }
+      res.json(entity);
+    } catch (err) {
+      res.status(400).json({ error: (err as Error).message });
+    }
+  };
+}

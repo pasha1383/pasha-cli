@@ -1,0 +1,21 @@
+import { I{{pascalCase moduleName}}Repository } from '../domain/{{moduleName}}.repository.interface';
+import { {{pascalCase moduleName}}DeletedEvent } from '../domain/{{moduleName}}.events';
+import { NotFoundError } from '../../../errors/app-error';
+import { ICommandHandler } from '../infrastructure/bus';
+
+export class Delete{{pascalCase moduleName}}Command {
+  constructor(public readonly id: string) {}
+}
+
+export class Delete{{pascalCase moduleName}}Handler implements ICommandHandler<Delete{{pascalCase moduleName}}Command, {{pascalCase moduleName}}DeletedEvent> {
+  constructor(private readonly repo: I{{pascalCase moduleName}}Repository) {}
+
+  async execute(command: Delete{{pascalCase moduleName}}Command): Promise<{{pascalCase moduleName}}DeletedEvent> {
+    const entity = await this.repo.findById(command.id);
+    if (!entity) {
+      throw new NotFoundError(`{{pascalCase moduleName}} with id "${command.id}" not found`);
+    }
+    await this.repo.delete(command.id);
+    return new {{pascalCase moduleName}}DeletedEvent(command.id);
+  }
+}

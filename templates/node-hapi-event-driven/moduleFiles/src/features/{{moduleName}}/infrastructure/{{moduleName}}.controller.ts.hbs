@@ -1,0 +1,87 @@
+import { Request, ResponseToolkit } from '@hapi/hapi';
+import { Create{{pascalCase moduleName}}Command } from '../commands/create-{{moduleName}}.command';
+import { Create{{pascalCase moduleName}}Handler } from '../commands/create-{{moduleName}}.command-handler';
+import { {{pascalCase moduleName}}Projection, {{pascalCase moduleName}}ReadModel } from '../projections/{{moduleName}}.projection';
+import { {{pascalCase moduleName}}Aggregate } from '../aggregates/{{moduleName}}.aggregate';
+import { EventStore } from '../event-store/event-store';
+import { NotFoundError } from '../../../errors/app-error';
+import { {{pascalCase moduleName}}CreatedEvent } from '../events/{{moduleName}}-created.event';
+import { {{pascalCase moduleName}}UpdatedEvent } from '../events/{{moduleName}}-updated.event';
+import { {{pascalCase moduleName}}DeletedEvent } from '../events/{{moduleName}}-deleted.event';
+
+export class {{pascalCase moduleName}}Controller {
+  constructor(
+    private readonly createHandler: Create{{pascalCase moduleName}}Handler,
+    private readonly projection: {{pascalCase moduleName}}Projection,
+    private readonly eventStore: EventStore,
+  ) {}
+
+  create = async (request: Request, h: ResponseToolkit) => {
+    const { name } = request.payload as { name: string };
+    const command = new Create{{pascalCase moduleName}}Command(name);
+    const id = await this.createHandler.execute(command);
+    return h.response({ id }).code(201);
+  };
+
+  findAll = async (_request: Request, h: ResponseToolkit) => {
+    const results = this.projection.findAll();
+    return h.response(results).code(200);
+  };
+
+  findOne = async (request: Request, h: ResponseToolkit) => {
+    const found = this.projection.findById(request.params.id);
+    if (!found) {
+      throw new NotFoundError(`{{pascalCase moduleName}} with id "${request.params.id}" not found`);
+    }
+    return h.response(found).code(200);
+  };
+
+  update = async (request: Request, h: ResponseToolkit) => {
+    const { name } = request.payload as { name: string };
+    const events = await this.eventStore.getEvents(request.params.id);
+    if (events.length === 0) {
+      throw new NotFoundError(`{{pascalCase moduleName}} with id "${request.params.id}" not found`);
+    }
+
+    const aggregate = {{pascalCase moduleName}}Aggregate.fromHistory(
+      events.map((e) => e.payload) as ({{pascalCase moduleName}}CreatedEvent | {{pascalCase moduleName}}UpdatedEvent | {{pascalCase moduleName}}DeletedEvent)[],
+    );
+    aggregate.updateName(name);
+
+    const newEvents = aggregate.getUncommittedEvents();
+    await this.eventStore.append(request.params.id, '{{pascalCase moduleName}}', newEvents, aggregate.version);
+    aggregate.markEventsAsCommitted();
+
+    for (const event of newEvents) {
+      if (event instanceof {{pascalCase moduleName}}UpdatedEvent) {
+        this.projection.handleUpdatedEvent(event);
+      }
+    }
+
+    return h.response(this.projection.findById(request.params.id)).code(200);
+  };
+
+  remove = async (request: Request, h: ResponseToolkit) => {
+    const events = await this.eventStore.getEvents(request.params.id);
+    if (events.length === 0) {
+      throw new NotFoundError(`{{pascalCase moduleName}} with id "${request.params.id}" not found`);
+    }
+
+    const aggregate = {{pascalCase moduleName}}Aggregate.fromHistory(
+      events.map((e) => e.payload) as ({{pascalCase moduleName}}CreatedEvent | {{pascalCase moduleName}}UpdatedEvent | {{pascalCase moduleName}}DeletedEvent)[],
+    );
+    aggregate.delete();
+
+    const newEvents = aggregate.getUncommittedEvents();
+    await this.eventStore.append(request.params.id, '{{pascalCase moduleName}}', newEvents, aggregate.version);
+    aggregate.markEventsAsCommitted();
+
+    for (const event of newEvents) {
+      if (event instanceof {{pascalCase moduleName}}DeletedEvent) {
+        this.projection.handleDeletedEvent(event);
+      }
+    }
+
+    return h.response({ id: request.params.id }).code(200);
+  };
+}

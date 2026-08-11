@@ -1,0 +1,53 @@
+# src/features/
+
+Each subdirectory is a CQRS module following the command/query separation pattern.
+
+## Module structure
+
+```
+<moduleName>/
+├── <moduleName>.routes.ts          ← manual DI — creates the repo, handlers, buses, controller, Router
+├── commands/                       ← write operations
+│   ├── create-<moduleName>.command.ts
+│   ├── create-<moduleName>.handler.ts
+│   ├── update-<moduleName>.command.ts
+│   ├── update-<moduleName>.handler.ts
+│   └── delete-<moduleName>.handler.ts  (command + handler in one file)
+├── queries/                        ← read operations
+│   ├── get-<moduleName>.query.ts
+│   ├── get-<moduleName>.handler.ts
+│   ├── list-<moduleName>s.query.ts
+│   └── list-<moduleName>s.handler.ts
+├── domain/                         ← pure domain — no framework dependencies
+│   ├── <moduleName>.entity.ts
+│   ├── <moduleName>.repository.interface.ts
+│   └── <moduleName>.events.ts
+├── infrastructure/                 ← framework adapters
+│   ├── bus.ts                      ← CommandBus + QueryBus (simple in-process dispatcher)
+│   ├── <moduleName>.controller.ts  ← Express req/res handler methods
+│   └── <moduleName>.repository.ts  ← one per ORM (in-memory, Prisma, TypeORM, Mongoose)
+└── dto/                            ← data transfer objects
+    ├── create-<moduleName>.dto.ts
+    └── <moduleName>.response.ts
+```
+
+## Writing a new feature
+
+1. Define the entity in `domain/<moduleName>.entity.ts`
+2. Define the repository interface in `domain/<moduleName>.repository.interface.ts`
+3. Create command/query classes and their handlers
+4. Write the controller methods (they receive Express `req`, `res`, `next` and use the buses)
+5. Wire everything in `routes.ts`:
+   - Create repository instance
+   - Create handlers (pass repository)
+   - Create buses, register handlers by command/query class
+   - Create controller (pass buses)
+   - Export the Router with route definitions
+
+## Routing conventions
+
+- `POST   /<module>`           → `controller.create`
+- `GET    /<module>`           → `controller.findAll`
+- `GET    /<module>/:id`       → `controller.findOne`
+- `PATCH  /<module>/:id`       → `controller.update`
+- `DELETE /<module>/:id`       → `controller.remove`

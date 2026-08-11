@@ -1,0 +1,23 @@
+import { {{pascalCase moduleName}}Entity } from './{{moduleName}}.entity';
+
+export interface I{{pascalCase moduleName}}Repository {
+  save(entity: {{pascalCase moduleName}}Entity): Promise<void>;
+  findAll(): Promise<{{pascalCase moduleName}}Entity[]>;
+  findById(id: string): Promise<{{pascalCase moduleName}}Entity | null>;
+}
+
+export class {{pascalCase moduleName}}InMemoryRepository implements I{{pascalCase moduleName}}Repository {
+  private readonly items = new Map<string, {{pascalCase moduleName}}Entity>();
+
+  async save(entity: {{pascalCase moduleName}}Entity): Promise<void> {
+    this.items.set(entity.id, entity);
+  }
+
+  async findAll(): Promise<{{pascalCase moduleName}}Entity[]> {
+    return Array.from(this.items.values());
+  }
+
+  async findById(id: string): Promise<{{pascalCase moduleName}}Entity | null> {
+    return this.items.get(id) ?? null;
+  }
+}

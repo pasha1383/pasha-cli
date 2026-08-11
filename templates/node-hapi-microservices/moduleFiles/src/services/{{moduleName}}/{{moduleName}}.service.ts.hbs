@@ -1,0 +1,110 @@
+import Hapi from '@hapi/hapi';
+{{#if useZod}}
+import { create{{pascalCase moduleName}}Schema } from './dto/create-{{moduleName}}.dto';
+{{/if}}
+import { AppError } from '../../errors/app-error';
+import { {{pascalCase moduleName}}Entity } from './persistence/{{moduleName}}.entity';
+{{#if ormPrisma}}
+import { {{pascalCase moduleName}}PrismaRepository } from './persistence/{{moduleName}}.prisma.repository';
+{{/if}}
+{{#if ormTypeorm}}
+import { {{pascalCase moduleName}}TypeormRepository } from './persistence/{{moduleName}}.typeorm.repository';
+{{/if}}
+{{#if ormMongoose}}
+import { {{pascalCase moduleName}}MongooseRepository } from './persistence/{{moduleName}}.mongoose.repository';
+{{/if}}
+{{#if ormNone}}
+import { {{pascalCase moduleName}}InMemoryRepository } from './persistence/{{moduleName}}.repository';
+{{/if}}
+
+interface {{pascalCase moduleName}}ServiceInstance {
+  routes: Hapi.ServerRoute[];
+}
+
+export async function init{{pascalCase moduleName}}Service(): Promise<{{pascalCase moduleName}}ServiceInstance> {
+{{#if ormPrisma}}
+  const repo = new {{pascalCase moduleName}}PrismaRepository();
+{{/if}}
+{{#if ormTypeorm}}
+  const repo = new {{pascalCase moduleName}}TypeormRepository();
+{{/if}}
+{{#if ormMongoose}}
+  const repo = new {{pascalCase moduleName}}MongooseRepository();
+{{/if}}
+{{#if ormNone}}
+  const repo = new {{pascalCase moduleName}}InMemoryRepository();
+{{/if}}
+
+  const routes: Hapi.ServerRoute[] = [
+    {
+      method: 'POST',
+      path: '/{{moduleName}}',
+      handler: async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
+        try {
+{{#if useZod}}
+          const payload = create{{pascalCase moduleName}}Schema.parse(request.payload);
+          const entity: {{pascalCase moduleName}}Entity = { id: generateId(), name: payload.name };
+{{else}}
+          const entity: {{pascalCase moduleName}}Entity = {
+            id: generateId(),
+            name: (request.payload as { name: string }).name,
+          };
+{{/if}}
+          await repo.save(entity);
+          return h.response(entity).code(201);
+        } catch (err) {
+          if (err instanceof AppError) {
+            return h.response({ error: err.message }).code(err.statusCode);
+          }
+          throw err;
+        }
+      },
+{{#if useJoi}}
+      options: {
+        validate: {
+          payload: create{{pascalCase moduleName}}Schema,
+        },
+      },
+{{/if}}
+    },
+    {
+      method: 'GET',
+      path: '/{{moduleName}}',
+      handler: async (_request: Hapi.Request, h: Hapi.ResponseToolkit) => {
+        try {
+          const entities = await repo.findAll();
+          return h.response(entities).code(200);
+        } catch (err) {
+          if (err instanceof AppError) {
+            return h.response({ error: err.message }).code(err.statusCode);
+          }
+          throw err;
+        }
+      },
+    },
+    {
+      method: 'GET',
+      path: '/{{moduleName}}/{id}',
+      handler: async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
+        try {
+          const entity = await repo.findById(request.params.id);
+          if (!entity) {
+            return h.response({ error: '{{pascalCase moduleName}} not found' }).code(404);
+          }
+          return h.response(entity).code(200);
+        } catch (err) {
+          if (err instanceof AppError) {
+            return h.response({ error: err.message }).code(err.statusCode);
+          }
+          throw err;
+        }
+      },
+    },
+  ];
+
+  return { routes };
+}
+
+function generateId(): string {
+  return Math.random().toString(36).substring(2, 11);
+}

@@ -1,0 +1,50 @@
+import hapiAuthJwt2 from 'hapi-auth-jwt2';
+import jwt from 'jsonwebtoken';
+import type { Server, Request, ResponseToolkit } from '@hapi/hapi';
+import { env } from '../config/env';
+
+declare module '@hapi/hapi' {
+  interface AuthCredentials {
+    sub: string;
+    username: string;
+  }
+}
+
+const validate: hapiAuthJwt2.ValidateFunction = async function (decoded, _request) {
+  if (!decoded.sub) {
+    return { isValid: false };
+  }
+  return { isValid: true, credentials: decoded as { sub: string; username: string } };
+};
+
+export const authPlugin = {
+  name: 'jwt-auth',
+  version: '1.0.0',
+  register: async function (server: Server) {
+    await server.register(hapiAuthJwt2);
+
+    server.auth.strategy('jwt', 'jwt', {
+      key: env.jwtSecret,
+      validate,
+      verifyOptions: { algorithms: ['HS256'] },
+    });
+
+    server.route({
+      method: 'POST',
+      path: '/auth/login',
+      options: { auth: false },
+      handler: async (request: Request, h: ResponseToolkit) => {
+        const { username, password } = request.payload as { username: string; password: string };
+
+        if (username !== env.adminUser || password !== env.adminPassword) {
+          return h.response({ error: 'Invalid credentials' }).code(401);
+        }
+
+        const payload = { sub: '1', username };
+        const token = jwt.sign(payload, env.jwtSecret, { expiresIn: env.jwtExpiresIn } as jwt.SignOptions);
+
+        return h.response({ accessToken: token }).code(200);
+      },
+    });
+  },
+};

@@ -1,0 +1,43 @@
+import { {{pascalCase moduleName}}CreatedEvent } from '../events/{{moduleName}}-created.event';
+import { {{pascalCase moduleName}}UpdatedEvent } from '../events/{{moduleName}}-updated.event';
+import { {{pascalCase moduleName}}DeletedEvent } from '../events/{{moduleName}}-deleted.event';
+
+export interface {{pascalCase moduleName}}ReadModel {
+  id: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export class {{pascalCase moduleName}}Projection {
+  private readonly collection = new Map<string, {{pascalCase moduleName}}ReadModel>();
+
+  handleCreatedEvent(event: {{pascalCase moduleName}}CreatedEvent): void {
+    this.collection.set(event.aggregateId, {
+      id: event.aggregateId,
+      name: event.name,
+      createdAt: event.createdAt,
+      updatedAt: event.createdAt,
+    });
+  }
+
+  handleUpdatedEvent(event: {{pascalCase moduleName}}UpdatedEvent): void {
+    const existing = this.collection.get(event.aggregateId);
+    if (existing) {
+      existing.name = event.name;
+      existing.updatedAt = event.updatedAt;
+    }
+  }
+
+  handleDeletedEvent(event: {{pascalCase moduleName}}DeletedEvent): void {
+    this.collection.delete(event.aggregateId);
+  }
+
+  findById(id: string): {{pascalCase moduleName}}ReadModel | null {
+    return this.collection.get(id) ?? null;
+  }
+
+  findAll(): {{pascalCase moduleName}}ReadModel[] {
+    return Array.from(this.collection.values());
+  }
+}

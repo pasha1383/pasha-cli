@@ -1,0 +1,23 @@
+# AGENT.md — src/application/
+
+The use-case / orchestration layer. Depends on domain but not on infrastructure
+or presentation.
+
+## What lives here
+
+- `dto/<module>/` — data transfer objects for input validation (Zod schemas).
+  These define the shape of data entering the application.
+- `services/<module>/` — application services that orchestrate use cases.
+  A service receives a DTO/repo, coordinates domain entities, and returns a result.
+
+## Rules
+
+1. Application layer depends **only** on the domain layer. Import entities and
+   repository interfaces from `src/domain/`. Never import from infrastructure
+   or presentation.
+2. Services receive repository implementations through constructor injection.
+   The wiring happens in the route plugin, not here.
+3. DTOs validate input shape. They do not contain business logic — that lives
+   in domain entities.
+4. Services are the entry point for use cases. Route plugins call services,
+   never repositories directly.

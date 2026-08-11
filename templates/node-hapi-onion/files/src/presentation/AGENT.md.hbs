@@ -1,0 +1,24 @@
+# AGENT.md — src/presentation/
+
+The outermost layer. Converts HTTP requests into application service calls
+and returns HTTP responses.
+
+## What lives here
+
+- `<module>/handler.ts` — Hapi route handlers. Receives a `Request` and
+  `ResponseToolkit`, calls the application service, and returns a response.
+- `<module>/routes.ts` — exports a function that returns `ServerRoute[]`.
+  Defines method, path, handler, and (optionally) validation options.
+
+## Rules
+
+1. Handlers call application services, never repositories.
+2. Every handler catches `AppError` subclasses and converts them to
+   appropriate HTTP responses.
+3. Routes are defined as functions (not plain arrays) so the handler
+   instance can be injected during wiring in `server.ts`.
+4. Validation (Joi schemas in route options, Zod parse in handler) happens
+   before the service is called.
+5. Handlers use `h.response(data).code(status)` — no `res.send()` or `next()`.
+6. When adding a new module, mount its routes in `src/server.ts` using
+   `server.route(moduleRoutes(handler))`.

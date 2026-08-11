@@ -1,0 +1,86 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository. Read this before
+generating or editing code. Each significant directory has its own `AGENT.md`
+with rules specific to that layer.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Framework:** Express (TypeScript, strict mode) — no DI container. Wiring
+  is manual in `src/app.ts`.
+- **Architecture:** {{architectureLabel}}
+- **Data layer:** {{#if ormNone}}in-memory repositories (no ORM){{else}}{{orm}}{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+- **Validation:** {{#if hasValidation}}{{validation}}{{else}}none{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis (via `ioredis`)
+{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/api/docs`
+{{/if}}
+{{#if useAuth}}
+- **Auth:** JWT (POST /auth/login, Bearer token, passport)
+{{/if}}
+{{#if useHealthCheck}}
+- **Health:** `GET /health` reports liveness/readiness
+{{/if}}
+{{#if useRateLimit}}
+- **Rate limiting:** express-rate-limit
+{{/if}}
+
+## Modules
+
+{{#each modules}}
+- `{{this}}`
+{{/each}}
+
+## Commands
+
+```bash
+npm run start:dev      # watch mode (tsx)
+npm run build           # tsc
+{{#if useDocker}}
+npm run infra:up        # start databases/brokers via docker compose
+npm run infra:down
+{{/if}}
+{{#if ormPrisma}}
+npm run prisma:migrate  # create and apply a migration
+npm run prisma:generate
+{{/if}}
+{{#if useLint}}
+npm run lint            # ESLint with auto-fix
+npm run format          # Prettier
+{{/if}}
+{{#if useTests}}
+npm run test            # unit tests (Jest)
+npm run test:watch
+npm run test:cov        # with coverage
+npm run test:e2e        # e2e tests (supertest)
+{{/if}}
+```
+
+## Hard rules
+
+1. **No DI container.** `src/app.ts` is the composition root. Every module's
+   dependencies are manually constructed there.
+2. **TypeScript is strict.** No `any`, no non-null assertions to silence the
+   compiler.{{#if ormTypeorm}} TypeORM entity fields use `!:` — the one sanctioned exception.{{/if}}
+3. **Dependency direction is inward.** Presentation → Application → Domain.
+   Infrastructure implements Domain interfaces. Never the reverse.
+4. **Mount new routes** in `src/app.ts` via `app.use('/path', router(...))`.
+5. **Controllers call services, never repositories directly.**
+6. **Express handlers use `res.status(code).json(data)`.** The error-handler
+   middleware catches thrown errors.
+{{#if hasValidation}}
+7. **Every request body needs validation** before it reaches a controller.
+   Use express-validator chains or Zod schemas with `validateBody()` middleware.
+{{/if}}
+8. **`config/env.ts`** is the only file that reads `process.env`.
+
+## When you are unsure
+
+Prefer asking over guessing.

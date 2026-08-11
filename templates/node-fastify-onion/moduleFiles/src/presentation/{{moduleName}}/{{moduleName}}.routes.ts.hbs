@@ -1,0 +1,51 @@
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+{{#if ormPrisma}}
+import { {{pascalCase moduleName}}PrismaRepository } from '../../infrastructure/persistence/{{moduleName}}.prisma.repository';
+{{/if}}
+{{#if ormTypeorm}}
+import { {{pascalCase moduleName}}TypeormRepository } from '../../infrastructure/persistence/{{moduleName}}.typeorm.repository';
+{{/if}}
+{{#if ormMongoose}}
+import { {{pascalCase moduleName}}MongooseRepository } from '../../infrastructure/persistence/{{moduleName}}.mongoose.repository';
+{{/if}}
+{{#if ormNone}}
+import { {{pascalCase moduleName}}InMemoryRepository } from '../../infrastructure/persistence/{{moduleName}}.repository';
+{{/if}}
+import { {{pascalCase moduleName}}Service } from '../../application/services/{{moduleName}}.service';
+
+export default async function {{camelCase moduleName}}Routes(fastify: FastifyInstance) {
+{{#if ormPrisma}}
+  const repository = new {{pascalCase moduleName}}PrismaRepository();
+{{/if}}
+{{#if ormTypeorm}}
+  const repository = new {{pascalCase moduleName}}TypeormRepository();
+{{/if}}
+{{#if ormMongoose}}
+  const repository = new {{pascalCase moduleName}}MongooseRepository();
+{{/if}}
+{{#if ormNone}}
+  const repository = new {{pascalCase moduleName}}InMemoryRepository();
+{{/if}}
+
+  const service = new {{pascalCase moduleName}}Service(repository);
+
+  fastify.post('/', async (request: FastifyRequest, reply: FastifyReply) => {
+    const entity = await service.create((request.body as { name: string }).name);
+    reply.status(201).send(entity);
+  });
+
+  fastify.get('/', async (_request: FastifyRequest, reply: FastifyReply) => {
+    const entities = await service.findAll();
+    reply.send(entities);
+  });
+
+  fastify.get('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
+    const { id } = request.params as { id: string };
+    const entity = await service.findById(id);
+    if (!entity) {
+      reply.status(404).send({ error: '{{pascalCase moduleName}} not found' });
+      return;
+    }
+    reply.send(entity);
+  });
+}

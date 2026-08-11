@@ -1,0 +1,44 @@
+import { Router } from 'express';
+{{#if useZod}}
+import { create{{pascalCase moduleName}}Schema } from './dto/create-{{moduleName}}.dto';
+import { validateBody } from '../../middlewares/validate-body.middleware';
+{{/if}}
+{{#if useClassValidator}}
+import { Create{{pascalCase moduleName}}Dto } from './dto/create-{{moduleName}}.dto';
+import { validateBodyDto } from '../../middlewares/handle-validation-errors.middleware';
+{{/if}}
+import { {{pascalCase moduleName}}Controller } from './infrastructure/{{moduleName}}.controller';
+import { Create{{pascalCase moduleName}}Handler } from './commands/create-{{moduleName}}.command-handler';
+import { {{pascalCase moduleName}}Projection } from './projections/{{moduleName}}.projection';
+import { EventStore } from './event-store/event-store';
+import { Outbox } from './infrastructure/outbox/outbox';
+
+const {{camelCase moduleName}}Router = Router();
+
+// ---- DI: wire up shared infrastructure ----
+const eventStore = new EventStore();
+const outbox = new Outbox();
+const projection = new {{pascalCase moduleName}}Projection();
+
+// ---- DI: wire up handlers ----
+const createHandler = new Create{{pascalCase moduleName}}Handler(eventStore, outbox, projection);
+
+// ---- Controller ----
+const controller = new {{pascalCase moduleName}}Controller(createHandler, projection, eventStore);
+
+// ---- Routes ----
+{{#if useZod}}
+{{camelCase moduleName}}Router.post('/', validateBody(create{{pascalCase moduleName}}Schema), controller.create);
+{{else}}
+{{#if useClassValidator}}
+{{camelCase moduleName}}Router.post('/', validateBodyDto(Create{{pascalCase moduleName}}Dto), controller.create);
+{{else}}
+{{camelCase moduleName}}Router.post('/', controller.create);
+{{/if}}
+{{/if}}
+{{camelCase moduleName}}Router.get('/', controller.findAll);
+{{camelCase moduleName}}Router.get('/:id', controller.findOne);
+{{camelCase moduleName}}Router.patch('/:id', controller.update);
+{{camelCase moduleName}}Router.delete('/:id', controller.remove);
+
+export { {{camelCase moduleName}}Router };

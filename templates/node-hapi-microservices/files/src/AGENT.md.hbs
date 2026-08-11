@@ -1,0 +1,35 @@
+# AGENT.md — src/
+
+Application root for the Microservices architecture.
+
+## What lives here
+
+- `main.ts` — starts the gateway{{#if hasOrm}} and initializes the ORM connection{{/if}}.
+- `server.ts` — builds the Hapi gateway (initGateway factory), registers plugins
+  and initializes all services, then mounts their routes.
+- `config/` — environment loading (`env.ts` is the only file that reads `process.env`).
+- `plugins/` — Hapi plugin registrations (swagger{{#if useAuth}}, auth{{/if}}).
+- `errors/` — AppError base class and subclasses (NotFoundError, ValidationError).
+- `shared/` — cross-cutting infrastructure (database, cache{{#if useAuth}}, auth{{/if}}{{#if useHealthCheck}}, health{{/if}}).
+- `services/<name>/` — one directory per microservice. Each contains its own
+  routes, persistence, entities, and DTOs.
+
+## Service pattern
+
+Each service exports `init<Name>Service() → Promise<{ routes: ServerRoute[] }>`.
+The gateway calls this, then mounts `service.routes` via `server.route()`.
+
+Services are isolated — they do not import from each other. Cross-cutting
+concerns (auth, db, cache) go through `src/shared/` or `src/plugins/`.
+
+## Rules
+
+- Do not put business logic in `main.ts` or `server.ts`.
+- When you add a new service, call its init function and mount its routes
+  in `server.ts`.
+- Plugins (swagger, auth) are registered in `server.ts` via
+  `await server.register([...])`.
+- Cross-cutting error formatting uses `server.ext('onPreResponse', ...)`.
+{{#if useAuth}}
+- Auth is set up as a JWT strategy in `plugins/auth.ts`.
+{{/if}}

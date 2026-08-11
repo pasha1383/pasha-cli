@@ -1,0 +1,34 @@
+import { ServerRoute } from '@hapi/hapi';
+import { {{pascalCase moduleName}}Controller } from './infrastructure/{{moduleName}}.controller';
+import { Create{{pascalCase moduleName}}Handler } from './commands/create-{{moduleName}}.command-handler';
+import { {{pascalCase moduleName}}Projection } from './projections/{{moduleName}}.projection';
+import { EventStore } from './event-store/event-store';
+import { Outbox } from './infrastructure/outbox/outbox';
+
+// ---- DI: wire up shared infrastructure ----
+const eventStore = new EventStore();
+const outbox = new Outbox();
+const projection = new {{pascalCase moduleName}}Projection();
+
+// ---- DI: wire up handlers ----
+const createHandler = new Create{{pascalCase moduleName}}Handler(eventStore, outbox, projection);
+
+// ---- Controller ----
+const controller = new {{pascalCase moduleName}}Controller(createHandler, projection, eventStore);
+
+// ---- Routes ----
+export const {{camelCase moduleName}}Routes: ServerRoute[] = [
+  { method: 'POST', path: '/{{moduleName}}', handler: controller.create },
+  { method: 'GET', path: '/{{moduleName}}', handler: controller.findAll },
+  { method: 'GET', path: '/{{moduleName}}/{id}', handler: controller.findOne },
+  { method: 'PATCH', path: '/{{moduleName}}/{id}', handler: controller.update },
+  { method: 'DELETE', path: '/{{moduleName}}/{id}', handler: controller.remove },
+];
+
+// ---- Plugin ----
+export const {{camelCase moduleName}}Plugin = {
+  name: '{{moduleName}}',
+  register: async (server: any) => {
+    server.route({{camelCase moduleName}}Routes);
+  },
+};

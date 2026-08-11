@@ -1,0 +1,19 @@
+import { I{{pascalCase moduleName}}Repository } from '../domain/{{moduleName}}.repository.interface';
+import { {{pascalCase moduleName}}UpdatedEvent } from '../domain/{{moduleName}}.events';
+import { NotFoundError } from '../../../errors/app-error';
+import { Update{{pascalCase moduleName}}Command } from './update-{{moduleName}}.command';
+import { ICommandHandler } from '../infrastructure/bus';
+
+export class Update{{pascalCase moduleName}}Handler implements ICommandHandler<Update{{pascalCase moduleName}}Command, {{pascalCase moduleName}}UpdatedEvent> {
+  constructor(private readonly repo: I{{pascalCase moduleName}}Repository) {}
+
+  async execute(command: Update{{pascalCase moduleName}}Command): Promise<{{pascalCase moduleName}}UpdatedEvent> {
+    const entity = await this.repo.findById(command.id);
+    if (!entity) {
+      throw new NotFoundError(`{{pascalCase moduleName}} with id "${command.id}" not found`);
+    }
+    entity.updateName(command.name);
+    await this.repo.save(entity);
+    return new {{pascalCase moduleName}}UpdatedEvent(entity);
+  }
+}

@@ -1,0 +1,22 @@
+# AGENT.md — src/presentation/
+
+The outermost layer. Fastify plugins that convert HTTP requests into application
+service calls and return HTTP responses.
+
+## What lives here
+
+- `<module>/routes.ts` — exports a default Fastify plugin function
+  (`export default async function(fastify: FastifyInstance)`).
+  Creates its own repository/service instances and registers routes.
+
+## Rules
+
+1. Route plugins call application services, never repositories directly.
+2. Each plugin exports one default async function. `app.ts` registers it with
+   `await fastify.register(moduleRoutes, { prefix: '/name' })`.
+3. Inside the plugin, routes are registered with `fastify.get()`,
+   `fastify.post()`, etc.
+4. Responses use `reply.status(code).send(data)`.
+5. Error handling is done globally via `setErrorHandler` in `app.ts`.
+   Throw `AppError` subclasses for expected client errors.
+6. When adding a new module, register its plugin in `src/app.ts`.

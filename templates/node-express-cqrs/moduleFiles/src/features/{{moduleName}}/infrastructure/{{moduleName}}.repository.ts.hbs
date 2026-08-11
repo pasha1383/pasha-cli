@@ -1,0 +1,22 @@
+import { {{pascalCase moduleName}} } from '../domain/{{moduleName}}.entity';
+import { I{{pascalCase moduleName}}Repository } from '../domain/{{moduleName}}.repository.interface';
+
+export class {{pascalCase moduleName}}InMemoryRepository implements I{{pascalCase moduleName}}Repository {
+  private readonly items = new Map<string, {{pascalCase moduleName}}>();
+
+  async save(entity: {{pascalCase moduleName}}): Promise<void> {
+    this.items.set(entity.id, entity);
+  }
+
+  async findById(id: string): Promise<{{pascalCase moduleName}} | null> {
+    return this.items.get(id) ?? null;
+  }
+
+  async findAll(): Promise<{{pascalCase moduleName}}[]> {
+    return Array.from(this.items.values());
+  }
+
+  async delete(id: string): Promise<void> {
+    this.items.delete(id);
+  }
+}

@@ -1,0 +1,89 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository. Read this before
+generating or editing code.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Framework:** Fastify (TypeScript, strict mode) — no DI container. Manual
+  wiring in the composition root (`src/app.ts`).
+- **Architecture:** {{architectureLabel}}
+- **Data layer:** {{#if ormNone}}in-memory repositories (no ORM){{else}}{{orm}}{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+- **Validation:** {{#if useZod}}Zod{{else}}Fastify built-in JSON Schema{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis (via `ioredis`)
+{{/if}}
+{{#if hasBroker}}
+- **Message broker:** {{broker}}
+{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/api/docs` (@fastify/swagger)
+{{/if}}
+{{#if useAuth}}
+- **Auth:** JWT (@fastify/jwt)
+{{/if}}
+{{#if useHealthCheck}}
+- **Health:** `GET /health`
+{{/if}}
+{{#if useRateLimit}}
+- **Rate limiting:** @fastify/rate-limit
+{{/if}}
+
+## Modules
+
+{{#each modules}}
+- `{{this}}`
+{{/each}}
+
+## Commands
+
+```bash
+npm run start:dev      # watch mode (tsx)
+npm run build           # tsc
+{{#if useDocker}}
+npm run infra:up        # docker compose
+npm run infra:down
+{{/if}}
+{{#if ormPrisma}}
+npm run prisma:migrate
+npm run prisma:generate
+{{/if}}
+{{#if useLint}}
+npm run lint
+npm run format
+{{/if}}
+{{#if useTests}}
+npm run test
+npm run test:cov
+{{/if}}
+```
+
+## Hard rules
+
+1. **Dependency rule.** `core/` knows nothing about `adapters/`. `adapters/`
+   implements interfaces that `core/` declares. Never import from `adapters/`
+   into `core/`.
+2. **TypeScript is strict.** No `any`, no non-null assertions to silence the
+   compiler.{{#if ormTypeorm}} TypeORM entity fields use `!:` — sanctioned exception.{{/if}}
+3. **The composition root (`src/app.ts`) is the only place wiring happens.**
+   Repositories, use-cases, controllers are constructed and connected here.
+4. **Controllers never touch the repository directly.** Always go through
+   the use-case.
+5. **One use-case does one thing.** `CreateXUseCase`, `GetXsUseCase`.
+{{#if useZod}}
+6. **Every request body needs a Zod schema** before it reaches a controller.
+{{/if}}
+7. **`src/config/env.ts` is the only file that reads `process.env`** directly.
+{{#if useAuth}}
+8. **Protected routes** use `fastify.authenticate` decorator from `@fastify/jwt`.
+{{/if}}
+
+## When you are unsure
+
+Prefer asking over guessing. Generating a plausible-looking file in the wrong
+layer costs more to unpick than a clarifying question costs to answer.

@@ -19,6 +19,13 @@ const tornado = require('./tornado');
 const laravel = require('./laravel');
 const axum = require('./axum');
 const rails = require('./rails');
+const html = require('./html');
+const react = require('./react');
+const nextjs = require('./nextjs');
+const svelte = require('./svelte');
+const angular = require('./angular');
+const astro = require('./astro');
+const vue = require('./vue');
 
 const REGISTRY = {
   nestjs,
@@ -40,6 +47,13 @@ const REGISTRY = {
   laravel,
   axum,
   rails,
+  html,
+  nextjs,
+  react,
+  svelte,
+  angular,
+  astro,
+  vue,
 };
 
 // Validates at load time that every module exports the required interface

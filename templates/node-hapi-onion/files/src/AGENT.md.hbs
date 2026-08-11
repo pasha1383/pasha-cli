@@ -1,0 +1,39 @@
+# AGENT.md — src/
+
+Application root for the Onion Architecture.
+
+## What lives here
+
+- `main.ts` — starts the server{{#if hasOrm}} and initializes the ORM connection{{/if}}. Nothing else.
+- `server.ts` — builds the Hapi server (initServer factory), registers plugins
+  and routes, wires every module's dependency chain manually.
+- `config/` — environment loading (`env.ts` is the only file that reads `process.env`).
+- `plugins/` — Hapi plugin registrations (swagger{{#if useAuth}}, auth{{/if}}).
+- `errors/` — AppError base class and subclasses (NotFoundError, ValidationError).
+- `shared/` — cross-cutting infrastructure (database, cache{{#if useAuth}}, auth{{/if}}{{#if useHealthCheck}}, health{{/if}}).
+
+## Onion Architecture layers
+
+```
+src/
+├── domain/          ← Innermost: entities, repository interfaces (ports)
+├── application/     ← Use cases, DTOs, service implementations
+├── infrastructure/  ← Persistence adapters (TypeORM, Prisma, Mongoose, in-memory)
+└── presentation/    ← Outermost: Hapi route handlers and route definitions
+```
+
+Dependency direction is strictly inward — `presentation → application → domain`.
+Infrastructure implements domain interfaces; domain knows nothing about persistence.
+
+## Rules
+
+- Do not put business logic in `main.ts` or `server.ts`.
+- When you add a new module, register its routes in `server.ts` with
+  `server.route(moduleRoutes)` in the same change.
+- Plugins (swagger, auth) are registered in `server.ts` via
+  `await server.register([...])`.
+- Cross-cutting concerns (error formatting) use `server.ext('onPreResponse', ...)`.
+{{#if useAuth}}
+- Auth is set up as a JWT strategy in `plugins/auth.ts`. Apply it to a
+  route by setting `options: { auth: 'jwt' }` in the route config.
+{{/if}}

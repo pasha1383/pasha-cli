@@ -1,0 +1,65 @@
+# {{projectName}}
+
+{{description}}
+
+Built with pasha CLI — **Clean Architecture** on Fastify.
+
+## Stack
+
+- **Data layer:** {{#if ormNone}}in-memory repositories{{else}}{{orm}}{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+- **Validation:** {{#if useZod}}Zod{{else}}Fastify built-in JSON Schema{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis
+{{/if}}
+{{#if hasBroker}}
+- **Messaging:** {{broker}}
+{{/if}}
+
+## Run
+
+```bash
+cp .env.example .env
+{{#if useDocker}}
+npm run infra:up          # start docker services
+{{/if}}
+npm install
+{{#if ormPrisma}}
+npm run prisma:migrate    # create the database schema
+{{/if}}
+npm run start:dev
+```
+
+## Modules
+
+{{#each modules}}
+- `{{this}}` → `http://localhost:3000/{{this}}`
+{{/each}}
+
+## Structure
+
+```
+src/
+├── main.ts                  ← starts the server (and ORM connection, if any)
+├── app.ts                   ← composition root — wires everything manually (no DI container)
+├── config/env.ts            ← the only file that reads process.env
+├── middlewares/              ← error handling
+├── shared/                   ← database/cache clients used by more than one module
+├── core/
+│   ├── entities/             ← domain entities — pure business objects
+│   ├── ports/                ← abstract interfaces (repository contracts)
+│   └── use-cases/<module>/   ← application business rules — one class per operation
+└── adapters/<module>/
+    ├── controllers/          ← Fastify req/res handlers
+    ├── routes/               ← Fastify plugin factory
+    ├── dto/                  ← input shapes / validation schemas
+    └── repositories/         ← concrete implementations of core ports
+```
+
+Dependency rule: `core/` knows nothing about `adapters/`. The composition root
+(`app.ts`) wires adapters into core ports by hand.
+
+---
+Made with ❤️ by {{author}}

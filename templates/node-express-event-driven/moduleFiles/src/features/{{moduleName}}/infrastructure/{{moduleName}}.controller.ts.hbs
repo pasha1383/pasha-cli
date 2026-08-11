@@ -1,0 +1,107 @@
+import { NextFunction, Request, Response } from 'express';
+import { Create{{pascalCase moduleName}}Command } from '../commands/create-{{moduleName}}.command';
+import { Create{{pascalCase moduleName}}Handler } from '../commands/create-{{moduleName}}.command-handler';
+import { {{pascalCase moduleName}}Projection, {{pascalCase moduleName}}ReadModel } from '../projections/{{moduleName}}.projection';
+import { {{pascalCase moduleName}}Aggregate } from '../aggregates/{{moduleName}}.aggregate';
+import { EventStore, StoredEvent } from '../event-store/event-store';
+import { NotFoundError } from '../../../errors/app-error';
+import { {{pascalCase moduleName}}CreatedEvent } from '../events/{{moduleName}}-created.event';
+import { {{pascalCase moduleName}}UpdatedEvent } from '../events/{{moduleName}}-updated.event';
+import { {{pascalCase moduleName}}DeletedEvent } from '../events/{{moduleName}}-deleted.event';
+
+export class {{pascalCase moduleName}}Controller {
+  constructor(
+    private readonly createHandler: Create{{pascalCase moduleName}}Handler,
+    private readonly projection: {{pascalCase moduleName}}Projection,
+    private readonly eventStore: EventStore,
+  ) {}
+
+  create = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { name } = req.body as { name: string };
+      const command = new Create{{pascalCase moduleName}}Command(name);
+      const id = await this.createHandler.execute(command);
+      res.status(201).json({ id });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  findAll = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const results = this.projection.findAll();
+      res.json(results);
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  findOne = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const found = this.projection.findById(req.params.id);
+      if (!found) {
+        throw new NotFoundError(`{{pascalCase moduleName}} with id "${req.params.id}" not found`);
+      }
+      res.json(found);
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  update = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { name } = req.body as { name: string };
+      const events = await this.eventStore.getEvents(req.params.id);
+      if (events.length === 0) {
+        throw new NotFoundError(`{{pascalCase moduleName}} with id "${req.params.id}" not found`);
+      }
+
+      const aggregate = {{pascalCase moduleName}}Aggregate.fromHistory(
+        events.map((e) => e.payload) as ({{pascalCase moduleName}}CreatedEvent | {{pascalCase moduleName}}UpdatedEvent | {{pascalCase moduleName}}DeletedEvent)[],
+      );
+      aggregate.updateName(name);
+
+      const newEvents = aggregate.getUncommittedEvents();
+      await this.eventStore.append(req.params.id, '{{pascalCase moduleName}}', newEvents, aggregate.version);
+      aggregate.markEventsAsCommitted();
+
+      for (const event of newEvents) {
+        if (event instanceof {{pascalCase moduleName}}UpdatedEvent) {
+          this.projection.handleUpdatedEvent(event);
+        }
+      }
+
+      res.json(this.projection.findById(req.params.id));
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  remove = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const events = await this.eventStore.getEvents(req.params.id);
+      if (events.length === 0) {
+        throw new NotFoundError(`{{pascalCase moduleName}} with id "${req.params.id}" not found`);
+      }
+
+      const aggregate = {{pascalCase moduleName}}Aggregate.fromHistory(
+        events.map((e) => e.payload) as ({{pascalCase moduleName}}CreatedEvent | {{pascalCase moduleName}}UpdatedEvent | {{pascalCase moduleName}}DeletedEvent)[],
+      );
+      aggregate.delete();
+
+      const newEvents = aggregate.getUncommittedEvents();
+      await this.eventStore.append(req.params.id, '{{pascalCase moduleName}}', newEvents, aggregate.version);
+      aggregate.markEventsAsCommitted();
+
+      for (const event of newEvents) {
+        if (event instanceof {{pascalCase moduleName}}DeletedEvent) {
+          this.projection.handleDeletedEvent(event);
+        }
+      }
+
+      res.json({ id: req.params.id });
+    } catch (err) {
+      next(err);
+    }
+  };
+}

@@ -1,0 +1,21 @@
+import { randomUUID } from 'crypto';
+import { {{pascalCase moduleName}} } from '../../domain/entities/{{moduleName}}.entity';
+import { I{{pascalCase moduleName}}Repository } from '../../domain/repositories/{{moduleName}}.repository.interface';
+
+export class {{pascalCase moduleName}}Service {
+  constructor(private readonly repository: I{{pascalCase moduleName}}Repository) {}
+
+  async create(name: string): Promise<{{pascalCase moduleName}}> {
+    const entity = new {{pascalCase moduleName}}(randomUUID(), name);
+    await this.repository.save(entity);
+    return entity;
+  }
+
+  async findAll(): Promise<{{pascalCase moduleName}}[]> {
+    return this.repository.findAll();
+  }
+
+  async findById(id: string): Promise<{{pascalCase moduleName}} | null> {
+    return this.repository.findById(id);
+  }
+}

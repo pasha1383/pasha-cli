@@ -1,0 +1,21 @@
+# AGENT.md — src/domain/
+
+The innermost layer of the Onion Architecture. No dependencies on external
+frameworks, databases, or transport.
+
+## What lives here
+
+- `entities/<module>/` — domain entities with business rules and invariants.
+  Plain TypeScript classes; no ORM annotations, no database concerns.
+- `repositories/<module>/` — **interfaces only** (ports). Define the contract
+  that infrastructure must implement. Naming: `I<Name>Repository`.
+
+## Rules
+
+1. **Domain knows nothing about persistence.** Entities are plain classes.
+   Repository interfaces are abstract contracts — never import TypeORM,
+   Prisma, or Mongoose here.
+2. Entities own their validation logic. Create an entity, and it should be
+   impossible to construct it in an invalid state.
+3. Repository interfaces define the *what*, never the *how*. Methods like
+   `save(entity)`, `findAll()`, `findById(id)` — no SQL, no query builders.

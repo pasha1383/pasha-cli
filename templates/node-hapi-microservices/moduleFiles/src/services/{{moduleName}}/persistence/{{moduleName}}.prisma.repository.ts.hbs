@@ -1,0 +1,22 @@
+import { prisma } from '../../shared/database/prisma.client';
+import { I{{pascalCase moduleName}}Repository, {{pascalCase moduleName}}Entity } from './{{moduleName}}.repository';
+
+export class {{pascalCase moduleName}}PrismaRepository implements I{{pascalCase moduleName}}Repository {
+  async save(entity: {{pascalCase moduleName}}Entity): Promise<void> {
+    await prisma.{{camelCase moduleName}}.upsert({
+      where: { id: entity.id },
+      create: { id: entity.id, name: entity.name },
+      update: { name: entity.name },
+    });
+  }
+
+  async findAll(): Promise<{{pascalCase moduleName}}Entity[]> {
+    const rows = await prisma.{{camelCase moduleName}}.findMany();
+    return rows.map((r: { id: string; name: string }) => ({ id: r.id, name: r.name }));
+  }
+
+  async findById(id: string): Promise<{{pascalCase moduleName}}Entity | null> {
+    const row = await prisma.{{camelCase moduleName}}.findUnique({ where: { id } });
+    return row ? { id: row.id, name: row.name } : null;
+  }
+}

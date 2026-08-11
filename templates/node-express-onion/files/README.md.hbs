@@ -1,0 +1,54 @@
+# {{projectName}}
+
+{{description}}
+
+Built with pasha CLI — **Onion Architecture** on Express.
+
+## Stack
+
+- **Framework:** Express (minimal, unopinionated)
+- **Architecture:** Onion (Domain → Application → Infrastructure → Presentation)
+- **Data layer:** {{#if ormNone}}in-memory repositories{{else}}{{orm}}{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+- **Validation:** {{#if hasValidation}}{{validation}}{{else}}none{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis
+{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/api/docs`
+{{/if}}
+
+## Architecture
+
+```
+src/
+├── domain/                  ← Innermost: entities, repository interfaces
+├── application/             ← Use cases, DTOs, service orchestration
+├── infrastructure/          ← Persistence adapters (Prisma/TypeORM/Mongoose/In-Memory)
+└── presentation/            ← Outermost: Express controllers and route definitions
+```
+
+## Run
+
+```bash
+cp .env.example .env
+{{#if useDocker}}
+npm run infra:up
+{{/if}}
+npm install
+{{#if ormPrisma}}
+npm run prisma:migrate
+{{/if}}
+npm run start:dev
+```
+
+## Modules
+
+{{#each modules}}
+- `{{this}}` → `http://localhost:3000/{{this}}`
+{{/each}}
+
+---
+Made with {{author}}

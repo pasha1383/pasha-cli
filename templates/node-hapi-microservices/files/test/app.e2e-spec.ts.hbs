@@ -1,0 +1,29 @@
+import { initGateway } from '../src/server';
+import type { Server } from '@hapi/hapi';
+
+describe('App (e2e)', () => {
+  let server: Server;
+
+  beforeAll(async () => {
+    server = await initGateway();
+  });
+
+  afterAll(async () => {
+    await server.stop();
+  });
+
+{{#if useHealthCheck}}
+  it('/health (GET) reports the app is up', async () => {
+    const res = await server.inject({ method: 'GET', url: '/health' });
+    expect(res.statusCode).toBe(200);
+    expect(JSON.parse(res.payload).status).toBe('ok');
+  });
+{{/if}}
+{{#each modules}}
+  it('/{{this}} (GET) returns a list', async () => {
+    const res = await server.inject({ method: 'GET', url: '/{{this}}' });
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(JSON.parse(res.payload))).toBe(true);
+  });
+{{/each}}
+});

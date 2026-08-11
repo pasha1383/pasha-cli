@@ -1,0 +1,87 @@
+import { Router } from 'express';
+{{#if useZod}}
+import { create{{pascalCase moduleName}}Schema } from './dto/create-{{moduleName}}.dto';
+import { validateBody } from '../../middlewares/validate-body.middleware';
+{{/if}}
+{{#if useClassValidator}}
+import { Create{{pascalCase moduleName}}Dto } from './dto/create-{{moduleName}}.dto';
+import { validateBodyDto } from '../../middlewares/handle-validation-errors.middleware';
+{{/if}}
+import { CommandBus, QueryBus } from './infrastructure/bus';
+import { {{pascalCase moduleName}}Controller } from './infrastructure/{{moduleName}}.controller';
+import { I{{pascalCase moduleName}}Repository } from './domain/{{moduleName}}.repository.interface';
+{{#if ormNone}}
+import { {{pascalCase moduleName}}InMemoryRepository } from './infrastructure/{{moduleName}}.repository';
+{{/if}}
+{{#if ormPrisma}}
+import { {{pascalCase moduleName}}PrismaRepository } from './infrastructure/{{moduleName}}.prisma.repository';
+{{/if}}
+{{#if ormTypeorm}}
+import { {{pascalCase moduleName}}TypeormRepository } from './infrastructure/{{moduleName}}.typeorm.repository';
+{{/if}}
+{{#if ormMongoose}}
+import { {{pascalCase moduleName}}MongooseRepository } from './infrastructure/{{moduleName}}.mongoose.repository';
+{{/if}}
+import { Create{{pascalCase moduleName}}Command } from './commands/create-{{moduleName}}.command';
+import { Create{{pascalCase moduleName}}Handler } from './commands/create-{{moduleName}}.handler';
+import { Update{{pascalCase moduleName}}Command } from './commands/update-{{moduleName}}.command';
+import { Update{{pascalCase moduleName}}Handler } from './commands/update-{{moduleName}}.handler';
+import { Delete{{pascalCase moduleName}}Command } from './commands/delete-{{moduleName}}.handler';
+import { Delete{{pascalCase moduleName}}Handler } from './commands/delete-{{moduleName}}.handler';
+import { Get{{pascalCase moduleName}}Query } from './queries/get-{{moduleName}}.query';
+import { Get{{pascalCase moduleName}}Handler } from './queries/get-{{moduleName}}.handler';
+import { List{{pascalCase moduleName}}sQuery } from './queries/list-{{moduleName}}s.query';
+import { List{{pascalCase moduleName}}sHandler } from './queries/list-{{moduleName}}s.handler';
+
+const {{camelCase moduleName}}Router = Router();
+
+// ---- DI: wire up repository ----
+{{#if ormNone}}
+const repository: I{{pascalCase moduleName}}Repository = new {{pascalCase moduleName}}InMemoryRepository();
+{{/if}}
+{{#if ormPrisma}}
+const repository: I{{pascalCase moduleName}}Repository = new {{pascalCase moduleName}}PrismaRepository();
+{{/if}}
+{{#if ormTypeorm}}
+const repository: I{{pascalCase moduleName}}Repository = new {{pascalCase moduleName}}TypeormRepository();
+{{/if}}
+{{#if ormMongoose}}
+const repository: I{{pascalCase moduleName}}Repository = new {{pascalCase moduleName}}MongooseRepository();
+{{/if}}
+
+// ---- DI: wire up handlers ----
+const createHandler = new Create{{pascalCase moduleName}}Handler(repository);
+const updateHandler = new Update{{pascalCase moduleName}}Handler(repository);
+const deleteHandler = new Delete{{pascalCase moduleName}}Handler(repository);
+const getHandler = new Get{{pascalCase moduleName}}Handler(repository);
+const listHandler = new List{{pascalCase moduleName}}sHandler(repository);
+
+// ---- Bus registration ----
+const commandBus = new CommandBus();
+commandBus.register(Create{{pascalCase moduleName}}Command, createHandler);
+commandBus.register(Update{{pascalCase moduleName}}Command, updateHandler);
+commandBus.register(Delete{{pascalCase moduleName}}Command, deleteHandler);
+
+const queryBus = new QueryBus();
+queryBus.register(Get{{pascalCase moduleName}}Query, getHandler);
+queryBus.register(List{{pascalCase moduleName}}sQuery, listHandler);
+
+// ---- Controller ----
+const controller = new {{pascalCase moduleName}}Controller(commandBus, queryBus);
+
+// ---- Routes ----
+{{#if useZod}}
+{{camelCase moduleName}}Router.post('/', validateBody(create{{pascalCase moduleName}}Schema), controller.create);
+{{else}}
+{{#if useClassValidator}}
+{{camelCase moduleName}}Router.post('/', validateBodyDto(Create{{pascalCase moduleName}}Dto), controller.create);
+{{else}}
+{{camelCase moduleName}}Router.post('/', controller.create);
+{{/if}}
+{{/if}}
+{{camelCase moduleName}}Router.get('/', controller.findAll);
+{{camelCase moduleName}}Router.get('/:id', controller.findOne);
+{{camelCase moduleName}}Router.patch('/:id', controller.update);
+{{camelCase moduleName}}Router.delete('/:id', controller.remove);
+
+export { {{camelCase moduleName}}Router };

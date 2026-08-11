@@ -1,0 +1,32 @@
+{
+  "name": "Node.js + Fastify + Event-Driven",
+  "prerequisites": ["node", "npm", "git"],
+  "shared": null,
+  "stackFeatures": "fastify",
+  "modules": {
+    "enabled": true,
+    "message": "Module/entity name (e.g. product, user, order)",
+    "default": "product"
+  },
+  "fileConditions": {
+    "docker-compose.yml.hbs": "useDocker",
+    "src/shared": "hasSharedInfra",
+    "src/shared/database": "hasOrm",
+    "src/shared/database/prisma.client.ts.hbs": "ormPrisma",
+    "src/shared/database/typeorm.datasource.ts.hbs": "ormTypeorm",
+    "src/shared/database/mongoose.connection.ts.hbs": "ormMongoose",
+    "src/shared/cache": "useRedis",
+    "AGENT.md.hbs": "useAgentDocs",
+    ".eslintrc.js": "useLint",
+    ".prettierrc": "useLint",
+    "Dockerfile.hbs": "useAppDockerfile",
+    ".dockerignore.hbs": "useAppDockerfile",
+    ".github": "useCI",
+    "test": "useTests",
+    "src/config/swagger.ts.hbs": "useSwagger",
+    "src/shared/auth": "useAuth",
+    "src/shared/health": "useHealthCheck"
+  },
+  "postInstall": ["npm install"],
+  "gitInit": true
+}

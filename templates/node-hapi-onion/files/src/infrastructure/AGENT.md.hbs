@@ -1,0 +1,24 @@
+# AGENT.md — src/infrastructure/
+
+The outer persistence layer. Implements the repository interfaces (ports)
+defined in the domain layer.
+
+## What lives here
+
+- `persistence/<module>.repository.ts` — in-memory implementation (when no ORM is selected).
+- `persistence/<module>.prisma.repository.ts` — Prisma adapter.
+- `persistence/<module>.orm-entity.ts` — TypeORM entity class (with `@Entity()`).
+- `persistence/<module>.typeorm.repository.ts` — TypeORM adapter.
+- `persistence/<module>.schema.ts` — Mongoose schema.
+- `persistence/<module>.mongoose.repository.ts` — Mongoose adapter.
+
+## Rules
+
+1. **Implements domain interfaces.** Every repository class here
+   `implements I<PascalCase>Repository` from `src/domain/repositories/`.
+2. Domain entities are mapped to/from persistence models manually via
+   `toDomain()` / constructor calls. No ORM-entity-as-domain-entity shortcuts.
+3. Only one database client is created (in `src/shared/database/`).
+   Repositories import the shared instance — never create their own connection.
+4. Mongoose repositories use `.lean()` and explicitly type the result
+   before mapping to domain entities.

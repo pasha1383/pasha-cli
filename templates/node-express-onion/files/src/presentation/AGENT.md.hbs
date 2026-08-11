@@ -1,0 +1,23 @@
+# AGENT.md — src/presentation/
+
+The outermost layer. Converts HTTP requests into application service calls
+and returns HTTP responses.
+
+## What lives here
+
+- `<module>/controller.ts` — Express controllers. Receives `Request` and
+  `Response`, calls the application service, and returns JSON.
+- `<module>/routes.ts` — exports a function that returns an Express `Router`.
+  Defines method, path, optional validation middleware, and controller handler.
+
+## Rules
+
+1. Controllers call application services, never repositories.
+2. Every controller catches errors and returns appropriate HTTP responses.
+3. Routes are defined as functions (not plain routers) so the controller
+   instance can be injected during wiring in `app.ts`.
+4. Validation (express-validator chains, Zod schemas) is applied as middleware
+   before the controller handler.
+5. Controllers use `res.status(code).json(data)`.
+6. When adding a new module, mount its routes in `src/app.ts` using
+   `app.use('/path', moduleRoutes(controller))`.

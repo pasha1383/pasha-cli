@@ -1,0 +1,57 @@
+import { FastifyRequest, FastifyReply } from 'fastify';
+import { CommandBus } from './bus';
+import { QueryBus } from './bus';
+import { Create{{pascalCase moduleName}}Command } from '../commands/create-{{moduleName}}.command';
+import { Update{{pascalCase moduleName}}Command } from '../commands/update-{{moduleName}}.command';
+import { Delete{{pascalCase moduleName}}Command } from '../commands/delete-{{moduleName}}.handler';
+import { Get{{pascalCase moduleName}}Query } from '../queries/get-{{moduleName}}.query';
+import { List{{pascalCase moduleName}}sQuery } from '../queries/list-{{moduleName}}s.query';
+import { {{pascalCase moduleName}}ResponseDto } from '../dto/{{moduleName}}.response';
+
+export class {{pascalCase moduleName}}Controller {
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
+
+  create = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+    const { name } = request.body as { name: string };
+    const command = new Create{{pascalCase moduleName}}Command(name);
+    const event = await this.commandBus.execute<{ {{camelCase moduleName}}: { id: string } }>(command);
+    reply.status(201).send({ id: event.{{camelCase moduleName}}.id });
+  };
+
+  findAll = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+    const { limit, offset } = request.query as { limit?: string; offset?: string };
+    const query = new List{{pascalCase moduleName}}sQuery(
+      limit ? parseInt(limit, 10) : undefined,
+      offset ? parseInt(offset, 10) : undefined,
+    );
+    const results = await this.queryBus.execute<{{pascalCase moduleName}}ResponseDto[]>(query);
+    reply.send(results);
+  };
+
+  findOne = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+    const { id } = request.params as { id: string };
+    const query = new Get{{pascalCase moduleName}}Query(id);
+    const result = await this.queryBus.execute<{{pascalCase moduleName}}ResponseDto>(query);
+    reply.send(result);
+  };
+
+  update = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+    const { id } = request.params as { id: string };
+    const { name } = request.body as { name: string };
+    const command = new Update{{pascalCase moduleName}}Command(id, name);
+    await this.commandBus.execute(command);
+    const query = new Get{{pascalCase moduleName}}Query(id);
+    const result = await this.queryBus.execute<{{pascalCase moduleName}}ResponseDto>(query);
+    reply.send(result);
+  };
+
+  remove = async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+    const { id } = request.params as { id: string };
+    const command = new Delete{{pascalCase moduleName}}Command(id);
+    const event = await this.commandBus.execute<{ id: string }>(command);
+    reply.send({ id: event.id });
+  };
+}

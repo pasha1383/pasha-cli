@@ -1,0 +1,71 @@
+# {{projectName}}
+
+{{description}}
+
+Built with pasha CLI — **Onion Architecture** on Hapi.
+
+## Stack
+
+- **Framework:** Hapi (configuration-centric)
+- **Architecture:** Onion (Domain → Application → Infrastructure → Presentation)
+- **Data layer:** {{#if ormNone}}in-memory repositories{{else}}{{orm}}{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+- **Validation:** {{#if hasValidation}}{{validation}}{{else}}none{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis
+{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/docs`
+{{/if}}
+
+## Architecture
+
+```
+src/
+├── domain/                  ← Innermost: entities, repository interfaces
+│   ├── entities/<module>/
+│   └── repositories/<module>/
+├── application/             ← Use cases, DTOs, service orchestration
+│   ├── dto/<module>/
+│   └── services/<module>/
+├── infrastructure/          ← Persistence adapters (Prisma/TypeORM/Mongoose/In-Memory)
+│   └── persistence/<module>/
+└── presentation/            ← Outermost: Hapi route handlers and routes
+    └── <module>/
+```
+
+Dependency direction is strictly inward: Presentation → Application → Domain.
+Infrastructure implements domain interfaces; domain knows nothing about databases.
+
+## Run
+
+```bash
+cp .env.example .env
+{{#if useDocker}}
+npm run infra:up          # start docker services
+{{/if}}
+npm install
+{{#if ormPrisma}}
+npm run prisma:migrate    # create the database schema
+{{/if}}
+npm run start:dev
+```
+
+## Modules
+
+{{#each modules}}
+- `{{this}}` → `http://localhost:3000/{{this}}`
+{{/each}}
+
+## Key Hapi Patterns
+
+- Routes export `ServerRoute[]` arrays with `{ method, path, handler }` configs
+- Plugins (swagger, auth) are registered via `server.register([...])`
+- Handlers return `h.response(data).code(status)` — no `res.send()` or `next()`
+- Error handling: services throw `AppError` subclasses, `onPreResponse` ext catches them
+- No middleware — use `server.ext()` lifecycle hooks and plugins instead
+
+---
+Made with {{author}}

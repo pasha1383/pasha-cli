@@ -1,0 +1,35 @@
+# AGENT.md — src/
+
+Application root for the Onion Architecture on Fastify.
+
+## What lives here
+
+- `main.ts` — starts the server{{#if hasOrm}} and initializes the ORM connection{{/if}}.
+- `app.ts` — composition root. Builds the Fastify instance, registers plugins
+  and module routes.
+- `config/` — environment loading, swagger setup.
+- `errors/` — AppError base class and subclasses (NotFoundError, ValidationError).
+- `shared/` — cross-cutting infrastructure (database, cache{{#if useAuth}}, auth{{/if}}{{#if useHealthCheck}}, health{{/if}}).
+
+## Onion Architecture layers
+
+```
+src/
+├── domain/          ← Innermost: entities, repository interfaces (ports)
+├── application/     ← Use cases, DTOs, service implementations
+├── infrastructure/  ← Persistence adapters (TypeORM, Prisma, Mongoose, in-memory)
+└── presentation/    ← Outermost: Fastify route plugins (export default async function)
+```
+
+## Rules
+
+- Do not put business logic in `main.ts` or `app.ts`.
+- When you add a new module, register its route plugin in `app.ts` with
+  `await fastify.register(moduleRoutes, { prefix: '/name' })`.
+- Fastify plugins receive the `FastifyInstance` and register routes with
+  `fastify.get()`, `fastify.post()`, etc. — no Router objects like Express.
+- Error handler is set globally via `setErrorHandler` in `app.ts`.
+{{#if useAuth}}
+- Auth works via `@fastify/jwt`. Protected routes call
+  `await request.jwtVerify()` or use the `authenticate` decorator.
+{{/if}}

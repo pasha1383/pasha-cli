@@ -1,0 +1,11 @@
+export interface {{pascalCase moduleName}}Entity {
+  id: string;
+  name: string;
+}
+
+export class {{pascalCase moduleName}} {
+  constructor(
+    public readonly id: string,
+    public name: string,
+  ) {}
+}

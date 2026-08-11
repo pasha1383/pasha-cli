@@ -178,6 +178,18 @@
             "modular": {
               "label": "Modular Monolith",
               "template": "node-express-modular"
+            },
+            "cqrs": {
+              "label": "CQRS (Command-Query Separation)",
+              "template": "node-express-cqrs"
+            },
+            "event-driven": {
+              "label": "Event-Driven / Event Sourcing",
+              "template": "node-express-event-driven"
+            },
+            "onion": {
+              "label": "Onion Architecture",
+              "template": "node-express-onion"
             }
           }
         },
@@ -241,6 +253,18 @@
             "hexagonal": {
               "label": "Hexagonal / DDD",
               "template": "node-fastify-hexagonal"
+            },
+            "cqrs": {
+              "label": "CQRS (Command-Query Separation)",
+              "template": "node-fastify-cqrs"
+            },
+            "event-driven": {
+              "label": "Event-Driven / Event Sourcing",
+              "template": "node-fastify-event-driven"
+            },
+            "onion": {
+              "label": "Onion Architecture",
+              "template": "node-fastify-onion"
             }
           }
         },
@@ -266,6 +290,22 @@
             "modular": {
               "label": "Modular Monolith",
               "template": "node-hapi-modular"
+            },
+            "cqrs": {
+              "label": "CQRS (Command-Query Separation)",
+              "template": "node-hapi-cqrs"
+            },
+            "event-driven": {
+              "label": "Event-Driven / Event Sourcing",
+              "template": "node-hapi-event-driven"
+            },
+            "onion": {
+              "label": "Onion Architecture",
+              "template": "node-hapi-onion"
+            },
+            "microservices": {
+              "label": "Microservices (Hapi transport)",
+              "template": "node-hapi-microservices"
             }
           }
         },
@@ -533,6 +573,36 @@
         }
       }
     },
+    "html": {
+      "label": "HTML5 / CSS3 / JavaScript",
+      "frameworks": {
+        "html": {
+          "label": "Vanilla HTML5 (no framework)",
+          "architectures": {
+            "tailwind": {
+              "label": "Tailwind CSS (via CDN)",
+              "template": "html-tailwind"
+            },
+            "bootstrap": {
+              "label": "Bootstrap 5 (via CDN)",
+              "template": "html-bootstrap"
+            },
+            "component-based": {
+              "label": "Component-Based (Web Components)",
+              "template": "html-component-based"
+            },
+            "landing-page": {
+              "label": "Landing Page (Hero, Features, Pricing, CTA)",
+              "template": "html-landing-page"
+            },
+            "dashboard": {
+              "label": "Dashboard (Sidebar, Cards, Charts, Table)",
+              "template": "html-dashboard"
+            }
+          }
+        }
+      }
+    },
     "rust": {
       "label": "Rust",
       "frameworks": {
@@ -558,6 +628,133 @@
             "modular": {
               "label": "Modular Monolith",
               "template": "rust-axum-modular"
+            }
+          }
+        }
+      }
+    },
+    "frontend": {
+      "label": "Frontend",
+      "frameworks": {
+        "nextjs": {
+          "label": "Next.js",
+          "architectures": {
+            "component-based": {
+              "label": "Component-Based (Atoms / Molecules / Organisms)",
+              "template": "nextjs-component-based"
+            },
+            "feature-sliced": {
+              "label": "Feature-Sliced Design (Pages / Widgets / Features / Entities / Shared)",
+              "template": "nextjs-feature-sliced"
+            },
+            "atomic-design": {
+              "label": "Atomic Design (Atoms / Molecules / Organisms / Templates / Pages)",
+              "template": "nextjs-atomic-design"
+            },
+            "page-based": {
+              "label": "Page-Based (Pages / Components / Hooks / Utils)",
+              "template": "nextjs-page-based"
+            },
+            "app-router": {
+              "label": "App Router (app/ layouts, Server Components)",
+              "template": "nextjs-app-router"
+            }
+          }
+        },
+        "vue": {
+          "label": "Vue 3 (Vite SPA)",
+          "architectures": {
+            "component-based": {
+              "label": "Component-Based (components / composables / views)",
+              "template": "vue-component-based"
+            },
+            "feature-sliced": {
+              "label": "Feature-Sliced Design",
+              "template": "vue-feature-sliced"
+            },
+            "atomic-design": {
+              "label": "Atomic Design (atoms / molecules / organisms)",
+              "template": "vue-atomic-design"
+            },
+            "pinia-store": {
+              "label": "Pinia Store-Based (stores / views / composables)",
+              "template": "vue-pinia-store"
+            },
+            "modular": {
+              "label": "Modular (domain modules)",
+              "template": "vue-modular"
+            }
+          }
+        },
+        "react": {
+          "label": "React (Vite SPA)",
+          "architectures": {
+            "component-based": {
+              "label": "Component-Based (components / hooks / utils)",
+              "template": "react-component-based"
+            },
+            "feature-sliced": {
+              "label": "Feature-Sliced Design",
+              "template": "react-feature-sliced"
+            },
+            "atomic-design": {
+              "label": "Atomic Design (atoms / molecules / organisms)",
+              "template": "react-atomic-design"
+            },
+            "redux-toolkit": {
+              "label": "Redux Toolkit Based (store / slices / components)",
+              "template": "react-redux-toolkit"
+            },
+            "clean": {
+              "label": "Clean Architecture (domain / application / infrastructure / presentation)",
+              "template": "react-clean"
+            }
+          }
+        },
+        "svelte": {
+          "label": "Svelte",
+          "architectures": {
+            "component-based": {
+              "label": "Component-Based (Svelte 5 Runes)",
+              "template": "svelte-component-based"
+            },
+            "feature-sliced": {
+              "label": "Feature-Sliced Design (FSD)",
+              "template": "svelte-feature-sliced"
+            },
+            "kit-routes": {
+              "label": "SvelteKit File-Based Routing",
+              "template": "svelte-kit-routes"
+            }
+          }
+        },
+        "angular": {
+          "label": "Angular",
+          "architectures": {
+            "component-based": {
+              "label": "Standalone Components",
+              "template": "angular-component-based"
+            },
+            "feature-modules": {
+              "label": "Feature Modules (NgModules)",
+              "template": "angular-feature-modules"
+            },
+            "ngrx": {
+              "label": "NgRx State Management",
+              "template": "angular-ngrx"
+            }
+          }
+        },
+        "astro": {
+          "label": "Astro",
+          "architectures": {
+            "content-site": {
+              "label": "Content-Focused Site (Blog, Docs)",
+              "template": "astro-content-site"
+            },
+            "island-architecture": {
+              "label": "Islands Architecture",
+              "template": "astro-island-architecture"
             }
           }
         }

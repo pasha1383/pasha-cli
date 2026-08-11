@@ -1,0 +1,72 @@
+import { NextFunction, Request, Response } from 'express';
+import { CommandBus } from './bus';
+import { QueryBus } from './bus';
+import { Create{{pascalCase moduleName}}Command } from '../commands/create-{{moduleName}}.command';
+import { Update{{pascalCase moduleName}}Command } from '../commands/update-{{moduleName}}.command';
+import { Delete{{pascalCase moduleName}}Command } from '../commands/delete-{{moduleName}}.handler';
+import { Get{{pascalCase moduleName}}Query } from '../queries/get-{{moduleName}}.query';
+import { List{{pascalCase moduleName}}sQuery } from '../queries/list-{{moduleName}}s.query';
+import { {{pascalCase moduleName}}ResponseDto } from '../dto/{{moduleName}}.response';
+
+export class {{pascalCase moduleName}}Controller {
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
+
+  create = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { name } = req.body as { name: string };
+      const command = new Create{{pascalCase moduleName}}Command(name);
+      const event = await this.commandBus.execute<{ {{camelCase moduleName}}: { id: string } }>(command);
+      res.status(201).json({ id: event.{{camelCase moduleName}}.id });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  findAll = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : undefined;
+      const offset = req.query.offset ? parseInt(req.query.offset as string, 10) : undefined;
+      const query = new List{{pascalCase moduleName}}sQuery(limit, offset);
+      const results = await this.queryBus.execute<{{pascalCase moduleName}}ResponseDto[]>(query);
+      res.json(results);
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  findOne = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const query = new Get{{pascalCase moduleName}}Query(req.params.id);
+      const result = await this.queryBus.execute<{{pascalCase moduleName}}ResponseDto>(query);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  update = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { name } = req.body as { name: string };
+      const command = new Update{{pascalCase moduleName}}Command(req.params.id, name);
+      await this.commandBus.execute(command);
+      const query = new Get{{pascalCase moduleName}}Query(req.params.id);
+      const result = await this.queryBus.execute<{{pascalCase moduleName}}ResponseDto>(query);
+      res.json(result);
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  remove = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const command = new Delete{{pascalCase moduleName}}Command(req.params.id);
+      const event = await this.commandBus.execute<{ id: string }>(command);
+      res.json({ id: event.id });
+    } catch (err) {
+      next(err);
+    }
+  };
+}

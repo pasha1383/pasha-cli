@@ -1,0 +1,104 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository. Read this before
+generating or editing code. Each significant directory has its own `AGENT.md`
+with rules specific to that layer.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Framework:** Hapi (TypeScript, strict mode) — no DI container. Wiring
+  is manual (see `presentation/<module>/routes.ts` in each module).
+- **Architecture:** {{architectureLabel}}
+- **Data layer:** {{#if ormNone}}in-memory repositories (no ORM){{else}}{{orm}}{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+- **Validation:** {{#if hasValidation}}{{validation}}{{else}}none{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis (via `ioredis`)
+{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/docs` (hapi-swagger)
+{{/if}}
+{{#if useAuth}}
+- **Auth:** JWT (POST /auth/login, Bearer token)
+{{/if}}
+{{#if useHealthCheck}}
+- **Health:** `GET /health` reports liveness/readiness
+{{/if}}
+{{#if useRateLimit}}
+- **Rate limiting:** hapi-rate-limit (configurable via env)
+{{/if}}
+
+## Modules
+
+{{#each modules}}
+- `{{this}}`
+{{/each}}
+
+## Commands
+
+```bash
+npm run start:dev      # watch mode (tsx)
+npm run build           # tsc
+{{#if useDocker}}
+npm run infra:up        # start databases/brokers via docker compose
+npm run infra:down
+{{/if}}
+{{#if ormPrisma}}
+npm run prisma:migrate  # create and apply a migration
+npm run prisma:generate
+{{/if}}
+{{#if useLint}}
+npm run lint            # ESLint with auto-fix
+npm run format          # Prettier
+{{/if}}
+{{#if useTests}}
+npm run test            # unit tests (Jest)
+npm run test:watch
+npm run test:cov        # with coverage
+npm run test:e2e        # e2e tests (server.inject())
+{{/if}}
+```
+
+## Hard rules
+
+1. **No DI container.** Every module's `{{moduleName}}.routes.ts` in
+   `src/presentation/<module>/` manually constructs the full dependency
+   chain: `repository → service → handler`. Do not introduce a framework-level
+   injector.
+2. **TypeScript is strict.** No `any`, no non-null assertions to silence the
+   compiler.{{#if ormTypeorm}} TypeORM entity fields use `!:` because the ORM
+   populates them, not a constructor — that's the one sanctioned exception.{{/if}}
+3. **Adding a module means adding every file.** entity, repository interface,
+   service, handler, routes{{#if hasValidation}}, dto{{/if}} — a new feature
+   gets its full slice across all four onion layers.
+4. **Dependency direction is inward.** Presentation depends on Application.
+   Application depends on Domain. Infrastructure implements Domain interfaces.
+   Never the reverse.
+5. **Mount new routes** in `src/server.ts` via `server.route(moduleRoutes)` or
+   they will not be reachable.
+6. **Handlers never touch the repository directly.** Always go through
+   the service layer.
+7. **Hapi handlers use `h.response(data).code(status)`** to send responses.
+   Throwing an error is caught by the `onPreResponse` extension in server.ts
+   and turned into a JSON error response with the correct status code.
+{{#if hasValidation}}
+8. **Every request body needs validation** before it reaches a handler.
+   Joi schemas are applied via Hapi's native `options.validate`. Zod schemas
+   are parsed manually in the handler.
+{{/if}}
+9. **`config/env.ts` is the only file that reads `process.env`** directly.
+   Everywhere else imports `env` from there.
+{{#if useAuth}}
+10. **Protected routes** use Hapi's auth system: add `options: { auth: 'jwt' }`
+    to the route config. `request.auth.credentials` carries `{ sub, username }`
+    after successful validation.
+{{/if}}
+
+## When you are unsure
+
+Prefer asking over guessing. Generating a plausible-looking file in the wrong
+layer costs more to unpick than a clarifying question costs to answer.

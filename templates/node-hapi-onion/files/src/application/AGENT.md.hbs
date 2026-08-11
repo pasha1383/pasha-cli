@@ -1,0 +1,28 @@
+# AGENT.md — src/application/
+
+The use-case / orchestration layer. Depends on domain but not on infrastructure
+or presentation.
+
+## What lives here
+
+- `dto/<module>/` — data transfer objects for input validation (Joi schemas
+  or Zod schemas). These define the shape of data entering the application.
+- `services/<module>/` — application services that orchestrate use cases.
+  A service receives a DTO, coordinates domain entities via repository
+  interfaces, and returns a result.
+
+## Rules
+
+1. Application layer depends **only** on the domain layer. Import entities and
+   repository interfaces from `src/domain/`. Never import from infrastructure
+   or presentation.
+2. Services receive repository implementations through constructor injection.
+   The wiring happens in `server.ts`, not here.
+3. DTOs validate input shape. They do not contain business logic — that lives
+   in domain entities.
+4. Services are the entry point for use cases. Handlers in the presentation
+   layer call services, never repositories directly.
+{{#if hasValidation}}
+5. Validation schemas (Joi/Zod) in `dto/` are applied in the presentation
+   layer (handler or route options), not here.
+{{/if}}

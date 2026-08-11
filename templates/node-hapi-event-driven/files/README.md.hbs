@@ -1,0 +1,74 @@
+# {{projectName}}
+
+{{description}}
+
+Built with pasha CLI — **Layered** architecture on Hapi.
+
+## Stack
+
+- **Framework:** Hapi (configuration-centric)
+- **Data layer:** {{#if ormNone}}in-memory repositories{{else}}{{orm}}{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+- **Validation:** {{#if hasValidation}}{{validation}}{{else}}none{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis
+{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/docs`
+{{/if}}
+
+## Run
+
+```bash
+cp .env.example .env
+{{#if useDocker}}
+npm run infra:up          # start docker services
+{{/if}}
+npm install
+{{#if ormPrisma}}
+npm run prisma:migrate    # create the database schema
+{{/if}}
+npm run start:dev
+```
+
+## Modules
+
+{{#each modules}}
+- `{{this}}` → `http://localhost:3000/{{this}}`
+{{/each}}
+
+## Structure
+
+```
+src/
+├── main.ts                  ← starts the server (and ORM connection, if any)
+├── server.ts                ← builds the Hapi server; separate from main.ts so tests can use server.inject()
+├── config/env.ts            ← the only file that reads process.env
+├── plugins/                  ← Hapi plugin registrations (swagger, auth)
+├── errors/                   ← AppError base class
+├── shared/                   ← database/cache clients used by more than one module
+└── routes/<module>/
+    ├── <module>.entity.ts      ← the model{{#if ormTypeorm}} (also the TypeORM persistence entity){{/if}}
+    ├── <module>.repository.ts  ← data access
+    ├── <module>.service.ts     ← business logic
+    ├── <module>.handler.ts     ← Hapi route handlers (request, h) => h.response(...)
+    ├── <module>.routes.ts      ← wires repository → service → handler → ServerRoute[] (manual, no DI container)
+{{#if hasValidation}}
+    └── <module>.validation.ts  ← request validation
+{{/if}}
+```
+
+Call direction: `routes` wires everything → `handler` → `service` → `repository`. A layer only ever talks to the one directly below it.
+
+## Key Hapi Patterns
+
+- Routes export `ServerRoute[]` arrays with `{ method, path, handler }` configs
+- Plugins (swagger, auth) are registered via `server.register([...])`
+- Handlers return `h.response(data).code(status)` — no `res.send()` or `next()`
+- Error handling: services throw `AppError` subclasses, `onPreResponse` ext catches them
+- No middleware — use `server.ext()` lifecycle hooks and plugins instead
+
+---
+Made with {{author}}

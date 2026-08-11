@@ -1,0 +1,58 @@
+# src/features/
+
+Each subdirectory is an Event-Driven module following event sourcing patterns.
+
+## Module structure
+
+```
+<moduleName>/
+├── <moduleName>.routes.ts          ← manual DI — creates EventStore, Outbox, Projection, Handler, Controller, Router
+├── commands/                       ← write operations
+│   ├── create-<moduleName>.command.ts
+│   └── create-<moduleName>.command-handler.ts
+├── events/                         ← domain events (immutable data classes)
+│   ├── <moduleName>-created.event.ts
+│   ├── <moduleName>-updated.event.ts
+│   └── <moduleName>-deleted.event.ts
+├── aggregates/                     ← aggregate root
+│   └── <moduleName>.aggregate.ts
+├── projections/                    ← materialized read models
+│   └── <moduleName>.projection.ts
+├── event-store/                    ← append-only event log
+│   └── event-store.ts
+├── dto/                            ← request validation
+│   └── create-<moduleName>.dto.ts
+└── infrastructure/                 ← Express adapters
+    ├── <moduleName>.controller.ts
+    └── outbox/
+        └── outbox.ts               ← reliable event publishing queue
+```
+
+## Event sourcing flow
+
+### Write path
+1. Controller receives HTTP request, extracts DTO, builds command
+2. Handler calls `Aggregate.create(name)` or `Aggregate.fromHistory(events)`
+3. Aggregate produces events via domain methods (create, updateName, delete)
+4. Handler calls `EventStore.append(aggregateId, type, events, expectedVersion)` — concurrency is checked
+5. After successful append, handler updates the projection and enqueues events in the outbox
+6. Aggregate marks events as committed
+
+### Read path
+1. Controller calls `Projection.findById(id)` or `Projection.findAll()`
+2. Projection returns materialized data — never touches the event store
+
+## Routing conventions
+
+- `POST   /<module>`           → `controller.create`
+- `GET    /<module>`           → `controller.findAll`
+- `GET    /<module>/:id`       → `controller.findOne`
+- `PATCH  /<module>/:id`       → `controller.update`
+- `DELETE /<module>/:id`       → `controller.remove`
+
+## Important rules
+
+- Aggregates should never have side effects — they only produce events
+- Projections are eventually consistent — they update synchronously after store append in this template
+- Outbox is the single source for publishing events to external systems
+- Event store is append-only — never modify or delete stored events

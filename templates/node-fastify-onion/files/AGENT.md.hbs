@@ -1,0 +1,98 @@
+# AGENT.md — {{projectName}}
+
+Context for AI coding agents working in this repository. Read this before
+generating or editing code.
+
+## Project
+
+- **Name:** {{projectName}}
+- **Description:** {{description}}
+- **Framework:** Fastify (TypeScript, strict mode) — plugin-based.
+  Each module is registered as a Fastify plugin with its own prefix.
+- **Architecture:** {{architectureLabel}}
+- **Data layer:** {{#if ormNone}}in-memory repositories (no ORM){{else}}{{orm}}{{/if}}
+{{#if hasDatabase}}
+- **Database:** {{database}}
+{{/if}}
+- **Validation:** {{#if hasValidation}}{{validation}}{{else}}none{{/if}}
+{{#if useRedis}}
+- **Cache:** Redis (via `ioredis`)
+{{/if}}
+{{#if useSwagger}}
+- **API docs:** Swagger UI at `/api/docs` (@fastify/swagger-ui)
+{{/if}}
+{{#if useAuth}}
+- **Auth:** JWT (POST /auth/login, Bearer token, @fastify/jwt)
+{{/if}}
+{{#if useHealthCheck}}
+- **Health:** `GET /health` reports liveness/readiness
+{{/if}}
+{{#if useRateLimit}}
+- **Rate limiting:** @fastify/rate-limit
+{{/if}}
+
+## Modules
+
+{{#each modules}}
+- `{{this}}`
+{{/each}}
+
+## Commands
+
+```bash
+npm run start:dev      # watch mode (tsx)
+npm run build           # tsc
+{{#if useDocker}}
+npm run infra:up        # start databases/brokers via docker compose
+npm run infra:down
+{{/if}}
+{{#if ormPrisma}}
+npm run prisma:migrate  # create and apply a migration
+npm run prisma:generate
+{{/if}}
+{{#if useLint}}
+npm run lint            # ESLint with auto-fix
+npm run format          # Prettier
+{{/if}}
+{{#if useTests}}
+npm run test            # unit tests (Jest)
+npm run test:watch
+npm run test:cov        # with coverage
+npm run test:e2e        # e2e tests (app.inject())
+{{/if}}
+```
+
+## Architecture
+
+Onion architecture with Fastify plugins as the presentation layer:
+
+```
+src/
+├── domain/          ← Innermost: entities, repository interfaces (ports)
+├── application/     ← Use cases, DTOs, service implementations
+├── infrastructure/  ← Persistence adapters (TypeORM, Prisma, Mongoose, in-memory)
+└── presentation/    ← Outermost: Fastify route plugins (one per module)
+```
+
+Each module's presentation layer exports a default Fastify plugin function.
+The plugin creates its own repository/service instances internally (manual
+DI) and registers routes on the Fastify instance.
+
+## Hard rules
+
+1. **No DI container.** Each plugin's `export default async function` creates
+   its own dependency chain.
+2. **TypeScript is strict.** No `any`, no non-null assertions.{{#if ormTypeorm}}
+   TypeORM entity fields use `!:` — the one sanctioned exception.{{/if}}
+3. **Dependency direction is inward.** Presentation → Application → Domain.
+   Infrastructure implements Domain interfaces. Never the reverse.
+4. **Register new modules** in `src/app.ts` via
+   `await fastify.register(moduleRoutes, { prefix: '/name' })`.
+5. **Fastify plugins use `export default async function(fastify)`** —
+   inside they call `fastify.get()`, `fastify.post()`, etc.
+6. **Error handling** uses Fastify's `setErrorHandler` + AppError subclasses.
+7. **`config/env.ts`** is the only file that reads `process.env`.
+
+## When you are unsure
+
+Prefer asking over guessing.

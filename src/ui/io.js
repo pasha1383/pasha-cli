@@ -2,13 +2,15 @@
 
 let _plainMode = false;
 
+function _stdout() { return process.stdout; }
+
 const defaultIO = {
   get input() { return process.stdin; },
-  get output() { return process.stdout; },
-  get isTTY() { return process.stdout.isTTY; },
-  get columns() { return process.stdout.columns || 80; },
-  get rows() { return process.stdout.rows || 24; },
-  get colorDepth() { return process.stdout.getColorDepth ? process.stdout.getColorDepth() : 4; },
+  get output() { return _stdout(); },
+  get isTTY() { return !!(process.stdout && process.stdout.isTTY); },
+  get columns() { return (process.stdout && process.stdout.columns) || 80; },
+  get rows() { return (process.stdout && process.stdout.rows) || 24; },
+  get colorDepth() { return (process.stdout && process.stdout.getColorDepth) ? process.stdout.getColorDepth() : 4; },
 };
 
 let _io = defaultIO;
@@ -67,11 +69,13 @@ function canUseTui(opts) {
 }
 
 function write(str) {
-  _io.output.write(str);
+  const out = _io.output;
+  if (out) out.write(str);
 }
 
 function writeLine(str) {
-  _io.output.write((str || '') + '\n');
+  const out = _io.output;
+  if (out) out.write((str || '') + '\n');
 }
 
 module.exports = {

@@ -1,7 +1,5 @@
 'use strict';
 
-const { ExitPromptError } = require('@inquirer/prompts');
-
 class Navigator {
   /**
    * @param {Array<{name: string, label: string, run: Function}>} steps
@@ -23,6 +21,9 @@ class Navigator {
     this._history = [];
     this._pendingAction = null;
     this._visitCount = new Map();
+    this._errorHandler = null;
+    this._loopGuardHandler = null;
+    this._retrySkipHandler = null;
   }
 
   get totalSteps() {
@@ -35,6 +36,18 @@ class Navigator {
 
   get currentStep() {
     return this._steps[this._currentIndex] || null;
+  }
+
+  setErrorHandler(fn) {
+    this._errorHandler = fn;
+  }
+
+  setLoopGuardHandler(fn) {
+    this._loopGuardHandler = fn;
+  }
+
+  setRetrySkipHandler(fn) {
+    this._retrySkipHandler = fn;
   }
 
   goBack() {
@@ -70,7 +83,11 @@ class Navigator {
       if (count > 20) {
         const msg = `Navigator loop detected on step "${step.label}" (visited ${count} times). ` +
           `This is a bug in the wizard — accumulated answers: ${JSON.stringify(Object.keys(this._ctx))}`;
-        console.warn(msg);
+        if (this._loopGuardHandler) {
+          this._loopGuardHandler(msg);
+        } else {
+          console.warn(msg);
+        }
         break;
       }
 
@@ -120,11 +137,20 @@ class Navigator {
         this._currentIndex++;
 
       } catch (err) {
-        if (err instanceof ExitPromptError) {
-          console.log('\n\nExiting...');
-          process.exit(0);
+        if (err.name === 'ExitPromptError') {
+          this._ctx._cancelled = true;
+          if (this._errorHandler) {
+            this._errorHandler('exit');
+          }
+          break;
         }
-        console.error(`\nError in step "${step.label}" — ${err.message}`);
+
+        if (this._errorHandler) {
+          this._errorHandler('step_error', err, step.label);
+        } else {
+          console.error(`\nError in step "${step.label}" — ${err.message}`);
+        }
+
         const action = await this._askRetrySkip();
         if (action === 'retry') {
           continue;
@@ -132,7 +158,12 @@ class Navigator {
         if (action === 'exit') {
           process.exit(0);
         }
-        console.log('Skipping step — the project may be incomplete.');
+
+        if (this._errorHandler) {
+          this._errorHandler('info', 'Skipping step — the project may be incomplete.');
+        } else {
+          console.log('Skipping step — the project may be incomplete.');
+        }
         this._currentIndex++;
       }
     }
@@ -168,6 +199,9 @@ class Navigator {
     } catch (_) { /* prompts module not loaded */ }
 
     if (isTui) {
+      if (this._retrySkipHandler) {
+        return await this._retrySkipHandler();
+      }
       return 'skip';
     }
 

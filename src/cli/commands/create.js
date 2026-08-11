@@ -439,9 +439,18 @@ async function renderProject(ctx, renderOpts = {}) {
   const modules = ctx.modules || [];
 
   const tui = isTuiMode();
+  const isPlain = io.isPlainMode();
   const onProgress = renderOpts.onProgress || null;
-  const silentSpinner = { start() { return this; }, succeed() { return this; }, fail() { return this; }, stop() {}, warn() {} };
-  const sp = tui ? silentSpinner : new Spinner('Generating files...').start();
+  const silentSpinner = { start() { return this; }, succeed() { return this; }, fail() { return this; }, stop() {}, warn() { return this; } };
+  let sp;
+  if (tui) {
+    sp = silentSpinner;
+  } else if (isPlain) {
+    console.log('  … Generating files...');
+    sp = silentSpinner;
+  } else {
+    sp = new Spinner('Generating files...').start();
+  }
   try {
     await fs.ensureDir(outDir);
 
@@ -460,9 +469,17 @@ async function renderProject(ctx, renderOpts = {}) {
       await renderModuleFiles(moduleFilesDir, outDir, ctx, modules, shouldInclude, onProgress ? function (fp) { onProgress({ phase: 0, filePath: fp }); } : null);
 
     if (tui && onProgress) onProgress({ phase: 0, done: true });
-    sp.succeed(chalk.green(`Files generated (${modules.length} module${modules.length === 1 ? '' : 's'})`));
+    if (isPlain) {
+      console.log(`  ✓ Files generated (${modules.length} module${modules.length === 1 ? '' : 's'})`);
+    } else if (!tui) {
+      sp.succeed(chalk.green(`Files generated (${modules.length} module${modules.length === 1 ? '' : 's'})`));
+    }
   } catch (err) {
-    sp.fail(chalk.red(err.message));
+    if (isPlain) {
+      console.log(`  ✗ ${err.message}`);
+    } else if (!tui) {
+      sp.fail(chalk.red(err.message));
+    }
     process.exit(1);
   }
 
@@ -488,21 +505,37 @@ async function renderProject(ctx, renderOpts = {}) {
   if (!renderOpts.skipGit && tc.gitInit) {
     if (tui && onProgress) {
       onProgress({ phase: 3, filePath: null, fileCount: 0 });
+      try {
+        await run('git', ['init'], { cwd: outDir, stdio: 'ignore' });
+        await run('git', ['add', '.'], { cwd: outDir, stdio: 'ignore' });
+        await run('git', ['commit', '-m', 'feat: init ' + ctx.projectName], { cwd: outDir, stdio: 'ignore' });
+      } catch (_) {}
+      onProgress({ phase: 3, done: true });
     } else {
       const { doGit } = await prompt([
         { type: 'confirm', name: 'doGit', message: 'Run git init and first commit?', default: true },
       ]);
       if (doGit) {
-        const sg = tui ? silentSpinner : new Spinner('Setting up git...').start();
+        if (isPlain) console.log('  … Setting up git...');
+        const sg = (tui || isPlain) ? silentSpinner : new Spinner('Setting up git...').start();
         try {
           await run('git', ['init'], { cwd: outDir, stdio: 'ignore' });
           await run('git', ['add', '.'], { cwd: outDir, stdio: 'ignore' });
           await run('git', ['commit', '-m', 'feat: init ' + ctx.projectName], { cwd: outDir, stdio: 'ignore' });
-          sg.succeed(chalk.green('git set up'));
-        } catch { sg.warn('Run git init manually'); }
+          if (isPlain) {
+            console.log('  ✓ git set up');
+          } else if (!tui) {
+            sg.succeed(chalk.green('git set up'));
+          }
+        } catch {
+          if (isPlain) {
+            console.log('  Run git init manually');
+          } else if (!tui) {
+            sg.warn('Run git init manually');
+          }
+        }
       }
     }
-    if (tui && onProgress) onProgress({ phase: 3, done: true });
   }
 
   return outDir;
@@ -702,7 +735,12 @@ async function stepReview(ctx, nav) {
   const fullCtx = buildContext(flags, ctx.modules || [], ctx, ctx);
 
   if (ctx._mode !== 'multi') {
-    summary(fullCtx);
+    if (isTuiMode()) {
+      const tuiApp = require('../../ui/tui/app');
+      tuiApp.showSummary(fullCtx);
+    } else {
+      summary(fullCtx);
+    }
   }
 
   const { action } = await prompt([{
@@ -716,7 +754,7 @@ async function stepReview(ctx, nav) {
 
   if (action === '__cancel__') {
     log.warn('Aborted. No files were created.');
-    process.exit(0);
+    return '__cancel__';
   }
   if (action === '__back__') return '__back__';
 
@@ -1179,8 +1217,7 @@ async function createTui(options) {
     const ctx = await nav.start(initialCtx);
 
     if (!ctx._confirmed) {
-      showDone('Cancelled. No files were created.');
-      tuiTerminal.restore();
+      showDone('Cancelled. No files were created.', null, null);
       await waitUntilExit();
       process.exit(0);
     }
@@ -1256,29 +1293,26 @@ async function createTui(options) {
       var onProgress = makeProgressCallback(0, renderFileCount);
       var outDir = await renderProject(ctx, { onProgress });
       await history.saveSession(ctx);
+      updateProgress({ currentPhase: 2 });
       await writePashaJson(outDir, ctx);
       var cs2 = getState();
       var prev2 = (cs2 && cs2.completedPhases) ? cs2.completedPhases : {};
       var updated2 = Object.assign({}, prev2);
       updated2[2] = true;
-      showProgress(phases, -1, 'Done!');
-      updateProgress({ completedPhases: updated2 });
+      updateProgress({ completedPhases: updated2, currentPhase: -1 });
 
-      showDone(`Project "${ctx.projectName}" created at ${outDir}`);
+      showDone(`Project "${ctx.projectName}" created!`, outDir, ctx);
     }
 
     await waitUntilExit();
   } catch (err) {
-    if (_cleanupExitHandlers) _cleanupExitHandlers();
-    tuiTerminal.restore();
-    if (_log) console.log = _log;
-    if (_error) console.error = _error;
     if (err && err.name === 'ExitPromptError') {
-      console.log('');
-      log.warn('Cancelled.');
-      process.exit(0);
+      showDone('Cancelled.', null, null);
+    } else {
+      showDone('Failed: ' + (err.message || 'Unknown error'), null, null);
     }
-    throw err;
+    await waitUntilExit();
+    process.exit(err && err.name === 'ExitPromptError' ? 0 : 1);
   } finally {
     if (_cleanupExitHandlers) _cleanupExitHandlers();
     if (_log) console.log = _log;

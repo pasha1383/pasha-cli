@@ -41,15 +41,25 @@ async function _promptTui(questions) {
       answers: _tuiContext.answers || {},
       sidebarInfo: q.sidebarInfo || _tuiContext.sidebarInfo || null,
     });
-    const answer = await new Promise((resolve) => {
-      try {
-        pushQuestion(augmented, (value) => {
-          resolve(value);
-        });
-      } catch (err) {
-        resolve(null);
-      }
-    });
+    let answer;
+    try {
+      answer = await new Promise((resolve) => {
+        try {
+          pushQuestion(augmented, (value) => {
+            resolve(value);
+          });
+        } catch (err) {
+          resolve(null);
+        }
+      });
+    } catch (_) {
+      answer = null;
+    }
+    if (answer === '__cancel__') {
+      const err = new Error('Cancelled by user');
+      err.name = 'ExitPromptError';
+      throw err;
+    }
     answers[q.name] = answer;
   }
   return answers;

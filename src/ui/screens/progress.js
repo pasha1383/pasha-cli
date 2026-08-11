@@ -44,6 +44,12 @@ class Spinner {
     return this;
   }
 
+  warn(text) {
+    this.stop();
+    io.writeLine(`  ! ${text || this.text}`);
+    return this;
+  }
+
   stop() {
     if (this._interval) {
       clearInterval(this._interval);
@@ -53,7 +59,7 @@ class Spinner {
   }
 
   _shouldAnimate() {
-    return io.isTTY() && !process.env.CI && !process.env.NO_COLOR;
+    return io.isTTY() && !process.env.CI && !process.env.NO_COLOR && !io.isPlainMode();
   }
 }
 

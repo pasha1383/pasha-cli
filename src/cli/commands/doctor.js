@@ -1,7 +1,7 @@
 'use strict';
-const inquirer = require('inquirer');
 const chalk = require('chalk');
 const log = require('../../utils/logger');
+const { prompt } = require('../../ui/prompts');
 const { checkAll, installTool, PLATFORM, SUPPORTED_PLATFORMS } = require('../../core/system/prerequisites');
 
 const ALL_TOOLS = ['node', 'npm', 'git', 'python3', 'go', 'java'];
@@ -25,7 +25,7 @@ async function doctor() {
     return;
   }
 
-  const { toInstall } = await inquirer.prompt([{
+  const { toInstall } = await prompt([{
     type: 'checkbox',
     name: 'toInstall',
     message: 'Which ones should I install now?',

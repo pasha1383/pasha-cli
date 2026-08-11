@@ -19,12 +19,12 @@ import { selectAll{{pascalCase moduleName}}s, select{{pascalCase moduleName}}sLo
       }
 
       @if (error$ | async; as error) {
-        <p class="error">{{ error }}</p>
+        <p class="error" [innerText]="error"></p>
       }
 
       <ul>
         @for (item of items$ | async; track item.id) {
-          <li>{{ item.name }} ({{ item.id }})</li>
+          <li [innerText]="item.name + ' (' + item.id + ')'"></li>
         }
       </ul>
 

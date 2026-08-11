@@ -9,7 +9,7 @@ defineProps<{
 
 <template>
   <div class="{{kebabCase moduleName}}-card rounded border p-4">
-    <h3 class="text-lg font-semibold">{{ '{{' }} {{camelCase moduleName}}.name }}</h3>
-    <p class="text-sm text-gray-500">ID: {{ '{{' }} {{camelCase moduleName}}.id }}</p>
+    <h3 class="text-lg font-semibold" v-text="{{camelCase moduleName}}.name"></h3>
+    <p class="text-sm text-gray-500">ID: <span v-text="{{camelCase moduleName}}.id"></span></p>
   </div>
 </template>

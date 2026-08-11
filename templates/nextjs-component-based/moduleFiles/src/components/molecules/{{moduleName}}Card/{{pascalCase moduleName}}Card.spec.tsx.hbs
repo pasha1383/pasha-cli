@@ -3,7 +3,8 @@ import { {{pascalCase moduleName}}Card } from './{{pascalCase moduleName}}Card';
 
 describe('{{pascalCase moduleName}}Card', () => {
   it('renders the card', () => {
-    render(<{{pascalCase moduleName}}Card {{moduleName}}={{ id: '1', name: 'Test', description: 'Desc' }} />);
+    const test{{pascalCase moduleName}} = { id: '1', name: 'Test', description: 'Desc' };
+    render(<{{pascalCase moduleName}}Card {{moduleName}}={test{{pascalCase moduleName}}{{!}} } />);
     expect(screen.getByText('Test')).toBeInTheDocument();
   });
 });

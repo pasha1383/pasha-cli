@@ -30,9 +30,9 @@ function handleRemove(id: string) {
 
 <template>
   <div class="{{kebabCase moduleName}}-page">
-    <h1 class="mb-6 text-2xl font-bold">{{\{{ pascalCase moduleName }}\}}</h1>
+    <h1 class="mb-6 text-2xl font-bold">{{pascalCase moduleName}}</h1>
     <{{pascalCase moduleName}}Form @submit="handleAdd" />
-    <p class="my-4 text-sm text-gray-600">Total: {{ '{{' }} count }}</p>
+    <p class="my-4 text-sm text-gray-600">Total: <span v-text="count"></span></p>
     <{{pascalCase moduleName}}Grid :items="items" @remove="handleRemove" />
   </div>
 </template>

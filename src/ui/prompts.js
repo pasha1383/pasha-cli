@@ -60,6 +60,10 @@ async function _promptTui(questions) {
       err.name = 'ExitPromptError';
       throw err;
     }
+    if (answer === '__back__') {
+      answers[q.name] = '__back__';
+      return answers;
+    }
     answers[q.name] = answer;
   }
   return answers;

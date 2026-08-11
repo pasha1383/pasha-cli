@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import type { {{pascalCase moduleName}} } from '../../entities/{{moduleName}}/types';
+
 defineProps<{
-  items: { id: string; name: string }[];
+  items: {{pascalCase moduleName}}[];
 }>();
 
 defineEmits<{
@@ -15,7 +17,7 @@ defineEmits<{
       :key="item.id"
       class="flex items-center justify-between px-4 py-3"
     >
-      <span>{{ '{{' }} item.name }}</span>
+      <span v-text="item.name"></span>
       <button
         class="text-sm text-red-500 hover:text-red-700"
         @click="$emit('remove', item.id)"

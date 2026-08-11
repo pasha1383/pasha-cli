@@ -138,7 +138,8 @@ function checkAll(tools) {
   return tools.map(checkTool);
 }
 
-async function installTool(tool) {
+async function installTool(tool, opts = {}) {
+  const { stdio = 'inherit' } = opts;
   if (!SUPPORTED_PLATFORMS.includes(PLATFORM)) {
     throw new Error('Automatic install is currently only supported on Linux and macOS.');
   }
@@ -153,7 +154,7 @@ async function installTool(tool) {
   if (!cmdParts) {
     throw new Error(`Don't know how to install "${tool}" via ${pkgManager} — please install it manually.`);
   }
-  await run(cmdParts[0], cmdParts.slice(1), { stdio: 'inherit' });
+  await run(cmdParts[0], cmdParts.slice(1), { stdio });
 }
 
 module.exports = {

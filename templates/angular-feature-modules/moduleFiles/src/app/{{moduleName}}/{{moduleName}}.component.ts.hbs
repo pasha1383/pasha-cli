@@ -18,7 +18,7 @@ type {{pascalCase moduleName}} = z.infer<typeof {{camelCase moduleName}}Schema>;
     <div class="{{kebabCase moduleName}}">
       <h2>{{pascalCase moduleName}}</h2>
       <p class="description">Feature module: <strong>{{moduleName}}</strong></p>
-      <p class="counter">Count: {{ count }}</p>
+      <p class="counter" [innerText]="'Count: ' + count"></p>
       <div class="actions">
         <button (click)="decrement()">-</button>
         <button (click)="reset()">Reset</button>

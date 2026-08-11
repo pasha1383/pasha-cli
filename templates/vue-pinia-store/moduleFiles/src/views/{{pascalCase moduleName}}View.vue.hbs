@@ -14,7 +14,7 @@ function handleAdd() {
 
 <template>
   <div class="{{kebabCase moduleName}}-view p-6">
-    <h1 class="mb-6 text-2xl font-bold">{{\{{ pascalCase moduleName }}\}}</h1>
+    <h1 class="mb-6 text-2xl font-bold">{{pascalCase moduleName}}</h1>
 
     <div class="mb-6 flex gap-2">
       <input
@@ -32,7 +32,7 @@ function handleAdd() {
       </button>
     </div>
 
-    <p class="mb-4 text-sm text-gray-600">Total: {{ '{{' }} store.count }}</p>
+    <p class="mb-4 text-sm text-gray-600">Total: <span v-text="store.count"></span></p>
 
     <ul class="divide-y rounded border">
       <li
@@ -40,8 +40,8 @@ function handleAdd() {
         :key="item.id"
         class="flex items-center justify-between px-4 py-3"
       >
-        <span>{{ '{{' }} item.name }}</span>
-        <span class="text-xs text-gray-400">{{ '{{' }} item.id }}</span>
+        <span v-text="item.name"></span>
+        <span class="text-xs text-gray-400" v-text="item.id"></span>
         <button
           class="text-sm text-red-500 hover:text-red-700"
           @click="store.removeItem(item.id)"

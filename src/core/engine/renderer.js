@@ -23,7 +23,26 @@ function renderString(str, ctx) {
   return compileTemplate(str)(ctx);
 }
 
-async function renderTemplateDir(srcDir, destDir, ctx, shouldInclude, relBase) {
+async function countFilesInTemplateDir(srcDir, shouldInclude, relBase) {
+  const include = shouldInclude || (() => true);
+  const base = relBase || '';
+  const entries = await fs.readdir(srcDir, { withFileTypes: true });
+  let count = 0;
+
+  for (const entry of entries) {
+    const relPath = base ? base + '/' + entry.name : entry.name;
+    if (!include(relPath)) continue;
+    const srcPath = path.join(srcDir, entry.name);
+    if (entry.isDirectory()) {
+      count += await countFilesInTemplateDir(srcPath, include, relPath);
+    } else {
+      count++;
+    }
+  }
+  return count;
+}
+
+async function renderTemplateDir(srcDir, destDir, ctx, shouldInclude, relBase, onProgress) {
   const include = shouldInclude || (() => true);
   const base = relBase || '';
   const entries = await fs.readdir(srcDir, { withFileTypes: true });
@@ -48,36 +67,44 @@ async function renderTemplateDir(srcDir, destDir, ctx, shouldInclude, relBase) {
 
     if (entry.isDirectory()) {
       await fs.ensureDir(destPath);
-      await renderTemplateDir(srcPath, destPath, ctx, include, relPath);
-    } else if (isHbs) {
-      const content = await fs.readFile(srcPath, 'utf8');
-      let rendered;
-      try {
-        rendered = renderString(content, ctx);
-      } catch (err) {
-        throw new TemplateRenderError(err.message, {
-          templatePath: srcPath,
-          line: err.lineNumber || null,
-        });
-      }
-      await fs.ensureDir(path.dirname(destPath));
-      await fs.writeFile(destPath, rendered, 'utf8');
+      await renderTemplateDir(srcPath, destPath, ctx, include, relPath, onProgress);
     } else {
-      await fs.ensureDir(path.dirname(destPath));
-      await fs.copy(srcPath, destPath);
+      if (onProgress) {
+        var displayPath = destPath.split('/').slice(-4).join('/');
+        onProgress(displayPath);
+      }
+      if (isHbs) {
+        const content = await fs.readFile(srcPath, 'utf8');
+        let rendered;
+        try {
+          rendered = renderString(content, ctx);
+        } catch (err) {
+          throw new TemplateRenderError(err.message, {
+            templatePath: srcPath,
+            line: err.lineNumber || null,
+          });
+        }
+        await fs.ensureDir(path.dirname(destPath));
+        await fs.writeFile(destPath, rendered, 'utf8');
+      } else {
+        await fs.ensureDir(path.dirname(destPath));
+        await fs.copy(srcPath, destPath);
+      }
     }
   }
 }
 
-async function renderModuleFiles(srcDir, destDir, ctx, moduleNames, shouldInclude) {
+async function renderModuleFiles(srcDir, destDir, ctx, moduleNames, shouldInclude, onProgress) {
   for (const moduleName of moduleNames) {
     await renderTemplateDir(
       srcDir,
       destDir,
       Object.assign({}, ctx, { moduleName }),
-      shouldInclude
+      shouldInclude,
+      null,
+      onProgress
     );
   }
 }
 
-module.exports = { renderTemplateDir, renderModuleFiles, renderString, compileTemplate };
+module.exports = { renderTemplateDir, renderModuleFiles, renderString, compileTemplate, countFilesInTemplateDir };

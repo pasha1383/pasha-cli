@@ -7,6 +7,7 @@ const KEYS = {
   RIGHT: 'rightArrow',
   ENTER: 'return',
   BACKSPACE: 'backspace',
+  DELETE: 'delete',
   SPACE: 'space',
   TAB: 'tab',
   ESCAPE: 'escape',
@@ -48,24 +49,27 @@ const ACTIONS = {
 function mapKey(input, info) {
   const key = info && info.key ? info.key : {};
   const name = key.name;
+  const ctrl = key.ctrl;
+  const meta = key.meta;
 
-  if (key.ctrl) {
+  if (ctrl && !meta) {
     if (input === 'c' || input === '\x03') return ACTIONS.QUIT;
     if (input === 'l' || input === '\x0c') return ACTIONS.REDRAW;
   }
 
-  if (name === KEYS.UP || input === 'k' || name === KEYS.K) return ACTIONS.MOVE_UP;
-  if (name === KEYS.DOWN || input === 'j' || name === KEYS.J) return ACTIONS.MOVE_DOWN;
+  if (name === KEYS.ESCAPE) return ACTIONS.CLOSE_OVERLAY;
+  if (name === KEYS.TAB) return ACTIONS.NEXT_PANE;
+  if (name === KEYS.UP || input === 'k') return ACTIONS.MOVE_UP;
+  if (name === KEYS.DOWN || input === 'j') return ACTIONS.MOVE_DOWN;
   if (name === KEYS.LEFT || name === KEYS.BACKSPACE) return ACTIONS.GO_BACK;
   if (name === KEYS.RIGHT || name === KEYS.ENTER) return ACTIONS.CONFIRM;
   if (name === KEYS.SPACE) return ACTIONS.TOGGLE;
-  if (input === 'a' || name === KEYS.A) return ACTIONS.SELECT_ALL;
-  if (input === 'n' || name === KEYS.N) return ACTIONS.SELECT_NONE;
-  if (name === KEYS.TAB) return ACTIONS.NEXT_PANE;
+  if (input === 'a') return ACTIONS.SELECT_ALL;
+  if (input === 'n') return ACTIONS.SELECT_NONE;
   if (input === '?' || name === KEYS.QUESTION) return ACTIONS.HELP;
-  if (input === 's' || name === KEYS.S) return ACTIONS.JUMP_SUMMARY;
-  if (input === 'e' || name === KEYS.E) return ACTIONS.EDIT_FROM_SUMMARY;
-  if (name === KEYS.ESCAPE) return ACTIONS.CLOSE_OVERLAY;
+  if (input === 's') return ACTIONS.JUMP_SUMMARY;
+  if (input === 'e') return ACTIONS.EDIT_FROM_SUMMARY;
+  if (input === '/') return ACTIONS.FILTER;
 
   return null;
 }
@@ -73,42 +77,56 @@ function mapKey(input, info) {
 function hintsForContext(context) {
   if (context === 'done') {
     return [
-      { key: '\u23CE', label: 'exit' },
-      { key: '^C', label: 'quit' },
+      { key: 'Enter', label: 'exit' },
+      { key: 'Ctrl+C', label: 'quit' },
     ];
   }
 
   if (context === 'progress') {
     return [
-      { key: '^C', label: 'quit' },
+      { key: 'Ctrl+C', label: 'quit' },
+    ];
+  }
+
+  if (context === 'help') {
+    return [
+      { key: 'Esc', label: 'close' },
+    ];
+  }
+
+  if (context === 'confirm-quit') {
+    return [
+      { key: 'y', label: 'quit' },
+      { key: 'n/Esc', label: 'cancel' },
     ];
   }
 
   const base = [
-    { key: '\u2191\u2193', label: 'move' },
-    { key: '\u23CE', label: 'confirm' },
-    { key: '\u2190', label: 'back' },
+    { key: '\u2191\u2193 k/j', label: 'move' },
+    { key: 'Enter', label: 'confirm' },
+    { key: '\u2190/BS', label: 'back' },
     { key: '?', label: 'help' },
   ];
 
-  if (context === 'select' || context === 'multi-select') {
-    base.push({ key: '/', label: 'filter' });
+  if (context === 'select') {
+    base.push({ key: 'type', label: 'filter' });
   }
 
   if (context === 'multi-select') {
-    base.splice(1, 0, { key: 'space', label: 'toggle' });
-    base.splice(2, 0, { key: 'a/n', label: 'all/none' });
+    base.push({ key: 'Space', label: 'toggle' });
+    base.push({ key: 'a/n', label: 'all/none' });
+    base.push({ key: 'type', label: 'filter' });
   }
 
   if (context === 'summary') {
     base.push({ key: 'e', label: 'edit' });
   }
 
-  if (context === 'wizard') {
+  if (context === 'input' || context === 'confirm') {
     base.push({ key: 's', label: 'summary' });
   }
 
-  base.push({ key: '^C', label: 'quit' });
+  base.push({ key: 'Ctrl+C', label: 'quit' });
 
   return base;
 }

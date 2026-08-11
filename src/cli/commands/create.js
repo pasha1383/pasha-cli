@@ -8,7 +8,7 @@ const log = require('../../utils/logger');
 const { run } = require('../../core/system/exec');
 const { loadManifest, getLanguages, getFrameworks, getArchitectures, getTemplateDir } = require('../../core/catalog/manifest');
 const { loadTemplateConfig } = require('../../core/catalog/template-config');
-const { renderTemplateDir, renderModuleFiles } = require('../../core/engine/renderer');
+const { renderTemplateDir, renderModuleFiles, countFilesInTemplateDir } = require('../../core/engine/renderer');
 const { makeIncludeCheck } = require('../../core/engine/conditions');
 const { checkAll, installTool, resolveCommandPath } = require('../../core/system/prerequisites');
 const { resolveFeatures } = require('../../core/features/index');
@@ -27,6 +27,8 @@ let _inkInstance = null;
 let _tuiTerminal = null;
 
 const TEMPLATES_ROOT = path.join(__dirname, '../../../templates');
+
+const FRONTEND_FLAVORS = ['nextjs', 'react', 'vue', 'svelte', 'angular', 'astro', 'html'];
 
 let _manifest = null;
 
@@ -90,60 +92,106 @@ async function ensurePrerequisites(tools) {
 // Instead the message shows "(space to toggle, enter to submit)".
 
 function _buildStackSteps(fm, ctx, nav) {
-  const ormChoices = fm.ormChoices(ctx.framework);
+  const isFrontend = FRONTEND_FLAVORS.includes(ctx._stackFlavor);
   const steps = [];
 
-  // 0: ORM (single-select or auto)
-  if (ormChoices.length > 1) {
+  if (!isFrontend) {
+    // 0: ORM (single-select or auto)
+    const ormChoices = fm.ormChoices(ctx.framework);
+    if (ormChoices.length > 1) {
+      steps.push({
+        name: 'orm',
+        label: 'ORM',
+        run: async (c) => {
+          const a = await prompt([{
+            type: 'list', name: 'orm', message: 'Data layer / ORM?',
+            choices: withBack(ormChoices, nav),
+            default: c.orm || undefined,
+          }]);
+          if (a.orm === '__back__') return '__back__';
+          return { orm: a.orm };
+        },
+      });
+    } else if (ormChoices.length === 1) {
+      steps.push({
+        name: 'orm',
+        label: 'ORM',
+        run: async () => {
+          const val = ormChoices[0].value;
+          log.info(`   ORM: ${ormChoices[0].name} (the only option for ${ctx.framework})`);
+          return { orm: val };
+        },
+      });
+    } else {
+      steps.push({
+        name: 'orm',
+        label: 'ORM',
+        run: async () => ({ orm: 'none' }),
+      });
+    }
+
+    // 1: Database (single-select or auto)
     steps.push({
-      name: 'orm',
-      label: 'ORM',
+      name: 'database',
+      label: 'Database',
+      run: async (c) => {
+        const orm = c.orm;
+        if (!orm || orm === 'none') return { database: 'none' };
+        const dbChoices = fm.databaseChoices(orm);
+        if (dbChoices.length === 0) return { database: 'none' };
+        if (dbChoices.length === 1) {
+          log.info(`   Database: ${dbChoices[0].name} (the only option ${orm} supports)`);
+          return { database: dbChoices[0].value };
+        }
+        const a = await prompt([{
+          type: 'list', name: 'database', message: 'Database?',
+          choices: withBack(dbChoices, nav),
+          default: (c.database && c.database !== 'none') ? c.database : undefined,
+        }]);
+        if (a.database === '__back__') return '__back__';
+        return { database: a.database };
+      },
+    });
+
+    // 2: Redis (confirm — no back)
+    steps.push({
+      name: 'redis',
+      label: 'Redis',
       run: async (c) => {
         const a = await prompt([{
-          type: 'list', name: 'orm', message: 'Data layer / ORM?',
-          choices: withBack(ormChoices, nav),
-          default: c.orm || undefined,
+          type: 'confirm', name: 'useRedis', message: 'Add Redis for caching?',
+          default: c.useRedis !== undefined ? Boolean(c.useRedis) : false,
         }]);
-        if (a.orm === '__back__') return '__back__';
-        return { orm: a.orm };
+        return { useRedis: a.useRedis };
       },
     });
-  } else {
-    steps.push({
-      name: 'orm',
-      label: 'ORM',
-      run: async () => {
-        const val = ormChoices[0].value;
-        log.info(`   ORM: ${ormChoices[0].name} (the only option for ${ctx.framework})`);
-        return { orm: val };
-      },
-    });
+
+    // 3: Broker (single-select or auto)
+    const brokerChoices = fm.brokerChoices();
+    if (brokerChoices.length > 1) {
+      steps.push({
+        name: 'broker',
+        label: 'Broker',
+        run: async (c) => {
+          const a = await prompt([{
+            type: 'list', name: 'broker', message: 'Message broker?',
+            choices: withBack(brokerChoices, nav),
+            default: c.broker || undefined,
+          }]);
+          if (a.broker === '__back__') return '__back__';
+          return { broker: a.broker };
+        },
+      });
+    } else {
+      steps.push({
+        name: 'broker',
+        label: 'Broker',
+        run: async () => ({ broker: 'none' }),
+      });
+    }
   }
 
-  // 1: Database (single-select or auto)
-  steps.push({
-    name: 'database',
-    label: 'Database',
-    run: async (c) => {
-      const orm = c.orm;
-      if (!orm || orm === 'none') return { database: 'none' };
-      const dbChoices = fm.databaseChoices(orm);
-      if (dbChoices.length === 0) return { database: 'none' };
-      if (dbChoices.length === 1) {
-        log.info(`   Database: ${dbChoices[0].name} (the only option ${orm} supports)`);
-        return { database: dbChoices[0].value };
-      }
-      const a = await prompt([{
-        type: 'list', name: 'database', message: 'Database?',
-        choices: withBack(dbChoices, nav),
-        default: (c.database && c.database !== 'none') ? c.database : undefined,
-      }]);
-      if (a.database === '__back__') return '__back__';
-      return { database: a.database };
-    },
-  });
-
-  // 2: Validation (single-select)
+  // Validation (single-select — always asked, even for frontend)
   steps.push({
     name: 'validation',
     label: 'Validation',
@@ -158,44 +206,7 @@ function _buildStackSteps(fm, ctx, nav) {
     },
   });
 
-  // 3: Redis (confirm — no back)
-  steps.push({
-    name: 'redis',
-    label: 'Redis',
-    run: async (c) => {
-      const a = await prompt([{
-        type: 'confirm', name: 'useRedis', message: 'Add Redis for caching?',
-        default: c.useRedis !== undefined ? Boolean(c.useRedis) : false,
-      }]);
-      return { useRedis: a.useRedis };
-    },
-  });
-
-  // 4: Broker (single-select or auto)
-  const brokerChoices = fm.brokerChoices();
-  if (brokerChoices.length > 1) {
-    steps.push({
-      name: 'broker',
-      label: 'Broker',
-      run: async (c) => {
-        const a = await prompt([{
-          type: 'list', name: 'broker', message: 'Message broker?',
-          choices: withBack(brokerChoices, nav),
-          default: c.broker || undefined,
-        }]);
-        if (a.broker === '__back__') return '__back__';
-        return { broker: a.broker };
-      },
-    });
-  } else {
-    steps.push({
-      name: 'broker',
-      label: 'Broker',
-      run: async () => ({ broker: 'none' }),
-    });
-  }
-
-  // 5: AGENT docs (confirm — no back)
+  // AGENT docs (confirm — no back, always asked)
   steps.push({
     name: 'agentdocs',
     label: 'AGENT Docs',
@@ -209,7 +220,7 @@ function _buildStackSteps(fm, ctx, nav) {
     },
   });
 
-  // 6: Extras (checkbox — no back choice)
+  // Extras (checkbox — no back choice)
   if (fm.extraFeatureChoices) {
     steps.push({
       name: 'extras',
@@ -238,6 +249,7 @@ async function runStackWizard(ctx, nav) {
   const flavor = tf.stackFeatures;
   if (!flavor) return {};
 
+  const isFrontend = FRONTEND_FLAVORS.includes(flavor);
   const fm = resolveFeatures(flavor);
   const steps = _buildStackSteps(fm, ctx, nav);
 
@@ -245,15 +257,25 @@ async function runStackWizard(ctx, nav) {
 
   let index = 0;
   const total = steps.length;
-  const answers = {
-    orm: ctx.orm || undefined,
-    database: ctx.database || undefined,
-    validation: ctx.validation || undefined,
-    useRedis: ctx.useRedis,
-    broker: ctx.broker || undefined,
-    useAgentDocs: ctx.useAgentDocs,
-    extras: ctx.extras || undefined,
-  };
+  const answers = isFrontend
+    ? {
+        orm: 'none',
+        database: 'none',
+        validation: ctx.validation || undefined,
+        useRedis: false,
+        broker: 'none',
+        useAgentDocs: ctx.useAgentDocs,
+        extras: ctx.extras || undefined,
+      }
+    : {
+        orm: ctx.orm || undefined,
+        database: ctx.database || undefined,
+        validation: ctx.validation || undefined,
+        useRedis: ctx.useRedis,
+        broker: ctx.broker || undefined,
+        useAgentDocs: ctx.useAgentDocs,
+        extras: ctx.extras || undefined,
+      };
 
   while (index >= 0 && index < total) {
     const step = steps[index];
@@ -360,7 +382,13 @@ function buildContext(flags, modules, baseAnswers, ctx) {
   if (flavor) {
     const fm = resolveFeatures(flavor);
 
-    if (flavor === 'go' || flavor === 'chi' || flavor === 'go-stdlib') {
+    if (FRONTEND_FLAVORS.includes(flavor)) {
+      flags._frontendFlavor = flavor;
+      const deps = fm.resolveDependencies(flags);
+      fullCtx.dependenciesJson = JSON.stringify(deps.dependencies, null, 4).replace(/\n/g, '\n  ');
+      fullCtx.devDependenciesJson = JSON.stringify(deps.devDependencies, null, 4).replace(/\n/g, '\n  ');
+      fullCtx.scriptsJson = JSON.stringify(fm.resolveScripts(flags), null, 4).replace(/\n/g, '\n  ');
+    } else if (flavor === 'go' || flavor === 'chi' || flavor === 'go-stdlib') {
       const deps = fm.resolveDependencies(flags);
       fullCtx.goModules = deps.goModules;
     } else if (flavor === 'python' || flavor === 'flask' || flavor === 'litestar' || flavor === 'tornado') {
@@ -410,23 +438,27 @@ async function renderProject(ctx, renderOpts = {}) {
   const modules = ctx.modules || [];
 
   const tui = isTuiMode();
+  const onProgress = renderOpts.onProgress || null;
   const silentSpinner = { start() { return this; }, succeed() { return this; }, fail() { return this; }, stop() {}, warn() {} };
   const sp = tui ? silentSpinner : new Spinner('Generating files...').start();
   try {
     await fs.ensureDir(outDir);
 
+    if (tui && onProgress) onProgress({ phase: 0, filePath: null, fileCount: 0 });
+
     if (tc.shared) {
       const sharedFiles = path.join(TEMPLATES_ROOT, tc.shared, 'files');
       if (await fs.pathExists(sharedFiles))
-        await renderTemplateDir(sharedFiles, outDir, ctx, shouldInclude);
+        await renderTemplateDir(sharedFiles, outDir, ctx, shouldInclude, null, onProgress ? function (fp) { onProgress({ phase: 0, filePath: fp }); } : null);
     }
 
-    await renderTemplateDir(path.join(templateDir, 'files'), outDir, ctx, shouldInclude);
+    await renderTemplateDir(path.join(templateDir, 'files'), outDir, ctx, shouldInclude, null, onProgress ? function (fp) { onProgress({ phase: 0, filePath: fp }); } : null);
 
     const moduleFilesDir = path.join(templateDir, 'moduleFiles');
     if (modules.length && (await fs.pathExists(moduleFilesDir)))
-      await renderModuleFiles(moduleFilesDir, outDir, ctx, modules, shouldInclude);
+      await renderModuleFiles(moduleFilesDir, outDir, ctx, modules, shouldInclude, onProgress ? function (fp) { onProgress({ phase: 0, filePath: fp }); } : null);
 
+    if (tui && onProgress) onProgress({ phase: 0, done: true });
     sp.succeed(chalk.green(`Files generated (${modules.length} module${modules.length === 1 ? '' : 's'})`));
   } catch (err) {
     sp.fail(chalk.red(err.message));
@@ -435,6 +467,7 @@ async function renderProject(ctx, renderOpts = {}) {
 
   if (!renderOpts.skipInstall && tc.postInstall && tc.postInstall.includes('npm install')) {
     if (!tui) section('Installing dependencies');
+    if (tui && onProgress) onProgress({ phase: 1, filePath: null, fileCount: 0 });
     const npmPath = resolveCommandPath('npm');
     if (!npmPath) {
       log.fail('Could not resolve npm on PATH.');
@@ -442,6 +475,7 @@ async function renderProject(ctx, renderOpts = {}) {
     } else {
       try {
         await run(npmPath, ['install'], { cwd: outDir, stdio: 'inherit' });
+        if (tui && onProgress) onProgress({ phase: 1, done: true });
         log.ok('npm install done');
       } catch (err) {
         log.fail(err.message);
@@ -451,18 +485,23 @@ async function renderProject(ctx, renderOpts = {}) {
   }
 
   if (!renderOpts.skipGit && tc.gitInit) {
-    const { doGit } = await prompt([
-      { type: 'confirm', name: 'doGit', message: 'Run git init and first commit?', default: true },
-    ]);
-    if (doGit) {
-      const sg = tui ? silentSpinner : new Spinner('Setting up git...').start();
-      try {
-        await run('git', ['init'], { cwd: outDir, stdio: 'ignore' });
-        await run('git', ['add', '.'], { cwd: outDir, stdio: 'ignore' });
-        await run('git', ['commit', '-m', 'feat: init ' + ctx.projectName], { cwd: outDir, stdio: 'ignore' });
-        sg.succeed(chalk.green('git set up'));
-      } catch { sg.warn('Run git init manually'); }
+    if (tui && onProgress) {
+      onProgress({ phase: 3, filePath: null, fileCount: 0 });
+    } else {
+      const { doGit } = await prompt([
+        { type: 'confirm', name: 'doGit', message: 'Run git init and first commit?', default: true },
+      ]);
+      if (doGit) {
+        const sg = tui ? silentSpinner : new Spinner('Setting up git...').start();
+        try {
+          await run('git', ['init'], { cwd: outDir, stdio: 'ignore' });
+          await run('git', ['add', '.'], { cwd: outDir, stdio: 'ignore' });
+          await run('git', ['commit', '-m', 'feat: init ' + ctx.projectName], { cwd: outDir, stdio: 'ignore' });
+          sg.succeed(chalk.green('git set up'));
+        } catch { sg.warn('Run git init manually'); }
+      }
     }
+    if (tui && onProgress) onProgress({ phase: 3, done: true });
   }
 
   return outDir;
@@ -803,23 +842,37 @@ async function createNonInteractive(opts) {
   const flavor = ti._stackFlavor;
 
   let orm, database, validation, useRedis, broker, useAgentDocs, extras, flags, stackAnswers;
+  let isFrontendNonInteractive = false;
 
   if (flavor) {
+    const isFrontend = FRONTEND_FLAVORS.includes(flavor);
+    isFrontendNonInteractive = isFrontend;
     const fm = resolveFeatures(flavor);
 
-    orm = opts.orm || (fm.ormChoices(fw)[0] && fm.ormChoices(fw)[0].value) || 'none';
-    database = opts.database || 'none';
-    if (orm !== 'none' && database === 'none') {
-      const dbChoices = fm.databaseChoices(orm);
-      if (dbChoices.length > 0) database = dbChoices[0].value;
+    if (isFrontend) {
+      orm = 'none';
+      database = 'none';
+      useRedis = false;
+      broker = 'none';
+      validation = opts.validation || (fm.validationChoices()[0] && fm.validationChoices()[0].value) || 'none';
+      useAgentDocs = opts.agentDocs !== undefined ? Boolean(opts.agentDocs) : true;
+      extras = opts.extras ? opts.extras.split(',').map((s) => s.trim()).filter(Boolean) : ['lint', 'tests'];
+    } else {
+      orm = opts.orm || (fm.ormChoices(fw)[0] && fm.ormChoices(fw)[0].value) || 'none';
+      database = opts.database || 'none';
+      if (orm !== 'none' && database === 'none') {
+        const dbChoices = fm.databaseChoices(orm);
+        if (dbChoices.length > 0) database = dbChoices[0].value;
+      }
+      validation = opts.validation || (fm.validationChoices()[0] && fm.validationChoices()[0].value) || 'none';
+      useRedis = opts.redis !== undefined ? Boolean(opts.redis) : false;
+      broker = opts.broker || 'none';
+      useAgentDocs = opts.agentDocs !== undefined ? Boolean(opts.agentDocs) : true;
+      extras = opts.extras ? opts.extras.split(',').map((s) => s.trim()).filter(Boolean) : ['swagger', 'lint', 'tests', 'health'];
     }
-    validation = opts.validation || (fm.validationChoices()[0] && fm.validationChoices()[0].value) || 'none';
-    useRedis = opts.redis !== undefined ? Boolean(opts.redis) : false;
-    broker = opts.broker || 'none';
-    useAgentDocs = opts.agentDocs !== undefined ? Boolean(opts.agentDocs) : true;
-    extras = opts.extras ? opts.extras.split(',').map((s) => s.trim()).filter(Boolean) : ['swagger', 'lint', 'tests', 'health'];
 
     stackAnswers = { orm, database, validation, useRedis, broker, useAgentDocs, extras };
+    if (isFrontendNonInteractive) stackAnswers._frontendFlavor = flavor;
     flags = fm.deriveFlags(stackAnswers);
   } else {
     orm = 'none';
@@ -1000,6 +1053,11 @@ async function createInteractive(opts) {
 async function createTui(options) {
   const tuiTerminal = require('../../ui/tui/terminal');
   const { initInk, getInk } = require('../../ui/tui/ink-proxy');
+  const { disableAnimation } = require('../../ui/tui/hooks/useAnimation');
+
+  if (options.animation === false) {
+    disableAnimation();
+  }
 
   if (!process.stdout.isTTY || !process.stdin.isTTY) {
     log.warn('TUI mode requires a real terminal. Falling back to non-interactive.');
@@ -1014,7 +1072,7 @@ async function createTui(options) {
     const ink = getInk();
 
     const tuiApp = require('../../ui/tui/app');
-    const { showProgress, showSummary, showDone } = tuiApp;
+    const { showProgress, showSummary, showDone, updateProgress, getState } = tuiApp;
 
     setTuiMode(true);
     setTuiApp(tuiApp);
@@ -1132,21 +1190,73 @@ async function createTui(options) {
 
     const phases = [
       { label: 'Rendering templates' },
-      { label: 'Writing files' },
       { label: 'Installing dependencies' },
+      { label: 'Writing config' },
       { label: 'Initializing git' },
     ];
+
+    var renderFileCount = 0;
+    var renderFileDone = 0;
+
+    function makeProgressCallback(phase, totalFiles) {
+      return function (evt) {
+        if (evt.done) {
+          var cs = getState();
+          var prev = (cs && cs.completedPhases) ? cs.completedPhases : {};
+          var updated = Object.assign({}, prev);
+          var targetPhase = evt.phase !== undefined ? evt.phase : phase;
+          updated[targetPhase] = true;
+          updateProgress({ completedPhases: updated, currentPhase: Math.max(targetPhase + 1, 0) });
+          return;
+        }
+        if (evt.filePath) {
+          renderFileDone++;
+          updateProgress({
+            filePath: evt.filePath,
+            fileCount: renderFileDone,
+            fileTotal: totalFiles,
+          });
+        }
+        if (evt.phase !== undefined && evt.phase !== phase && !evt.filePath) {
+          updateProgress({ currentPhase: evt.phase });
+        }
+      };
+    }
 
     if (options.dryRun) {
       showProgress(phases, 0, 'Generating file list...');
       await renderProjectDry(ctx);
-      showProgress(phases, 4, 'Done!');
     } else {
-      showProgress(phases, 0, 'Creating project files...');
-      const outDir = await renderProject(ctx);
-      showProgress(phases, 4, 'Done!');
+      // Pre-count files for progress bar
+      var tc = ctx._templateConfig;
+      var templateDir = path.join(TEMPLATES_ROOT, ctx._templateName);
+      var shouldInclude = makeIncludeCheck(tc.fileConditions, ctx);
+
+      renderFileCount = await countFilesInTemplateDir(path.join(templateDir, 'files'), shouldInclude);
+      if (tc.shared) {
+        var sharedFilesDir = path.join(TEMPLATES_ROOT, tc.shared, 'files');
+        if (await fs.pathExists(sharedFilesDir)) {
+          renderFileCount += await countFilesInTemplateDir(sharedFilesDir, shouldInclude);
+        }
+      }
+      var moduleFilesDir = path.join(templateDir, 'moduleFiles');
+      if ((ctx.modules || []).length && (await fs.pathExists(moduleFilesDir))) {
+        for (var _m of ctx.modules || []) {
+          renderFileCount += await countFilesInTemplateDir(moduleFilesDir, shouldInclude);
+        }
+      }
+
+      showProgress(phases, 0, 'Rendering templates...');
+      var onProgress = makeProgressCallback(0, renderFileCount);
+      var outDir = await renderProject(ctx, { onProgress });
       await history.saveSession(ctx);
       await writePashaJson(outDir, ctx);
+      var cs2 = getState();
+      var prev2 = (cs2 && cs2.completedPhases) ? cs2.completedPhases : {};
+      var updated2 = Object.assign({}, prev2);
+      updated2[2] = true;
+      showProgress(phases, -1, 'Done!');
+      updateProgress({ completedPhases: updated2 });
 
       showDone(`Project "${ctx.projectName}" created at ${outDir}`);
     }

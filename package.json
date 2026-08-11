@@ -28,13 +28,13 @@
     "linux"
   ],
   "scripts": {
-    "start": "node bin/pasha.js",
     "doctor": "node bin/pasha.js doctor",
     "link": "npm link",
     "unlink": "npm unlink -g @pasha1383/pasha",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
+    "verify": "npm test && npm run verify:tui",
     "verify:tui": "node test/harness/walker.js --smoke",
     "verify:tui:full": "node test/harness/walker.js --full",
     "verify:tui:fuzz": "node test/harness/walker.js --fuzz",

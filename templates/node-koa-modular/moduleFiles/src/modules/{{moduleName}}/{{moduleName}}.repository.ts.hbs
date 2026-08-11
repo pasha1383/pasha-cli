@@ -1,0 +1,87 @@
+{{#if ormPrisma}}
+import { prisma } from '../../shared/database/prisma.client';
+import { {{pascalCase moduleName}} } from './{{moduleName}}.entity';
+
+export class {{pascalCase moduleName}}Repository {
+  async findAll(): Promise<{{pascalCase moduleName}}[]> {
+    const rows = await prisma.{{camelCase moduleName}}.findMany();
+    return rows.map((r: { id: string; name: string }) => new {{pascalCase moduleName}}(r.id, r.name));
+  }
+
+  async findById(id: string): Promise<{{pascalCase moduleName}} | null> {
+    const row = await prisma.{{camelCase moduleName}}.findUnique({ where: { id } });
+    return row ? new {{pascalCase moduleName}}(row.id, row.name) : null;
+  }
+
+  async save(entity: {{pascalCase moduleName}}): Promise<void> {
+    await prisma.{{camelCase moduleName}}.upsert({
+      where: { id: entity.id },
+      create: { id: entity.id, name: entity.name },
+      update: { name: entity.name },
+    });
+  }
+}
+{{/if}}
+{{#if ormTypeorm}}
+import { Repository } from 'typeorm';
+import { AppDataSource } from '../../shared/database/typeorm.datasource';
+import { {{pascalCase moduleName}} } from './{{moduleName}}.entity';
+
+export class {{pascalCase moduleName}}Repository {
+  private readonly repo: Repository<{{pascalCase moduleName}}> = AppDataSource.getRepository({{pascalCase moduleName}});
+
+  findAll(): Promise<{{pascalCase moduleName}}[]> {
+    return this.repo.find();
+  }
+
+  findById(id: string): Promise<{{pascalCase moduleName}} | null> {
+    return this.repo.findOne({ where: { id } });
+  }
+
+  async save(entity: {{pascalCase moduleName}}): Promise<void> {
+    await this.repo.save(entity);
+  }
+}
+{{/if}}
+{{#if ormMongoose}}
+import { {{pascalCase moduleName}}, {{pascalCase moduleName}}Model } from './{{moduleName}}.entity';
+
+export class {{pascalCase moduleName}}Repository {
+  async findAll(): Promise<{{pascalCase moduleName}}[]> {
+    const rows: { id: string; name: string }[] = await {{pascalCase moduleName}}Model.find().lean();
+    return rows.map((r) => new {{pascalCase moduleName}}(r.id, r.name));
+  }
+
+  async findById(id: string): Promise<{{pascalCase moduleName}} | null> {
+    const row: { id: string; name: string } | null = await {{pascalCase moduleName}}Model.findOne({ id }).lean();
+    return row ? new {{pascalCase moduleName}}(row.id, row.name) : null;
+  }
+
+  async save(entity: {{pascalCase moduleName}}): Promise<void> {
+    await {{pascalCase moduleName}}Model.updateOne(
+      { id: entity.id },
+      { $set: { id: entity.id, name: entity.name } },
+      { upsert: true },
+    );
+  }
+}
+{{/if}}
+{{#if ormNone}}
+import { {{pascalCase moduleName}} } from './{{moduleName}}.entity';
+
+export class {{pascalCase moduleName}}Repository {
+  private readonly items = new Map<string, {{pascalCase moduleName}}>();
+
+  async findAll(): Promise<{{pascalCase moduleName}}[]> {
+    return Array.from(this.items.values());
+  }
+
+  async findById(id: string): Promise<{{pascalCase moduleName}} | null> {
+    return this.items.get(id) ?? null;
+  }
+
+  async save(entity: {{pascalCase moduleName}}): Promise<void> {
+    this.items.set(entity.id, entity);
+  }
+}
+{{/if}}

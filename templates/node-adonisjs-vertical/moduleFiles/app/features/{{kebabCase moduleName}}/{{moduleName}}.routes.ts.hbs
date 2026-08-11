@@ -1,7 +1,7 @@
 import router from '@adonisjs/core/services/router'
-import { {{pascalCase moduleName}}Service } from './{{moduleName}}.service.js'
+import { {{pascalCase moduleName}}Service } from './{{moduleName}}.service'
 {{#if useVine}}
-import { create{{pascalCase moduleName}}Validator, update{{pascalCase moduleName}}Validator } from './{{moduleName}}.validator.js'
+import { create{{pascalCase moduleName}}Validator, update{{pascalCase moduleName}}Validator } from './{{moduleName}}.validator'
 {{/if}}
 
 const service = new {{pascalCase moduleName}}Service()

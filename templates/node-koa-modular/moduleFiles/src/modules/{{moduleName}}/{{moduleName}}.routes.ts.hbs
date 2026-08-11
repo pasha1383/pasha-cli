@@ -1,0 +1,48 @@
+import Router from '@koa/router';
+{{#if useZod}}
+import { create{{pascalCase moduleName}}Dto } from './dto/create-{{moduleName}}.dto';
+import { validateBody } from '../../middlewares/validate-body.middleware';
+{{/if}}
+{{#if useClassValidator}}
+import { create{{pascalCase moduleName}}Validation } from './dto/create-{{moduleName}}.dto';
+import { handleValidationErrors } from '../../middlewares/handle-validation-errors.middleware';
+{{/if}}
+import { {{pascalCase moduleName}}Repository } from './{{moduleName}}.repository';
+import { {{pascalCase moduleName}}Service } from './{{moduleName}}.service';
+
+const repository = new {{pascalCase moduleName}}Repository();
+const service = new {{pascalCase moduleName}}Service(repository);
+
+export const {{camelCase moduleName}}Router = new Router();
+
+{{#if useZod}}
+{{camelCase moduleName}}Router.post('/', validateBody(create{{pascalCase moduleName}}Dto), async (ctx) => {
+  const entity = await service.create(ctx.state.body);
+  ctx.status = 201;
+  ctx.body = entity;
+});
+{{else}}
+{{#if useClassValidator}}
+{{camelCase moduleName}}Router.post('/', create{{pascalCase moduleName}}Validation, handleValidationErrors, async (ctx) => {
+  const entity = await service.create(ctx.request.body);
+  ctx.status = 201;
+  ctx.body = entity;
+});
+{{else}}
+{{camelCase moduleName}}Router.post('/', async (ctx) => {
+  const entity = await service.create(ctx.request.body);
+  ctx.status = 201;
+  ctx.body = entity;
+});
+{{/if}}
+{{/if}}
+
+{{camelCase moduleName}}Router.get('/', async (ctx) => {
+  const entities = await service.findAll();
+  ctx.body = entities;
+});
+
+{{camelCase moduleName}}Router.get('/:id', async (ctx) => {
+  const entity = await service.findOne(ctx.params.id);
+  ctx.body = entity;
+});

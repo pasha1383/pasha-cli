@@ -1,9 +1,9 @@
 import router from '@adonisjs/core/services/router';
 {{#if useHealthCheck}}
-import { healthRouter } from '../src/shared/health/health.routes.js';
+import { healthRouter } from '../src/shared/health/health.routes';
 {{/if}}
 {{#each modules}}
-const {{camelCase this}}ControllerModule = await import('../app/controllers/{{this}}_controller.js');
+const {{camelCase this}}ControllerModule = await import('../app/controllers/{{this}}_controller');
 const {{camelCase this}}Controller = {{camelCase this}}ControllerModule.{{pascalCase this}}Controller;
 {{/each}}
 

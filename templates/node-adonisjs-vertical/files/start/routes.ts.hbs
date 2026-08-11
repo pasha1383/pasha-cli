@@ -1,9 +1,9 @@
 import router from '@adonisjs/core/services/router';
 {{#if useHealthCheck}}
-import { healthRouter } from '../src/shared/health/health.routes.js';
+import { healthRouter } from '../src/shared/health/health.routes';
 {{/if}}
 {{#each modules}}
-const {{camelCase this}}RoutesModule = await import('../app/features/{{this}}/{{this}}.routes.js');
+const {{camelCase this}}RoutesModule = await import('../app/features/{{this}}/{{this}}.routes');
 const register{{pascalCase this}}Routes = {{camelCase this}}RoutesModule.register{{pascalCase this}}Routes;
 {{/each}}
 

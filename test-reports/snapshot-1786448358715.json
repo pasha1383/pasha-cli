@@ -1,0 +1,1133 @@
+{
+  "timestamp": "2026-08-11T11:39:18.715Z",
+  "mode": "verify",
+  "summary": {
+    "total": 140,
+    "passed": 75,
+    "failed": 1,
+    "updated": 64,
+    "errors": 0
+  },
+  "results": [
+    {
+      "id": "go-gin-layered-gorm-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 236,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "go-gin-clean-gorm-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 243,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "go-gin-hexagonal-gorm-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 239,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "go-gin-onion-gorm-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 252,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "go-echo-layered-gorm-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 376,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "go-echo-clean-gorm-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 511,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "go-echo-hexagonal-gorm-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 669,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "go-echo-onion-gorm-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 774,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "go-fiber-layered-gorm-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 341,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "go-fiber-clean-gorm-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 331,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "go-fiber-hexagonal-gorm-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 305,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "go-fiber-onion-gorm-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 266,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "go-chi-layered-gorm-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 249,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "go-chi-onion-gorm-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 256,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "go-stdlib-layered-gorm-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 261,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "java-spring-boot-layered-jpa-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 230,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "java-spring-boot-clean-jpa-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 246,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "java-spring-boot-hexagonal-jpa-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 260,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "java-spring-boot-modular-jpa-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 249,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "java-spring-boot-cqrs-jpa-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 248,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-nestjs-layered-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 246,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-nestjs-clean-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 263,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-nestjs-hexagonal-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 255,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-nestjs-modular-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 244,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-nestjs-cqrs-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 248,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-nestjs-vertical-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 242,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-nestjs-microservices-prisma-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 220,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-nestjs-serverless-prisma-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 223,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-express-layered-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 243,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-express-clean-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 269,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-express-hexagonal-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 268,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-express-modular-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 278,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-express-cqrs-prisma-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 282,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-express-event-driven-prisma-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 277,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-express-onion-prisma-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 256,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-koa-layered-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 225,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-koa-clean-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 236,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-koa-modular-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 233,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-koa-hexagonal-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 265,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-koa-vertical-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 236,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-koa-cqrs-prisma-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 257,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-koa-event-driven-prisma-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 237,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-microservices-microservices-none-none",
+      "status": "failed",
+      "exitCode": 0,
+      "duration": 216,
+      "diffFile": "/home/pasha/projects/pasha-publish/pasha-cli/test/harness/snapshots/diffs/node-microservices-microservices-none-none.diff",
+      "error": null
+    },
+    {
+      "id": "node-fastify-layered-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 251,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-fastify-modular-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 255,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-fastify-clean-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 289,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-fastify-hexagonal-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 280,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-fastify-cqrs-prisma-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 258,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-fastify-event-driven-prisma-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 242,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-fastify-onion-prisma-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 236,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-hapi-layered-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 235,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-hapi-clean-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 238,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-hapi-hexagonal-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 262,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-hapi-vertical-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 223,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-hapi-modular-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 234,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-hapi-cqrs-prisma-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 253,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-hapi-event-driven-prisma-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 266,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-hapi-onion-prisma-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 256,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-hapi-microservices-prisma-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 258,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-serverless-function-prisma-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 252,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-adonis-mvc-lucid-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 216,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-adonis-layered-lucid-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 178,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-adonis-clean-lucid-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 173,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-adonis-modular-lucid-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 172,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-adonis-hexagonal-lucid-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 167,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "node-adonis-vertical-lucid-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 205,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "python-django-mvc-django-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 225,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "python-django-layered-django-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 232,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "python-django-clean-django-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 246,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "python-django-hexagonal-django-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 243,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "python-django-vertical-django-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 246,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "python-django-onion-django-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 242,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "python-fastapi-layered-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 240,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "python-fastapi-modular-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 224,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "python-fastapi-hexagonal-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 247,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "python-fastapi-clean-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 238,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "python-fastapi-vertical-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 230,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "python-fastapi-onion-sqlalchemy-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 248,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "python-flask-layered-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 220,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "python-flask-modular-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 210,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "python-flask-clean-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 231,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "python-flask-hexagonal-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 228,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "python-flask-vertical-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 206,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "python-flask-onion-sqlalchemy-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 236,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "python-litestar-layered-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 171,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "python-litestar-hexagonal-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 162,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "python-litestar-clean-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 169,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "python-litestar-modular-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 159,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "python-litestar-vertical-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 177,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "python-tornado-layered-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 169,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "python-tornado-clean-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 176,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "python-tornado-hexagonal-sqlalchemy-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 162,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "ruby-rails-mvc-activerecord-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 235,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "ruby-rails-layered-activerecord-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 232,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "ruby-rails-clean-activerecord-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 236,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "ruby-rails-modular-activerecord-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 247,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "ruby-rails-vertical-activerecord-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 241,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "php-laravel-mvc-eloquent-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 247,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "php-laravel-layered-eloquent-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 241,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "php-laravel-clean-eloquent-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 252,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "php-laravel-hexagonal-eloquent-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 239,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "php-laravel-modular-eloquent-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 241,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "csharp-aspnet-layered-efcore-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 237,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "csharp-aspnet-clean-efcore-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 236,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "csharp-aspnet-hexagonal-efcore-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 253,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "csharp-aspnet-onion-efcore-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 251,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "csharp-aspnet-cqrs-efcore-postgres",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 238,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "html-html-tailwind-none-none",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 171,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "html-html-bootstrap-none-none",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 181,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "html-html-component-based-none-none",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 182,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "html-html-landing-page-none-none",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 181,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "html-html-dashboard-none-none",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 181,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "rust-axum-layered-sqlx-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 236,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "rust-axum-clean-sqlx-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 227,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "rust-axum-hexagonal-sqlx-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 231,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "rust-axum-vertical-sqlx-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 226,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "rust-axum-modular-sqlx-postgres",
+      "status": "passed",
+      "exitCode": 0,
+      "duration": 237,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "frontend-nextjs-component-based-none-none",
+      "status": "updated",
+      "exitCode": 1,
+      "duration": 204,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "frontend-nextjs-feature-sliced-none-none",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 197,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "frontend-nextjs-atomic-design-none-none",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 213,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "frontend-nextjs-page-based-none-none",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 216,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "frontend-nextjs-app-router-none-none",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 208,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "frontend-vue-component-based-none-none",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 211,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "frontend-vue-feature-sliced-none-none",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 190,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "frontend-vue-atomic-design-none-none",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 198,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "frontend-vue-pinia-store-none-none",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 182,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "frontend-vue-modular-none-none",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 196,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "frontend-react-component-based-none-none",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 211,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "frontend-react-feature-sliced-none-none",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 208,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "frontend-react-atomic-design-none-none",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 207,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "frontend-react-redux-toolkit-none-none",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 211,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "frontend-react-clean-none-none",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 199,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "frontend-svelte-component-based-none-none",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 203,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "frontend-svelte-feature-sliced-none-none",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 210,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "frontend-svelte-kit-routes-none-none",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 204,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "frontend-angular-component-based-none-none",
+      "status": "updated",
+      "exitCode": 1,
+      "duration": 214,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "frontend-angular-feature-modules-none-none",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 209,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "frontend-angular-ngrx-none-none",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 219,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "frontend-astro-content-site-none-none",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 211,
+      "diffFile": null,
+      "error": null
+    },
+    {
+      "id": "frontend-astro-island-architecture-none-none",
+      "status": "updated",
+      "exitCode": 0,
+      "duration": 203,
+      "diffFile": null,
+      "error": null
+    }
+  ]
+}

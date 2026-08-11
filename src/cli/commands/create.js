@@ -1183,15 +1183,51 @@ async function createTui(options) {
     }
 
     const steps = [
+      { name: 'mode',         label: 'Mode',            run: _stepMode },
       { name: 'language',     label: 'Language',       run: stepLanguage },
       { name: 'framework',    label: 'Framework',       run: stepFramework },
       { name: 'architecture', label: 'Architecture',    run: stepArchitecture },
-      { name: 'prereqs',      label: 'Prerequisites',   run: stepPrerequisites },
+      { name: 'prereqs',      label: 'Prerequisites',   run: _stepPrerequisites },
       { name: 'project',      label: 'Project Info',    run: stepProject },
       { name: 'stack',        label: 'Stack',           run: stepStack },
       { name: 'modules',      label: 'Modules',         run: stepModules },
       { name: 'review',       label: 'Review',          run: stepReview },
     ];
+
+    async function _stepMode(ctx, nav) {
+      const { mode } = await prompt([{
+        type: 'list', name: 'mode', message: 'What would you like to build?',
+        choices: [
+          { name: 'Single service', value: 'single', description: 'One backend service with your chosen stack' },
+          { name: 'Microservices (multi-service)', value: 'multi', description: 'Multiple independent services orchestrated together' },
+          { name: 'Frontend app', value: 'frontend', description: 'React, Vue, Next.js, Svelte, or static HTML site' },
+        ],
+      }]);
+      if (mode === '__back__') return '__back__';
+      return { _mode: mode, mode };
+    }
+
+    async function _stepPrerequisites(ctx, nav) {
+      const tc = ctx._templateConfig;
+      if (!tc || !tc.prerequisites || !tc.prerequisites.length) return {};
+      const tools = tc.prerequisites;
+      const results = checkAll(tools);
+      const missing = results.filter((r) => !r.installed);
+      if (!missing.length) return {};
+      const names = missing.map(m => m.tool).join(', ');
+      const { shouldInstall } = await prompt([{
+        type: 'confirm', name: 'shouldInstall',
+        message: `${names} ${missing.length === 1 ? 'is' : 'are'} not installed. Install now?`,
+        default: true,
+      }]);
+      if (shouldInstall) {
+        for (const m of missing) {
+          try { await installTool(m.tool); }
+          catch (err) { /* continue */ }
+        }
+      }
+      return {};
+    }
 
     const nav = new Navigator(steps);
 

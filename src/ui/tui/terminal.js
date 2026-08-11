@@ -64,7 +64,7 @@ function restore() {
 
 function onResize(handler) {
   const onSigwinch = () => {
-    handler(process.stdout.columns || 80, process.stdout.rows || 24);
+    handler(io.columns(), io.rows());
   };
   process.on('SIGWINCH', onSigwinch);
   return () => process.removeListener('SIGWINCH', onSigwinch);

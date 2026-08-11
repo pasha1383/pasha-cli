@@ -163,4 +163,10 @@ module.exports = {
     bestFor: 'Admin panels, analytics dashboards, internal tools, monitoring screens',
     files: 'index.html (monolithic dashboard) or split into sections/js/ subdirectories',
   },
+  function: {
+    title: 'Handler-per-Function (FaaS)',
+    description: 'Each cloud function (Lambda, Worker, Cloud Function) lives in its own file with a single exported handler. The handler receives the event, parses and validates input, delegates to pure business logic in a shared library, and returns a response or throws. No long-running HTTP server — the platform runtime calls your handler per-invocation. Shared code (validation, database access, utilities) sits in a `lib/` or `shared/` directory, imported by each function as needed. Cold-start latency is the primary constraint: functions stay small, imports are kept minimal, and heavy frameworks are avoided. Each function is independently deployable and automatically scales to zero when idle. Distinct from framework-level serverless (e.g. NestJS wrapping Express behind a Lambda adapter), this pattern embraces the raw FaaS contract directly.',
+    bestFor: 'Micro-services with spiky traffic, event-driven pipelines, API gateways, cost-sensitive serverless deployments',
+    files: 'functions/{createUser, getOrder, processPayment}/ + shared/lib/',
+  },
 };

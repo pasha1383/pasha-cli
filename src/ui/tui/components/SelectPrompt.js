@@ -14,6 +14,7 @@ function SelectPrompt(_a) {
   var onSelect = _a.onSelect;
   var onHighlight = _a.onHighlight;
   var onKey = _a.onKey;
+  var compact = _a.compact;
 
   var { Text, Box, useInput } = getInk();
   var allChoices = choices || [];
@@ -132,11 +133,13 @@ function SelectPrompt(_a) {
     transitionFrom = transitionRef.current.from;
   }
 
-  var filterEl = filter
-    ? e(Text, { dimColor: true, color: 'gray' }, 'Filter: ' + filter + '  (Esc to clear)')
-    : filterActive
-      ? e(Text, { dimColor: true, color: 'gray' }, 'Filter: _')
-      : null;
+  var filterEl = compact
+    ? null
+    : filter
+      ? e(Text, { dimColor: true, color: 'gray' }, 'Filter: ' + filter + '  (Esc to clear)')
+      : filterActive
+        ? e(Text, { dimColor: true, color: 'gray' }, 'Filter: _')
+        : null;
 
   var choiceElements = filtered.map(function (choice, idx) {
     var isHighlighted = idx === clampedHighlight;

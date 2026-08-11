@@ -13,7 +13,7 @@ function _easeOutCubic(t) {
   return 1 - Math.pow(1 - t, 3);
 }
 
-function StepRail({ steps, currentIndex, width }) {
+function StepRail({ steps, currentIndex, width, compact }) {
   const { Text, Box } = getInk();
   const allSteps = steps || [];
   const idx = currentIndex || 0;
@@ -38,7 +38,12 @@ function StepRail({ steps, currentIndex, width }) {
     var marker = isCompleted ? COMPLETED : (isActive ? ACTIVE_FILLED : ACTIVE);
     var segment = '\u2501'.repeat(Math.max(1, slotWidth - 6));
     var label = step.label || step.name || '?';
-    var shortLabel = label.length > slotWidth - 4 ? label.slice(0, slotWidth - 5) + '.' : label;
+    var shortLabel;
+    if (compact) {
+      shortLabel = label.length > 3 ? label.slice(0, 3) : label;
+    } else {
+      shortLabel = label.length > slotWidth - 4 ? label.slice(0, slotWidth - 5) + '.' : label;
+    }
 
     return e(React.Fragment, { key: step.name || i },
       e(Text, { color: color, bold: isActive }, marker + segment + ' '),

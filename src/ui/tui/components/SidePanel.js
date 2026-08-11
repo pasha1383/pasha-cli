@@ -10,142 +10,253 @@ function stripAnsi(str) {
   return str.replace(/\x1b\[[0-9;]*m/g, '');
 }
 
-const BOX_WIDTH = 46;
-const CROSSFADE_FRAMES = 10;
+function visualLength(str) {
+  return stripAnsi(str).length;
+}
+
+var BASE_WIDTH = 46;
+var WIDE_THRESHOLD = 120;
+var CROSSFADE_FRAMES = 10;
+
+var SECTION_TITLE = 'title';
+var SECTION_DESC = 'desc';
+var SECTION_BEST_FOR = 'bestFor';
+var SECTION_FILES = 'files';
+var SECTION_BLANK = 'blank';
+
+function getPanelWidth() {
+  var cols = process.stdout.columns || 80;
+  if (cols >= WIDE_THRESHOLD) return BASE_WIDTH;
+  return Math.max(30, Math.floor(cols * 0.38));
+}
+
+function getMaxVisibleLines() {
+  var rows = process.stdout.rows || 24;
+  return Math.max(8, rows - 6);
+}
 
 function wrapLines(text, maxLen) {
+  if (maxLen <= 0) return [];
   var words = text.split(/\s+/);
   var lines = [];
   var line = '';
   for (var wi = 0; wi < words.length; wi++) {
     var word = words[wi];
-    if ((line + ' ' + word).trim().length > maxLen && line.length > 0) {
+    var candidate = line ? line + ' ' + word : word;
+    if (candidate.length > maxLen && line.length > 0) {
       lines.push(line.trim());
       line = word;
     } else {
-      line = (line + ' ' + word).trim();
+      line = candidate;
     }
   }
   if (line) lines.push(line.trim());
-  return lines;
+  return lines.length > 0 ? lines : [''];
 }
 
-function buildSectionLines(sectionLabel, text, maxLen) {
+function buildTaggedLines(boxInfo, innerWidth) {
   var lines = [];
-  if (sectionLabel) lines.push(sectionLabel);
-  var body = wrapLines(text, maxLen);
-  for (var i = 0; i < body.length; i++) lines.push(body[i]);
-  lines.push('');
-  return lines;
-}
 
-function buildFullLines(boxInfo, maxLineLen) {
-  var lines = [];
-  lines.push(boxInfo.title);
-  lines.push('');
+  lines.push({ text: boxInfo.title, section: SECTION_TITLE });
+  lines.push({ text: '', section: SECTION_BLANK });
 
-  var descLines = buildSectionLines(null, boxInfo.description, maxLineLen - 2);
-  for (var d = 0; d < descLines.length; d++) lines.push(descLines[d]);
+  var descBody = wrapLines(boxInfo.description, innerWidth);
+  for (var di = 0; di < descBody.length; di++) {
+    lines.push({ text: descBody[di], section: SECTION_DESC });
+  }
+  lines.push({ text: '', section: SECTION_BLANK });
 
   if (boxInfo.bestFor) {
-    var bestLines = buildSectionLines('Best for:', boxInfo.bestFor, maxLineLen - 2);
-    for (var b = 0; b < bestLines.length; b++) lines.push(bestLines[b]);
+    var bestBody = wrapLines(boxInfo.bestFor, innerWidth);
+    lines.push({ text: 'Best for:', section: SECTION_BEST_FOR });
+    for (var bi = 0; bi < bestBody.length; bi++) {
+      lines.push({ text: bestBody[bi], section: SECTION_BEST_FOR });
+    }
+    lines.push({ text: '', section: SECTION_BLANK });
   }
 
   if (boxInfo.files) {
-    var fileLines = buildSectionLines('File structure:', boxInfo.files, maxLineLen - 2);
-    for (var f = 0; f < fileLines.length; f++) lines.push(fileLines[f]);
+    var fileBody = wrapLines(boxInfo.files, innerWidth);
+    lines.push({ text: 'File structure:', section: SECTION_FILES });
+    for (var fi = 0; fi < fileBody.length; fi++) {
+      lines.push({ text: fileBody[fi], section: SECTION_FILES });
+    }
+    lines.push({ text: '', section: SECTION_BLANK });
   }
 
   return lines;
 }
 
-function renderPanelBox(boxInfo, isPrev, animFrame, crossfadeT, animEnabled, boxWidth) {
+function renderPanelFrame(boxInfo, isOld, crossfadeT, animEnabled, boxWidth) {
   if (!boxInfo) return null;
 
-  var { Text, Box } = getInk();
+  var ink = getInk();
+  var Text = ink.Text;
+  var Box = ink.Box;
 
-  var maxLineLen = boxWidth - 4;
-  var lines = buildFullLines(boxInfo, maxLineLen);
+  var innerWidth = Math.max(10, boxWidth - 5);
+  var taggedLines = buildTaggedLines(boxInfo, innerWidth);
 
-  var dimmed;
-  if (isPrev) {
-    dimmed = true;
-  } else if (animEnabled) {
-    dimmed = crossfadeT < 0.6;
+  var isDimmed;
+  if (isOld) {
+    isDimmed = true;
+  } else if (animEnabled && crossfadeT < 1) {
+    isDimmed = crossfadeT < 0.6;
   } else {
-    dimmed = false;
+    isDimmed = false;
   }
 
-  var lineColor = isPrev ? 'gray' : 'cyan';
-  var labelColor = isPrev ? 'gray' : 'magenta';
-  var titleColor = isPrev ? 'gray' : 'green';
+  var borderColor = isOld ? 'gray' : 'cyan';
+  var dimDefault = isDimmed;
 
-  var lineElements = lines.map(function (line, i) {
-    var isTitle = line === boxInfo.title;
-    var isLabel = line && (line.startsWith('Best for:') || line.startsWith('File structure:'));
+  var lineElements = [];
 
-    return e(Box, { key: i, flexDirection: 'row', width: boxWidth },
-      e(Text, { color: lineColor, dimColor: isPrev }, '\u2502'),
-      e(Text, {
-        dimColor: isPrev,
-        bold: isTitle || isLabel,
-        color: isTitle ? titleColor : (isLabel ? labelColor : undefined),
-      }, '  ' + line),
-      e(Text, { color: lineColor, dimColor: isPrev },
-        ' '.repeat(Math.max(0, boxWidth - 4 - stripAnsi(line))) + '\u2502')
+  for (var i = 0; i < taggedLines.length; i++) {
+    var item = taggedLines[i];
+    var line = item.text;
+    var section = item.section;
+
+    var color;
+    var bold = false;
+    var dim = dimDefault;
+
+    var isLabel = (
+      line === boxInfo.title ||
+      line === 'Best for:' ||
+      line === 'File structure:'
     );
-  });
 
-  var top = '\u250C' + '\u2500'.repeat(boxWidth - 2) + '\u2510';
-  var bottom = '\u2514' + '\u2500'.repeat(boxWidth - 2) + '\u2518';
+    if (section === SECTION_TITLE) {
+      color = dimDefault ? 'gray' : 'cyan';
+      bold = true;
+    } else if (section === SECTION_BEST_FOR) {
+      if (isLabel) {
+        color = dimDefault ? 'gray' : 'yellow';
+        bold = true;
+      } else {
+        color = dimDefault ? 'gray' : undefined;
+      }
+    } else if (section === SECTION_FILES) {
+      if (isLabel) {
+        color = dimDefault ? 'gray' : 'cyan';
+        bold = true;
+      } else {
+        color = dimDefault ? 'gray' : undefined;
+        dim = true;
+      }
+    } else if (section === SECTION_BLANK || section === SECTION_DESC) {
+      color = dimDefault ? 'gray' : undefined;
+    }
 
-  return e(Box, { flexDirection: 'column', width: boxWidth, flexShrink: 0 },
-    e(Text, { color: lineColor, dimColor: isPrev }, top),
+    var isBlank = line.length === 0;
+    var pad = Math.max(0, innerWidth - visualLength(line));
+    var content = isBlank ? '' : '  ' + line + ' '.repeat(pad);
+
+    lineElements.push(
+      e(Box, { key: i, flexDirection: 'row', width: boxWidth },
+        e(Text, { color: borderColor, dimColor: dimDefault }, '\u2502'),
+        e(Text, { dimColor: dim, bold: bold, color: color }, content),
+        e(Text, { color: borderColor, dimColor: dimDefault }, '\u2502')
+      )
+    );
+  }
+
+  var topBorder = '\u250C' + '\u2500'.repeat(boxWidth - 2) + '\u2510';
+  var bottomBorder = '\u2514' + '\u2500'.repeat(boxWidth - 2) + '\u2518';
+
+  var maxLines = getMaxVisibleLines();
+  var panelHeight = Math.min(maxLines, taggedLines.length + 2);
+
+  return e(Box, {
+    flexDirection: 'column',
+    width: boxWidth,
+    flexShrink: 0,
+    height: panelHeight,
+    overflow: 'hidden',
+  },
+    e(Text, { color: borderColor, dimColor: dimDefault }, topBorder),
     ...lineElements,
-    e(Text, { color: lineColor, dimColor: isPrev }, bottom)
+    e(Text, { color: borderColor, dimColor: dimDefault }, bottomBorder)
   );
 }
 
-function SidePanel({ architecture, visible }) {
-  if (!visible || !architecture) return null;
+function SidePanel(_a) {
+  var architecture = _a.architecture;
+  var visible = _a.visible;
 
-  var info = archDescriptions[architecture];
-  if (!info) return null;
+  var ink = getInk();
+  var Box = ink.Box;
+  var Text = ink.Text;
+
+  if (!visible) return null;
+
+  var info = architecture ? archDescriptions[architecture] : null;
 
   var anim = useAnimation({ fps: 30 });
   var animEnabled = isAnimationEnabled();
 
-  var transitionRef = React.useRef({ startFrame: 0, prevInfo: null });
+  var transitionRef = React.useRef({ startFrame: 0, prevArch: null });
   var prevArchRef = React.useRef(architecture);
 
   if (architecture !== prevArchRef.current && animEnabled) {
-    if (prevArchRef.current && archDescriptions[prevArchRef.current]) {
+    if (prevArchRef.current !== null && prevArchRef.current !== undefined) {
       transitionRef.current = {
         startFrame: anim.frame,
-        prevInfo: archDescriptions[prevArchRef.current],
+        prevArch: prevArchRef.current,
       };
     } else {
-      transitionRef.current = { startFrame: 0, prevInfo: null };
+      transitionRef.current = { startFrame: 0, prevArch: null };
     }
     prevArchRef.current = architecture;
   }
 
-  var showPrev = false;
+  var showOld = false;
   var crossfadeT = 1;
-  if (transitionRef.current.startFrame > 0 && animEnabled) {
+  var oldInfo = null;
+
+  if (transitionRef.current.startFrame > 0 && animEnabled && transitionRef.current.prevArch !== null) {
     var elapsed = anim.frame - transitionRef.current.startFrame;
     if (elapsed < CROSSFADE_FRAMES) {
-      showPrev = true;
+      showOld = true;
       crossfadeT = elapsed / CROSSFADE_FRAMES;
+      oldInfo = archDescriptions[transitionRef.current.prevArch] || null;
     } else {
-      transitionRef.current = { startFrame: 0, prevInfo: null };
+      transitionRef.current = { startFrame: 0, prevArch: null };
     }
   }
 
+  var boxWidth = getPanelWidth();
+
+  if (!info) {
+    var innerW = Math.max(10, boxWidth - 5);
+    var msg = 'Select an option to see details';
+    var padTotal = Math.max(0, innerW - msg.length);
+    var padLeft = Math.floor(padTotal / 2);
+    var padRight = padTotal - padLeft;
+
+    var phTop = '\u250C' + '\u2500'.repeat(boxWidth - 2) + '\u2510';
+    var phBottom = '\u2514' + '\u2500'.repeat(boxWidth - 2) + '\u2518';
+
+    return e(Box, { flexDirection: 'column', marginLeft: 2, width: boxWidth, flexShrink: 0 },
+      e(Text, { color: 'cyan' }, phTop),
+      e(Box, { flexDirection: 'row', width: boxWidth },
+        e(Text, { color: 'cyan' }, '\u2502'),
+        e(Text, { dimColor: true }, '  ' + ' '.repeat(padLeft) + msg + ' '.repeat(padRight)),
+        e(Text, { color: 'cyan' }, '\u2502')
+      ),
+      e(Text, { color: 'cyan' }, phBottom)
+    );
+  }
+
+  var oldPanel = showOld && oldInfo
+    ? renderPanelFrame(oldInfo, true, crossfadeT, animEnabled, boxWidth)
+    : null;
+
+  var newPanel = renderPanelFrame(info, false, crossfadeT, animEnabled, boxWidth);
+
   return e(Box, { flexDirection: 'column', marginLeft: 2 },
-    showPrev ? renderPanelBox(transitionRef.current.prevInfo, true, anim.frame, crossfadeT, animEnabled, BOX_WIDTH) : null,
-    renderPanelBox(info, false, anim.frame, crossfadeT, animEnabled, BOX_WIDTH)
+    oldPanel,
+    newPanel
   );
 }
 

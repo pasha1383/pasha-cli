@@ -27,6 +27,9 @@ function MultiSelectPrompt(_a) {
   var _d = React.useState('');
   var filter = _d[0];
   var setFilter = _d[1];
+  var _e = React.useState(false);
+  var filterActive = _e[0];
+  var setFilterActive = _e[1];
 
   var filtered = allChoices.filter(function (c) {
     if (!filter) return true;
@@ -41,25 +44,11 @@ function MultiSelectPrompt(_a) {
   var clampedHighlight = Math.min(highlighted, maxIdx);
 
   useInput(function (input, key) {
-    if (key.name === 'escape') {
-      setFilter('');
-      if (onKey) onKey(input, key);
-      return;
-    }
-    if (key.name === 'backspace' || key.name === 'delete') {
-      if (filter.length > 0) {
-        setFilter(function (prev) { return prev.slice(0, -1); });
-        setHighlighted(0);
-      } else {
-        if (onKey) onKey(input, key);
-      }
-      return;
-    }
-    if (key.name === 'upArrow' || input === 'k') {
+    if (key.upArrow || input === 'k') {
       setHighlighted(Math.max(0, clampedHighlight - 1));
       return;
     }
-    if (key.name === 'downArrow' || input === 'j') {
+    if (key.downArrow || input === 'j') {
       setHighlighted(Math.min(maxIdx, clampedHighlight + 1));
       return;
     }
@@ -83,7 +72,7 @@ function MultiSelectPrompt(_a) {
       setChecked(new Set());
       return;
     }
-    if (key.name === 'return') {
+    if (key.return) {
       if (onConfirm) {
         var result = allChoices
           .filter(function (c) { return checked.has(c.value); })
@@ -92,11 +81,41 @@ function MultiSelectPrompt(_a) {
       }
       return;
     }
-    if (key.name === 'leftArrow') {
+    if (key.leftArrow) {
       if (onKey) onKey(input, key);
       return;
     }
+
+    if (filterActive) {
+      if (key.escape) {
+        setFilter('');
+        setFilterActive(false);
+        return;
+      }
+      if (key.backspace || key.delete) {
+        setFilter(function (prev) { return prev.slice(0, -1); });
+        setHighlighted(0);
+        return;
+      }
+      if (input && input.length === 1 && !key.ctrl && !key.meta) {
+        setFilter(function (prev) { return prev + input; });
+        setHighlighted(0);
+        return;
+      }
+      if (onKey) onKey(input, key);
+      return;
+    }
+
+    if (key.escape || key.backspace) {
+      if (onKey) onKey(input, key);
+      return;
+    }
+    if (input === '/') {
+      setFilterActive(true);
+      return;
+    }
     if (input && input.length === 1 && !key.ctrl && !key.meta) {
+      setFilterActive(true);
       setFilter(function (prev) { return prev + input; });
       setHighlighted(0);
       return;
@@ -110,9 +129,15 @@ function MultiSelectPrompt(_a) {
   var scrollInfo = totalItems > 5 ? ' (' + pos + '/' + totalItems + ')' : '';
 
   if (filtered.length === 0) {
+    var noMatchFilterEl = filter
+      ? e(Text, { color: 'gray' }, 'Filter: ' + filter + '  (Esc to clear)')
+      : filterActive
+        ? e(Text, { color: 'gray' }, 'Filter: _')
+        : null;
+
     return e(Box, { flexDirection: 'column', paddingTop: 1 },
       e(Text, { bold: true, color: 'yellow' }, message),
-      filter ? e(Text, { color: 'gray' }, 'Filter: ' + filter + '  (Esc to clear)') : null,
+      noMatchFilterEl,
       e(Box, { flexDirection: 'column', marginTop: 1 },
         e(Text, { dimColor: true }, 'No matches found.')
       )
@@ -121,7 +146,9 @@ function MultiSelectPrompt(_a) {
 
   var filterEl = filter
     ? e(Text, { color: 'gray' }, 'Filter: ' + filter + '  (Esc to clear)')
-    : null;
+    : filterActive
+      ? e(Text, { color: 'gray' }, 'Filter: _')
+      : null;
 
   var choiceElements = filtered.map(function (choice, idx) {
     var isHighlighted = idx === clampedHighlight;

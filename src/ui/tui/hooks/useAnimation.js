@@ -5,7 +5,7 @@ const React = require('react');
 let _clock = null;
 let _reducedMotion = null;
 let _fpsCap = 30;
-let _forceMode = false;
+let _forceTTY = false;
 
 function _detectReducedMotion() {
   if (process.env.NO_MOTION || process.env.REDUCED_MOTION) return true;
@@ -14,8 +14,12 @@ function _detectReducedMotion() {
 }
 
 function _isTTY() {
-  if (_forceMode) return true;
-  return process.stdout.isTTY && process.stdin.isTTY;
+  if (_forceTTY) return true;
+  try {
+    return process.stdout.isTTY && process.stdin.isTTY;
+  } catch (_) {
+    return false;
+  }
 }
 
 function isAnimationEnabled() {
@@ -33,7 +37,7 @@ function enableAnimation() {
 }
 
 function setForceMode(val) {
-  _forceMode = !!val;
+  _forceTTY = !!val;
 }
 
 function setClock(fn) {
@@ -42,6 +46,10 @@ function setClock(fn) {
 
 function setFpsCap(val) {
   _fpsCap = val;
+}
+
+function _now() {
+  return (_clock || Date.now)();
 }
 
 function useAnimation({ fps, autoStart } = {}) {
@@ -54,7 +62,7 @@ function useAnimation({ fps, autoStart } = {}) {
   const frameRef = React.useRef(frame);
   const runningRef = React.useRef(running);
   const lastRef = React.useRef(0);
-  const rafRef = React.useRef(null);
+  const intervalRef = React.useRef(null);
   const enabled = isAnimationEnabled();
 
   React.useEffect(() => {
@@ -68,39 +76,45 @@ function useAnimation({ fps, autoStart } = {}) {
   React.useEffect(() => {
     if (!enabled) return;
 
-    const nowFn = _clock || Date.now;
+    lastRef.current = _now();
 
-    function tick(time) {
+    function tick() {
       if (!runningRef.current) return;
+      const time = _now();
       const elapsed = time - lastRef.current;
-      if (elapsed >= minInterval) {
+      if (elapsed < 0) {
         lastRef.current = time;
-        frameRef.current = frameRef.current + 1;
+        return;
+      }
+      if (elapsed >= minInterval) {
+        const frames = Math.floor(elapsed / minInterval);
+        lastRef.current += frames * minInterval;
+        frameRef.current += frames;
         setFrame(frameRef.current);
       }
-      rafRef.current = setTimeout(function () { tick(nowFn()); }, Math.max(1, Math.floor(minInterval * 0.5)));
     }
 
-    lastRef.current = nowFn();
-    rafRef.current = setTimeout(function () { tick(nowFn()); }, Math.floor(minInterval * 0.5));
+    intervalRef.current = setInterval(tick, Math.max(1, Math.floor(minInterval / 2)));
 
-    return function () {
-      if (rafRef.current) {
-        clearTimeout(rafRef.current);
-        rafRef.current = null;
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     };
   }, [enabled, minInterval]);
 
-  const start = React.useCallback(function () {
+  const start = React.useCallback(() => {
+    lastRef.current = _now();
     setRunning(true);
   }, []);
 
-  const stop = React.useCallback(function () {
+  const stop = React.useCallback(() => {
     setRunning(false);
   }, []);
 
-  const reset = React.useCallback(function () {
+  const reset = React.useCallback(() => {
+    lastRef.current = _now();
     frameRef.current = 0;
     setFrame(0);
     setRunning(true);

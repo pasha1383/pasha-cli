@@ -2,48 +2,91 @@
 
 const React = require('react');
 const { getInk } = require('../ink-proxy');
-const { hintsForContext } = require('../keymap');
 const e = React.createElement;
 
-function HelpOverlay({ context }) {
-  const { Text, Box } = getInk();
-  const hints = hintsForContext(context) || [];
-  const ctxLabel = context || 'wizard';
+function HelpOverlay({ visible, context, hints, onClose }) {
+  const { Text, Box, useInput } = getInk();
 
-  const titleLine = '  pasha CLI — Key Bindings (' + ctxLabel + ')';
-
-  var rows = ['', titleLine, ''];
-
-  for (var i = 0; i < hints.length; i++) {
-    var hint = hints[i];
-    var keyPad = (hint.key || '').padEnd(10);
-    rows.push('  ' + keyPad + '  ' + (hint.label || ''));
-  }
-
-  rows.push('');
-  rows.push('  Press Esc to close');
-
-  var maxLen = rows.reduce(function (max, r) { return Math.max(max, r.length); }, 0);
-  var innerWidth = Math.max(44, maxLen);
-  var width = innerWidth + 2;
-
-  var top = '\u250C' + '\u2500'.repeat(width - 2) + '\u2510';
-  var bottom = '\u2514' + '\u2500'.repeat(width - 2) + '\u2518';
-  var sep = '\u2502';
-
-  var lineElements = rows.map(function (row, idx) {
-    var padRight = Math.max(0, innerWidth - row.length);
-    return e(Box, { key: idx, flexDirection: 'row' },
-      e(Text, { color: 'cyan' }, sep),
-      e(Text, { bold: idx === 2 }, row + ' '.repeat(padRight)),
-      e(Text, { color: 'cyan' }, sep)
-    );
+  useInput(function (input, key) {
+    if (!visible) return;
+    if (key.name === 'escape' || input === '?') {
+      if (onClose) onClose();
+    }
   });
 
-  return e(Box, { flexDirection: 'column', marginTop: 1 },
-    e(Text, { color: 'cyan' }, top),
-    ...lineElements,
-    e(Text, { color: 'cyan' }, bottom)
+  if (!visible) return null;
+
+  const hintList = hints || [];
+  const ctxLabel = context || 'wizard';
+  const titleStr = 'Help \u2014 ' + ctxLabel;
+
+  var maxKey = 0;
+  for (var i = 0; i < hintList.length; i++) {
+    var len = (hintList[i].key || '').length;
+    if (len > maxKey) maxKey = len;
+  }
+
+  var innerWidth = titleStr.length + 4;
+  if (innerWidth < 48) innerWidth = 48;
+  var boxWidth = innerWidth + 2;
+
+  var top_ = '\u250C' + '\u2500'.repeat(boxWidth - 2) + '\u2510';
+  var bottom_ = '\u2514' + '\u2500'.repeat(boxWidth - 2) + '\u2518';
+  var sep = '\u2502';
+
+  var titlePad = Math.max(0, innerWidth - titleStr.length);
+  var titleLeft = Math.floor(titlePad / 2);
+  var titleRight = titlePad - titleLeft;
+
+  var rows = [];
+
+  rows.push(e(Text, { color: 'cyan' }, top_));
+
+  rows.push(
+    e(Box, { key: 'title', flexDirection: 'row' },
+      e(Text, { color: 'cyan' }, sep),
+      e(Text, { bold: true, color: 'white' }, ' '.repeat(titleLeft) + titleStr + ' '.repeat(titleRight)),
+      e(Text, { color: 'cyan' }, sep)
+    )
+  );
+
+  rows.push(
+    e(Box, { key: 'gap', flexDirection: 'row' },
+      e(Text, { color: 'cyan' }, sep),
+      e(Text, { color: 'cyan' }, '\u2500'.repeat(innerWidth)),
+      e(Text, { color: 'cyan' }, sep)
+    )
+  );
+
+  for (var j = 0; j < hintList.length; j++) {
+    var hint = hintList[j];
+    var keyStr = hint.key || '';
+    var descStr = hint.label || '';
+    var rightPad = Math.max(0, innerWidth - keyStr.length - descStr.length - 7);
+    rows.push(
+      e(Box, { key: 'h-' + j, flexDirection: 'row' },
+        e(Text, { color: 'cyan' }, sep),
+        e(Text, { bold: true, color: 'cyan' }, '  ' + keyStr),
+        e(Text, { color: 'white' }, '  \u2014  ' + descStr + ' '.repeat(rightPad)),
+        e(Text, { color: 'cyan' }, sep)
+      )
+    );
+  }
+
+  var closeText = 'Press ? or Esc to close';
+  var closePad = Math.max(0, innerWidth - closeText.length);
+  rows.push(
+    e(Box, { key: 'close', flexDirection: 'row' },
+      e(Text, { color: 'cyan' }, sep),
+      e(Text, { dimColor: true }, ' '.repeat(closePad) + closeText),
+      e(Text, { color: 'cyan' }, sep)
+    )
+  );
+
+  rows.push(e(Text, { color: 'cyan' }, bottom_));
+
+  return e(Box, { flexDirection: 'column', flexGrow: 1, alignItems: 'center', justifyContent: 'center' },
+    e(Box, { flexDirection: 'column' }, ...rows)
   );
 }
 

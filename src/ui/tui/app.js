@@ -13,7 +13,11 @@ var { SummaryScreen } = require('./components/SummaryScreen');
 var { ProgressScreen } = require('./components/ProgressScreen');
 var { HelpOverlay } = require('./components/HelpOverlay');
 var { hintsForContext, mapKey } = require('./keymap');
+var { onResize, restore: restoreTerminal } = require('./terminal');
 var e = React.createElement;
+
+var COMPACT_COLS = 60;
+var COMPACT_ROWS = 15;
 
 var _resolve = null;
 var _queue = [];
@@ -31,7 +35,13 @@ function setState(update) {
   if (_onStateChange) _onStateChange(_appState);
 }
 
+var _cancelled = false;
+
 function pushQuestion(question, resolve) {
+  if (_cancelled) {
+    resolve({});
+    return;
+  }
   _answerHistory.push({
     question: question,
     resolve: resolve,
@@ -41,6 +51,16 @@ function pushQuestion(question, resolve) {
     _previousView = _appState ? _appState.view : null;
     _showCurrentQuestion();
   }
+}
+
+function hasAnswers(answers) {
+  if (!answers) return false;
+  var keys = Object.keys(answers);
+  for (var i = 0; i < keys.length; i++) {
+    var v = answers[keys[i]];
+    if (v !== undefined && v !== null && v !== '') return true;
+  }
+  return false;
 }
 
 function _showCurrentQuestion() {
@@ -143,11 +163,30 @@ function _showSummaryFromCurrent() {
   showSummary(state.answers || {});
 }
 
-function showDone(message) {
+function showDone(message, outPath, ctx) {
   setState({
     view: 'done',
     doneMessage: message,
+    doneOutPath: outPath || null,
+    doneCtx: ctx || null,
     doneTime: Date.now(),
+  });
+}
+
+function cancelAll() {
+  if (_resolve) {
+    _resolve('__cancel__');
+    _resolve = null;
+  }
+  _queue = [];
+  _answerHistory = [];
+  _previousView = null;
+  setState({
+    view: 'idle',
+    questionType: null,
+    message: '',
+    choices: [],
+    answers: {},
   });
 }
 
@@ -168,6 +207,56 @@ var LOGO_SHORT = [
   ' | |_) | |_| |/ _ \\ \\___ \\ / _ \\ \\___ \\',
   ' |_|   |_| |_/_/ __\\_\\____/_/ __\\_\\____/',
 ];
+
+var ErrorBoundary = (function () {
+  function FallbackView(props) {
+    try {
+      var ink = getInk();
+      return e(ink.Box, { flexDirection: 'column', paddingTop: 2, paddingLeft: 1 },
+        e(ink.Text, { bold: true, color: 'red' }, 'Fatal Error'),
+        e(ink.Box, { marginTop: 1 },
+          e(ink.Text, { color: 'red' }, String(props.error && props.error.message ? props.error.message : 'Unknown error'))
+        ),
+        e(ink.Box, { marginTop: 1 },
+          e(ink.Text, { dimColor: true }, 'Press Ctrl+C to exit.')
+        )
+      );
+    } catch (_e2) {
+      return null;
+    }
+  }
+
+  function ErrorBoundaryClass() {}
+  ErrorBoundaryClass.prototype = Object.create(React.Component.prototype);
+  ErrorBoundaryClass.prototype.constructor = ErrorBoundaryClass;
+  ErrorBoundaryClass.prototype.render = function () {
+    if (this.state && this.state.hasError) {
+      return e(FallbackView, { error: this.state.error });
+    }
+    return this.props.children;
+  };
+
+  var staticMethods = {
+    getDerivedStateFromError: function (error) {
+      return { hasError: true, error: error };
+    }
+  };
+  ErrorBoundaryClass.prototype.componentDidCatch = function (error, errorInfo) {
+    if (typeof console.error === 'function') {
+      console.error('TUI crashed:', error && error.message, errorInfo);
+    }
+  };
+
+  Object.keys(staticMethods).forEach(function (k) {
+    Object.defineProperty(ErrorBoundaryClass, k, {
+      value: staticMethods[k],
+      writable: true,
+      configurable: true
+    });
+  });
+
+  return ErrorBoundaryClass;
+})();
 
 function App() {
   var { Text, Box, useInput, useApp } = getInk();
@@ -209,9 +298,38 @@ function App() {
   var renderKey = _g[0];
   var setRenderKey = _g[1];
 
-  _onStateChange = function (newState) {
-    setLocalState(Object.assign({}, newState));
-  };
+  function _isCompact() {
+    try {
+      return process.stdout.columns < COMPACT_COLS || process.stdout.rows < COMPACT_ROWS;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  var _h = React.useState(_isCompact());
+  var compact = _h[0];
+  var setCompact = _h[1];
+
+  React.useEffect(function () {
+    return onResize(function (cols, rows) {
+      setCompact(cols < COMPACT_COLS || rows < COMPACT_ROWS);
+    });
+  }, []);
+
+  React.useEffect(function () {
+    _onStateChange = function (newState) {
+      setLocalState(Object.assign({}, newState));
+    };
+    if (_queue.length > 0 && state.view === 'welcome' && !welcomeDismissed) {
+      setWelcomeDismissed(true);
+    }
+    if (_queue.length > 0 && state.view === 'question') {
+      // already in question state from pre-mount push — _onStateChange is now wired
+    }
+    return function () {
+      _onStateChange = null;
+    };
+  }, []);
 
   var doneTimerRef = React.useRef(null);
 
@@ -230,12 +348,27 @@ function App() {
     }
   }, [state.view === 'done']);
 
+  var welcomeTimerRef = React.useRef(null);
   React.useEffect(function () {
-    if (_queue.length > 0 && state.view === 'welcome' && welcomeDismissed) {
-      _showCurrentQuestion();
+    if (state.view === 'welcome' && !welcomeDismissed) {
+      welcomeTimerRef.current = setTimeout(function () {
+        setWelcomeDismissed(true);
+      }, 600);
+      return function () {
+        if (welcomeTimerRef.current) {
+          clearTimeout(welcomeTimerRef.current);
+        }
+      };
     }
-    if (_queue.length > 0 && state.view === 'idle') {
+  });
+
+  React.useEffect(function () {
+    if (!welcomeDismissed) return;
+    if (state.view !== 'welcome' && state.view !== 'idle') return;
+    if (_queue.length > 0) {
       _showCurrentQuestion();
+    } else if (state.view === 'welcome') {
+      setLocalState(Object.assign({}, state, { view: 'idle' }));
     }
   }, [welcomeDismissed]);
 
@@ -283,14 +416,18 @@ function App() {
       }
       if (action === 'quit') {
         if (quitConfirmVisible) {
-          exit();
+          _confirmQuit();
           return;
         }
         if (state.view === 'done') {
           exit();
           return;
         }
-        setQuitConfirmVisible(true);
+        if (hasAnswers(state.answers)) {
+          setQuitConfirmVisible(true);
+        } else {
+          exit();
+        }
         return;
       }
       if (action === 'redraw') {
@@ -312,27 +449,33 @@ function App() {
 
   var onKey = createOnKey();
 
+  function _confirmQuit() {
+    setQuitConfirmVisible(false);
+    restoreTerminal();
+    process.stdout.write('Cancelled. No files were created.\n');
+    process.exit(0);
+  }
+
   useInput(function (input, key) {
     if (state.view === 'welcome' && !welcomeDismissed) {
       setWelcomeDismissed(true);
-      setLocalState(Object.assign({}, state, { view: 'idle' }));
       return;
     }
 
     if (quitConfirmVisible) {
-      if (key.name === 'escape' || input === 'n') {
+      if (key.name === 'escape' || input === 'n' || input === 'N') {
         setQuitConfirmVisible(false);
         return;
       }
-      if (input === 'y') {
-        exit();
+      if (input === 'y' || input === 'Y') {
+        _confirmQuit();
         return;
       }
       return;
     }
 
     if (helpVisible) {
-      if (key.name === 'escape') {
+      if (key.name === 'escape' || input === '?') {
         setHelpVisible(false);
         return;
       }
@@ -364,7 +507,11 @@ function App() {
     if (state.view === 'summary') {
       var ctrlC3 = key.ctrl && !key.meta && (input === 'c' || input === '\x03');
       if (ctrlC3) {
-        setQuitConfirmVisible(true);
+        if (hasAnswers(state.answers)) {
+          setQuitConfirmVisible(true);
+        } else {
+          exit();
+        }
         return;
       }
       if (key.name === 'escape') {
@@ -385,7 +532,11 @@ function App() {
     if (state.view === 'question') {
       var ctrlC4 = key.ctrl && !key.meta && (input === 'c' || input === '\x03');
       if (ctrlC4) {
-        setQuitConfirmVisible(true);
+        if (hasAnswers(state.answers)) {
+          setQuitConfirmVisible(true);
+        } else {
+          exit();
+        }
         return;
       }
       if (key.ctrl && !key.meta && (input === 'l' || input === '\x0c')) {
@@ -407,13 +558,9 @@ function App() {
 
   var divider = e(Text, { color: 'gray' }, '\u2500'.repeat(78));
 
-  if (state.view === 'welcome' && !welcomeDismissed) {
-    return e(Box, { flexDirection: 'column', paddingLeft: 1, paddingRight: 1, minHeight: 24, paddingTop: 2 },
-      e(Box, { flexDirection: 'column' },
-        e(Text, { bold: true, color: 'magenta' }, 'pasha v2.1.0'),
-      ),
-      divider,
-      e(Box, { flexDirection: 'column', paddingTop: 2, alignItems: 'center' },
+  function renderBody() {
+    if (state.view === 'welcome' && !welcomeDismissed) {
+      return e(Box, { flexDirection: 'column', paddingTop: 2, alignItems: 'center' },
         e(Box, { flexDirection: 'column' },
           ...LOGO_SHORT.map(function (line, i) {
             return e(Text, { key: i, color: 'magenta', dimColor: true }, line);
@@ -425,11 +572,9 @@ function App() {
         e(Box, { marginTop: 1 },
           e(Text, { color: 'white' }, 'Press any key to start...'),
         ),
-      )
-    );
-  }
+      );
+    }
 
-  function renderBody() {
     if (state.view === 'progress') {
       return e(ProgressScreen, {
         phases: state.phases || [],
@@ -459,13 +604,107 @@ function App() {
     if (state.view === 'done') {
       var isSuccess = state.doneMessage && !/cancelled|failed/i.test(state.doneMessage);
       var dimmed = doneAnimFrame < 10;
+      var ctx = state.doneCtx || {};
+      var outPath = state.doneOutPath;
 
-      return e(Box, { flexDirection: 'column', paddingTop: 2 },
-        e(Text, { bold: true, color: isSuccess ? 'green' : 'red', dimColor: dimmed },
-          (isSuccess ? '\u2713 ' : '\u2717 ') + (state.doneMessage || 'Done!')
-        ),
-        e(Box, { marginTop: 1 }, e(Text, { dimColor: true }, 'Press Enter to exit.'))
+      var doneLines = [];
+
+      doneLines.push(
+        e(Box, {},
+          e(Text, { bold: true, color: isSuccess ? 'green' : 'red', dimColor: dimmed },
+            (isSuccess ? '\u2713 ' : '\u2717 ') + (state.doneMessage || 'Done!')
+          )
+        )
       );
+
+      if (outPath && isSuccess) {
+        doneLines.push(
+          e(Box, { marginTop: 1 },
+            e(Text, { bold: true, color: 'white' }, outPath)
+          )
+        );
+      }
+
+      if (isSuccess && outPath && ctx.projectName) {
+        var isNode = ctx.language === 'node';
+        var isPython = ctx.language === 'python';
+        var isGo = ctx.language === 'go';
+
+        doneLines.push(
+          e(Box, { marginTop: 1, flexDirection: 'column' },
+            e(Text, { bold: true }, 'Next steps:'),
+            e(Text, { dimColor: true }, '  cd ' + ctx.projectName)
+          )
+        );
+
+        if (isPython) {
+          doneLines.push(
+            e(Text, { dimColor: true }, '  python3 -m venv venv'),
+            e(Text, { dimColor: true }, '  source venv/bin/activate'),
+            e(Text, { dimColor: true }, '  pip install -r requirements.txt')
+          );
+          if (ctx.devRequirementsTxt) {
+            doneLines.push(e(Text, { dimColor: true }, '  pip install -r dev-requirements.txt'));
+          }
+        }
+
+        if (isGo) {
+          doneLines.push(e(Text, { dimColor: true }, '  go mod tidy'));
+        }
+
+        if (isNode) {
+          doneLines.push(e(Text, { dimColor: true }, '  npm install'));
+        }
+
+        if (ctx.useDocker) {
+          doneLines.push(
+            e(Text, { dimColor: true }, '  cp .env.example .env')
+          );
+          if (isNode) {
+            doneLines.push(e(Text, { dimColor: true }, '  npm run infra:up'));
+          } else {
+            doneLines.push(e(Text, { dimColor: true }, '  docker compose up -d'));
+          }
+        }
+
+        if (isPython) {
+          if (ctx.ormDjango) {
+            doneLines.push(
+              e(Text, { dimColor: true }, '  python manage.py migrate'),
+              e(Text, { dimColor: true }, '  python manage.py runserver')
+            );
+          } else {
+            doneLines.push(
+              e(Text, { dimColor: true }, '  uvicorn src.main:create_app --reload --factory --host 0.0.0.0 --port 8000')
+            );
+          }
+        } else if (isGo) {
+          doneLines.push(e(Text, { dimColor: true }, '  go run .'));
+        } else {
+          if (ctx.ormPrisma) {
+            doneLines.push(e(Text, { dimColor: true }, '  npm run prisma:migrate'));
+          }
+          doneLines.push(e(Text, { dimColor: true }, '  npm run start:dev'));
+        }
+
+        if (ctx.useSwagger) {
+          if (isPython && ctx.ormDjango) {
+            doneLines.push(e(Text, { dimColor: true }, '  # API docs at http://localhost:8000/api/docs/'));
+          } else if (isPython) {
+            doneLines.push(e(Text, { dimColor: true }, '  # API docs at http://localhost:8000/docs'));
+          } else {
+            doneLines.push(e(Text, { dimColor: true }, '  # API docs at http://localhost:3000/api/docs'));
+          }
+        }
+      }
+
+      doneLines.push(
+        e(Box, { marginTop: 1 },
+          e(Text, { dimColor: dimmed }, 'Press Enter to exit.')
+        )
+      );
+
+      return e(Box, { flexDirection: 'column', paddingTop: 2 }, ...doneLines);
     }
 
     if (state.view === 'idle') {
@@ -500,15 +739,17 @@ function App() {
 
       var sidebar = e(SidePanel, {
         architecture: currentArch,
-        visible: !!currentArch,
+        visible: !!currentArch && !compact,
+        compact: compact,
       });
 
-      return e(Box, { flexDirection: 'row' },
+      return e(Box, { flexDirection: compact ? 'column' : 'row' },
         e(Box, { flexDirection: 'column', flexGrow: 1 },
           e(SelectPrompt, {
             message: msg,
             choices: mappedChoices,
             selectedIndex: Math.max(0, defaultIdx),
+            compact: compact,
             onSelect: function (chosen) {
               _answer(chosen.value !== undefined ? chosen.value : chosen);
             },
@@ -575,29 +816,30 @@ function App() {
     return null;
   }
 
-  var overlayCtx = getOverlayContext();
-  var overlayEl = null;
-  if (helpVisible) {
-    var helpCtx = state.questionType === 'checkbox' ? 'multi-select'
-      : state.questionType === 'list' || state.questionType === 'select' ? 'select'
-      : state.questionType === 'input' ? 'input'
-      : state.questionType === 'confirm' ? 'confirm'
-      : state.view === 'summary' ? 'summary'
-      : state.view === 'progress' ? 'progress'
-      : state.view === 'done' ? 'done'
-      : 'select';
-    overlayEl = e(HelpOverlay, { context: helpCtx });
-  } else if (quitConfirmVisible) {
-    overlayEl = e(Box, { flexDirection: 'column', marginTop: 1, borderStyle: 'single', borderColor: 'red', paddingLeft: 2, paddingRight: 2, paddingTop: 1, paddingBottom: 1 },
-      e(Text, { bold: true, color: 'red' }, 'Quit pasha?'),
-      e(Box, { marginTop: 1 },
-        e(Text, { color: 'white' }, 'Press y to quit, n or Esc to cancel')
+  var helpCtx = state.questionType === 'checkbox' ? 'multi-select'
+    : state.questionType === 'list' || state.questionType === 'select' ? 'select'
+    : state.questionType === 'input' ? 'input'
+    : state.questionType === 'confirm' ? 'confirm'
+    : state.view === 'summary' ? 'summary'
+    : state.view === 'progress' ? 'progress'
+    : state.view === 'done' ? 'done'
+    : 'select';
+
+  var quitOverlayEl = null;
+  if (quitConfirmVisible) {
+    quitOverlayEl = e(Box, { flexDirection: 'column', justifyContent: 'center', alignItems: 'center', flexGrow: 1, minHeight: 14 },
+      e(Box, { borderStyle: 'single', borderColor: 'red', paddingLeft: 2, paddingRight: 2, paddingTop: 1, paddingBottom: 1 },
+        e(Text, { bold: true, color: 'red' }, 'Quit without saving? (y/N)'),
+        e(Box, { marginTop: 1 },
+          e(Text, { color: 'white' }, 'y to quit, n or Esc to cancel')
+        )
       )
     );
   }
 
   var hintCtx = determineContext();
   var hints = hintsForContext(hintCtx || 'select');
+  var isWelcome = state.view === 'welcome' && !welcomeDismissed;
 
   return e(Box, { flexDirection: 'column', paddingLeft: 1, paddingRight: 1, minHeight: 24, key: 'r-' + renderKey },
     e(Box, { flexDirection: 'row', justifyContent: 'space-between', paddingTop: 0, paddingBottom: 0 },
@@ -605,19 +847,26 @@ function App() {
       e(Text, { dimColor: true }, headerBreadcrumb())
     ),
     divider,
-    e(StepRail, { steps: STEPS, currentIndex: state.stepIndex, width: 78 }),
-    divider,
+    isWelcome ? null : e(StepRail, { steps: STEPS, currentIndex: state.stepIndex, width: compact ? process.stdout.columns : 78, compact: compact }),
+    isWelcome ? null : divider,
     e(Box, { flexDirection: 'column', flexGrow: 1, minHeight: 14 },
-      renderBody(),
-      overlayEl
+      helpVisible
+        ? e(HelpOverlay, { visible: true, context: helpCtx, hints: hintsForContext(helpCtx), onClose: function () { setHelpVisible(false); } })
+        : quitConfirmVisible
+          ? quitOverlayEl
+          : e(React.Fragment, null, renderBody(), quitOverlayEl)
     ),
-    divider,
-    e(KeyHints, { hints: hints })
+    isWelcome ? null : divider,
+    isWelcome ? null : e(KeyHints, { hints: hints, compact: compact })
   );
 }
 
+function WrappedApp() {
+  return e(ErrorBoundary, null, e(App));
+}
+
 module.exports = {
-  App: App,
+  App: WrappedApp,
   pushQuestion: pushQuestion,
   showProgress: showProgress,
   updateProgress: updateProgress,
@@ -625,5 +874,6 @@ module.exports = {
   showDone: showDone,
   getState: getState,
   setState: setState,
+  cancelAll: cancelAll,
   _queue: _queue,
 };

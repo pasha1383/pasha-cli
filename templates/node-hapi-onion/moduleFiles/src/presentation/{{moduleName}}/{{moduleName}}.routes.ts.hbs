@@ -1,6 +1,6 @@
 import { ServerRoute } from '@hapi/hapi';
 {{#if useJoi}}
-import { create{{pascalCase moduleName}}Schema } from '../../../application/dto/create-{{moduleName}}.dto';
+import { create{{pascalCase moduleName}}Schema } from '../../application/dto/create-{{moduleName}}.dto';
 {{/if}}
 import { {{pascalCase moduleName}}Handler } from './{{moduleName}}.handler';
 

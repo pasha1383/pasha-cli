@@ -32,7 +32,7 @@
     "src/shared/health": "useHealthCheck",
     "Dockerfile.hbs": "useAppDockerfile",
     ".dockerignore.hbs": "useAppDockerfile",
-    "src/services/{{moduleName}}/persistence/{{moduleName}}.repository.ts.hbs": "ormNone",
+
     "src/services/{{moduleName}}/persistence/{{moduleName}}.prisma.repository.ts.hbs": "ormPrisma",
     "src/services/{{moduleName}}/persistence/{{moduleName}}.orm-entity.ts.hbs": "ormTypeorm",
     "src/services/{{moduleName}}/persistence/{{moduleName}}.typeorm.repository.ts.hbs": "ormTypeorm",

@@ -1,5 +1,5 @@
-import { {{pascalCase moduleName}} } from '../../../domain/entities/{{moduleName}}.entity';
-import { I{{pascalCase moduleName}}Repository } from '../../../domain/repositories/{{moduleName}}.repository.interface';
+import { {{pascalCase moduleName}} } from '../../domain/entities/{{moduleName}}.entity';
+import { I{{pascalCase moduleName}}Repository } from '../../domain/repositories/{{moduleName}}.repository.interface';
 
 export class {{pascalCase moduleName}}InMemoryRepository implements I{{pascalCase moduleName}}Repository {
   private readonly items = new Map<string, {{pascalCase moduleName}}>();

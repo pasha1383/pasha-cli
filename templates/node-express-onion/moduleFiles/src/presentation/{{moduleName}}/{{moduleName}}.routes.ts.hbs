@@ -1,11 +1,11 @@
 import { Router } from 'express';
 {{#if useExpressValidator}}
-import { create{{pascalCase moduleName}}Validation } from '../../../application/dto/create-{{moduleName}}.dto';
-import { handleValidationErrors } from '../../../middlewares/handle-validation-errors.middleware';
+import { create{{pascalCase moduleName}}Validation } from '../../application/dto/create-{{moduleName}}.dto';
+import { handleValidationErrors } from '../../middlewares/handle-validation-errors.middleware';
 {{/if}}
 {{#if useZod}}
-import { create{{pascalCase moduleName}}Schema } from '../../../application/dto/create-{{moduleName}}.dto';
-import { validateBody } from '../../../middlewares/validate-body.middleware';
+import { create{{pascalCase moduleName}}Schema } from '../../application/dto/create-{{moduleName}}.dto';
+import { validateBody } from '../../middlewares/validate-body.middleware';
 {{/if}}
 import { {{pascalCase moduleName}}Controller } from './{{moduleName}}.controller';
 

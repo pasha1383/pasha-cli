@@ -9,7 +9,7 @@ function HelpOverlay({ visible, context, hints, onClose }) {
 
   useInput(function (input, key) {
     if (!visible) return;
-    if (key.name === 'escape' || input === '?') {
+    if (key.escape || input === '?') {
       if (onClose) onClose();
     }
   });

@@ -104,20 +104,19 @@ var BINDINGS = {
 
 function isKeyMatch(input, key, bindingKey) {
   var ctrl = key.ctrl && !key.meta;
-  var name = key.name || '';
 
   if (bindingKey === 'ctrl+c') return ctrl && (input === 'c' || input === '\x03');
   if (bindingKey === 'ctrl+l') return ctrl && (input === 'l' || input === '\x0c');
-  if (bindingKey === 'up') return name === 'upArrow';
-  if (bindingKey === 'down') return name === 'downArrow';
-  if (bindingKey === 'left') return name === 'leftArrow';
-  if (bindingKey === 'right') return name === 'rightArrow';
-  if (bindingKey === 'enter') return name === 'return';
-  if (bindingKey === 'backspace') return name === 'backspace';
-  if (bindingKey === 'delete') return name === 'delete';
+  if (bindingKey === 'up') return key.upArrow;
+  if (bindingKey === 'down') return key.downArrow;
+  if (bindingKey === 'left') return key.leftArrow;
+  if (bindingKey === 'right') return key.rightArrow;
+  if (bindingKey === 'enter') return key.return;
+  if (bindingKey === 'backspace') return key.backspace;
+  if (bindingKey === 'delete') return key.delete;
   if (bindingKey === 'space') return input === ' ';
-  if (bindingKey === 'tab') return key.tab || name === 'tab';
-  if (bindingKey === 'esc') return name === 'escape';
+  if (bindingKey === 'tab') return key.tab;
+  if (bindingKey === 'esc') return key.escape;
 
   if (bindingKey === '?') return input === '?';
   if (bindingKey === '/') return input === '/';

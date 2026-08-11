@@ -47,7 +47,7 @@ function InputPrompt(_a) {
       if (onKey) onKey(input, key);
       return;
     }
-    if (key.name === 'escape') {
+    if (key.escape) {
       if (onKey) onKey(input, key);
       return;
     }

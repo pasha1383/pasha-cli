@@ -57,25 +57,25 @@ function SelectPrompt(_a) {
 
   useInput(function (input, key) {
     if (filterActive) {
-      if (key.name === 'escape') {
+      if (key.escape) {
         setFilter('');
         setFilterActive(false);
         return;
       }
-      if (key.name === 'backspace' || key.name === 'delete') {
+      if (key.backspace || key.delete) {
         setFilter(function (prev) { return prev.slice(0, -1); });
         setHighlighted(0);
         return;
       }
-      if (key.name === 'upArrow' || input === 'k') {
+      if (key.upArrow || input === 'k') {
         setHighlighted(Math.max(0, clampedHighlight - 1));
         return;
       }
-      if (key.name === 'downArrow' || input === 'j') {
+      if (key.downArrow || input === 'j') {
         setHighlighted(Math.min(maxIdx, clampedHighlight + 1));
         return;
       }
-      if (key.name === 'return') {
+      if (key.return) {
         setFilterActive(false);
         if (onSelect && filtered[clampedHighlight]) {
           onSelect(filtered[clampedHighlight]);
@@ -91,15 +91,15 @@ function SelectPrompt(_a) {
       return;
     }
 
-    if (key.name === 'upArrow' || input === 'k') {
+    if (key.upArrow || input === 'k') {
       setHighlighted(Math.max(0, clampedHighlight - 1));
       return;
     }
-    if (key.name === 'downArrow' || input === 'j') {
+    if (key.downArrow || input === 'j') {
       setHighlighted(Math.min(maxIdx, clampedHighlight + 1));
       return;
     }
-    if (key.name === 'return') {
+    if (key.return) {
       if (onSelect && filtered[clampedHighlight]) {
         onSelect(filtered[clampedHighlight]);
       }

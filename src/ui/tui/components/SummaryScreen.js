@@ -69,15 +69,15 @@ function SummaryScreen(_a) {
   var setHighlighted = _b[1];
 
   useInput(function (input, key) {
-    if (key.name === 'upArrow' || input === 'k') {
+    if (key.upArrow || input === 'k') {
       setHighlighted(Math.max(0, highlighted - 1));
       return;
     }
-    if (key.name === 'downArrow' || input === 'j') {
+    if (key.downArrow || input === 'j') {
       setHighlighted(Math.min(rows.length - 1, highlighted + 1));
       return;
     }
-    if (key.name === 'return') {
+    if (key.return) {
       if (onContinue) onContinue();
       return;
     }

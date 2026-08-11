@@ -1,39 +1,166 @@
 'use strict';
 
-const ARCH_DESCRIPTIONS = {
-  layered: 'Controller → Service → Repository. Simple, familiar. Best for CRUD APIs and small teams.',
-  clean: 'Framework-free core. Adapters depend inward. Best when you may swap frameworks later.',
-  hexagonal: 'Domain depends on nothing. Ports isolate infrastructure. Best for complex business rules.',
-  onion: 'Domain at center, services wrap around. Dependencies flow inward only.',
-  mvc: 'Model-View-Controller. Classic server-rendered pattern.',
-  'modular-monolith': 'Independent modules with public interfaces. Enforced boundaries within one deployable.',
-  'vertical-slice': 'One folder per use-case. Cuts through every layer. Best for feature teams.',
-  cqrs: 'Separate read and write paths. Optimizes each independently.',
-  'event-driven': 'Events as first-class citizens. Event store, projections, outbox pattern.',
-  serverless: 'Handler per function. Pay-per-use. AWS Lambda / Cloudflare Workers.',
-  microservices: 'Independent services. Own data store per service. Docker orchestration.',
+module.exports = {
+  layered: {
+    title: 'Layered (N-Tier)',
+    description: 'The codebase is split into horizontal layers — typically Controller/Presentation, Service/Application, and Repository/Data. Each layer only calls the one directly below it. Dependencies flow top-to-bottom; data flows both ways. Simple mental model, fast onboarding, and trivial to test each layer in isolation with mocks. The trade-off: business logic tends to accumulate in fat services, and layer boundaries blur over time unless enforced by lint rules or architecture tests.',
+    bestFor: 'CRUD APIs, internal tools, small-to-medium teams, rapid prototyping',
+    files: 'src/{controllers, services, repositories, models, dto}/',
+  },
+  clean: {
+    title: 'Clean Architecture',
+    description: 'A dependency-inversion approach where the innermost circle — Entities and Use Cases — has zero framework imports. Adapters (controllers, repositories, presenters) depend inward on the core via interfaces (ports). You can swap Express for Fastify or PostgreSQL for MongoDB without touching business rules. I/O and side effects exist only in the outer ring. The cost is more boilerplate: DTOs, mappers, and interface definitions for every boundary.',
+    bestFor: 'Framework migrations, strict separation of concerns, large teams, long-lived projects',
+    files: 'core/{entities, use-cases, ports} + adapters/{controllers, repositories, presenters}',
+  },
+  hexagonal: {
+    title: 'Hexagonal (Ports & Adapters) / DDD',
+    description: 'The domain model is the star of the show — it has no framework or database imports. "Ports" are interfaces that define what the domain needs (e.g. an OrderRepository port). "Adapters" implement those ports (e.g. a PostgresOrderRepository). External systems only ever talk through ports. Domain objects enforce invariants with constructors and methods, not setters. Unit-testing the domain is pure and fast. Ideal when business complexity dominates technical complexity.',
+    bestFor: 'Complex business rules, domain-driven teams, projects where the domain outlives the UI',
+    files: 'domain/ (zero framework imports) + application/ (ports, use-cases) + infrastructure/ (adapters)',
+  },
+  onion: {
+    title: 'Onion Architecture',
+    description: 'All dependencies point toward the centre. The Domain layer sits at the core. Around it is the Application layer (use-cases, interfaces). Around that is the Infrastructure layer (database, HTTP, message queues). At the outermost ring is the Presentation/UI layer. Any outer ring can depend on any inner ring, but never the reverse. This gives maximum flexibility to swap infrastructure without touching core logic.',
+    bestFor: 'Contract-driven development, projects where technology choices may change over time',
+    files: 'src/{domain, application, infrastructure, presentation}/',
+  },
+  mvc: {
+    title: 'Model-View-Controller (MVC)',
+    description: 'The classic web pattern. Controllers accept requests and return responses. Models hold data and business logic. Views render the output. In server-rendered apps (Rails, Django, Laravel, Adonis) the View layer produces HTML. In API-only MVC frameworks the View is often replaced by serialisers or omitted entirely. Simple, well-understood, and backed by decades of tooling. Best for monoliths where convention-over-configuration matters.',
+    bestFor: 'Full-stack monoliths with server-side rendering, convention-heavy teams, rapid iteration',
+    files: 'app/{controllers, models, views}/ — or src/{controllers, models, routes}/',
+  },
+  modular: {
+    title: 'Modular Monolith',
+    description: 'A single deployable process partitioned into modules (or packages) that own their domain end-to-end. Each module has its own controllers, services, and persistence — modules do not share database tables directly. Communication between modules happens through public interfaces or lightweight events. You get the simplicity of a monolith with the isolation of microservices, without distributed-systems pain. A common first step before breaking into microservices.',
+    bestFor: 'Teams that want microservice-like isolation without operational overhead, growing projects',
+    files: 'modules/{users, orders, payments}/ — each module is self-contained',
+  },
+  vertical: {
+    title: 'Vertical Slice Architecture',
+    description: 'Each feature is implemented in a single vertical slice that spans the full stack. Instead of separate controller, service, and repository layers, a single "CreateOrder" folder contains the HTTP handler, validation, business logic, and data access for that one feature. Adding a feature means adding one folder. Changing a feature rarely touches unrelated code. Maximises cohesion and minimises coupling between features.',
+    bestFor: 'Feature-centric teams, rapid feature delivery, reducing merge conflicts in large teams',
+    files: 'features/{create-order, list-products, authenticate}/ — each slice is self-contained',
+  },
+  cqrs: {
+    title: 'CQRS (Command-Query Responsibility Segregation)',
+    description: 'Commands (writes) and Queries (reads) use separate models and often separate data stores. A command handler validates and persists changes; a query handler reads from optimised projections. This lets you scale reads independently from writes and choose the best persistence for each. Often paired with Event Sourcing, where the event store is the single source of truth and projections are rebuilt from events. Adds significant complexity — only reach for it when reads and writes have drastically different shapes or scale requirements.',
+    bestFor: 'High read/write asymmetry, event-sourced systems, complex query requirements',
+    files: 'src/{commands, queries, events, projections, aggregates}/',
+  },
+  'event-driven': {
+    title: 'Event-Driven / Event Sourcing',
+    description: 'Services communicate through events, not direct API calls. Each service emits domain events ("OrderPlaced", "PaymentReceived") to a message bus or event log. Other services subscribe and react. The event store becomes the authoritative source of truth — current state is a projection of the full event history. This gives you an audit log for free and makes temporal queries trivial ("what did the order look like last Tuesday?"). At small scale the event bus and eventual-consistency model is overkill.',
+    bestFor: 'Workflow-heavy systems, audit trails, eventual-consistency acceptable, microservice communication',
+    files: 'src/{events, handlers, projections, event-store}/',
+  },
+  serverless: {
+    title: 'Serverless / Function-as-a-Service',
+    description: 'Logic is deployed as individual functions (AWS Lambda, Cloudflare Workers, Vercel Functions). Each function handles one API endpoint or one event type. No long-running server to manage — you pay only for invocation time. Cold starts are the main trade-off; keep functions small and avoid heavy frameworks. State must live in external services (DynamoDB, S3, Redis). Best when traffic is spiky or unpredictable.',
+    bestFor: 'Spiky workloads, event processing, API gateways, cost-sensitive projects with variable traffic',
+    files: 'src/functions/{createUser, getOrder, processPayment}/ + shared/',
+  },
+  microservices: {
+    title: 'Microservices',
+    description: 'The application is split into independently deployable services, each owning a bounded context. Services communicate over the network — typically via REST, gRPC, or async messaging. Each service can use its own language, framework, and database. You can scale hot services independently and deploy without coordinating across the whole org. The operational cost is high: service discovery, distributed tracing, circuit breakers, and eventual consistency all add friction. Start with a modular monolith unless you have strong organisational reasons to distribute.',
+    bestFor: 'Large organisations with independent teams, systems needing independent scaling, polyglot stacks',
+    files: 'services/{user-service, order-service, payment-service}/ — each is its own project',
+  },
+  'component-based': {
+    title: 'Component-Based Architecture',
+    description: 'The UI is built from reusable, composable components — buttons, cards, modals, forms. Each component encapsulates its own markup, styles, and behaviour. Components can be composed into larger patterns: molecules (search bar with button), organisms (page header with nav), and pages. This is the baseline architecture for React, Vue, Svelte, and most modern frontend frameworks. Simple, scalable, and well-understood by most developers.',
+    bestFor: 'Most frontend apps, component libraries, design systems, teams new to frontend architecture',
+    files: 'src/{components, hooks, utils, pages}/',
+  },
+  'feature-sliced': {
+    title: 'Feature-Sliced Design',
+    description: 'The codebase is organised by business features, not technical categories. Each feature folder (e.g. "auth", "profile", "search") owns its UI, data-fetching, state, and types. Shared code lives in a "shared" layer. Widgets compose features into larger blocks. Pages assemble widgets into routes. This makes it obvious where to put new code and prevents cross-feature coupling. Popular in the React/Next.js community.',
+    bestFor: 'Medium-to-large frontend codebases, teams working on distinct features, reducing coupling',
+    files: 'src/{pages, widgets, features, entities, shared}/',
+  },
+  'atomic-design': {
+    title: 'Atomic Design',
+    description: 'Components are categorised into five levels: Atoms (buttons, inputs, labels), Molecules (search bar = input + button), Organisms (page header = logo + nav), Templates (page layouts without real content), and Pages (templates with real data). This creates a strict component hierarchy and a natural design-system workflow. Works well when designers and developers share vocabulary. Can be overly formal for small projects.',
+    bestFor: 'Design systems, projects with dedicated UI designers, component libraries shared across multiple apps',
+    files: 'src/{atoms, molecules, organisms, templates, pages}/',
+  },
+  'page-based': {
+    title: 'Page-Based Routing',
+    description: 'File-system routing where each file under a pages or routes directory becomes a URL. The framework handles code-splitting, layouts, and navigation automatically. Components, hooks, and utilities live in parallel directories. Simple and intuitive — you can guess the URL by looking at the file tree. Works out of the box with Next.js Pages Router, SvelteKit, Astro, and Nuxt.',
+    bestFor: 'Content sites, marketing pages, documentation, any project with URL-driven structure',
+    files: 'pages/ or routes/ + components/, hooks/, utils/',
+  },
+  'app-router': {
+    title: 'App Router (React Server Components)',
+    description: 'Next.js App Router architecture built around React Server Components. Layouts, pages, and loading/error states are co-located in the app/ directory. Server Components fetch data directly — no client-side API layer needed for most reads. Client Components are opt-in with the "use client" directive. Streaming, Suspense boundaries, and partial prerendering are first-class citizens.',
+    bestFor: 'Next.js 13+ projects, apps that benefit from server-side rendering, streaming, and reduced client JS',
+    files: 'app/{layout.tsx, page.tsx, loading.tsx, error.tsx}/ + components/',
+  },
+  'island-architecture': {
+    title: 'Islands Architecture',
+    description: 'The page is rendered as static HTML on the server. Interactive "islands" of JavaScript are hydrated on the client only where needed — a carousel, a search input, a shopping cart. The rest of the page stays as zero-JS HTML. Pioneered by Astro and increasingly adopted by frameworks optimising for Core Web Vitals. Minimises JavaScript shipped to the browser.',
+    bestFor: 'Content-heavy sites with isolated interactivity, marketing sites, performance-focused projects',
+    files: 'src/{components (server), islands (client), layouts, pages}/',
+  },
+  'redux-toolkit': {
+    title: 'Redux Toolkit (State-Management-First)',
+    description: 'Architecture centred around a Redux store. Slices define reducer logic and actions. Selectors extract derived data. Components dispatch actions and subscribe to store changes via hooks. RTK Query handles API caching and invalidation. Best when the app has complex shared state that many components need — shopping carts, multi-step forms, real-time dashboards. Overkill for simple data-fetching apps.',
+    bestFor: 'Apps with complex client-side state, real-time updates, multi-step workflows',
+    files: 'src/{store (slices, selectors), components, hooks, api}/',
+  },
+  'pinia-store': {
+    title: 'Pinia Store-Based',
+    description: 'Vue 3 architecture organised around Pinia stores — the official state management library. Each store owns a domain (auth, cart, products) with state, getters (computed), and actions (async or sync). Components remain thin views that delegate logic to stores. Simpler, more composable, and better TypeScript support than Vuex. Scales well for medium-to-large SPAs.',
+    bestFor: 'Vue 3 SPAs with shared state, multi-view workflows, apps transitioning from Vuex',
+    files: 'src/{stores, views, composables, components}/',
+  },
+  'feature-modules': {
+    title: 'Angular Feature Modules (NgModules)',
+    description: 'Each feature is encapsulated in an NgModule — a logical grouping of components, services, directives, and pipes. Modules can be eagerly or lazily loaded at routes. Shared modules provide common UI and utilities. Core module holds singleton services. This is the traditional Angular architecture, well-suited for enterprise apps with many distinct domains.',
+    bestFor: 'Enterprise Angular apps, large codebases with clear domain boundaries, lazy-loaded routes',
+    files: 'src/app/{feature-modules, shared, core}/',
+  },
+  ngrx: {
+    title: 'NgRx (Angular State Management)',
+    description: 'Angular architecture using NgRx for state management — the Redux pattern ported to Angular with RxJS. Actions, reducers, selectors, and effects create a unidirectional data flow. The Store is the single source of truth. Effects handle side effects (API calls, navigation). Best for large Angular apps with complex, shared state where plain services become unwieldy.',
+    bestFor: 'Large Angular apps, complex state machines, teams familiar with Redux patterns',
+    files: 'src/app/{store (actions, reducers, selectors, effects), components, services}/',
+  },
+  'content-site': {
+    title: 'Content-Focused Site',
+    description: 'Astro architecture optimised for content — blogs, documentation, portfolios. Pages are .astro or .md/.mdx files in the pages directory. Components are server-rendered by default. Interactive islands are opt-in. Content collections provide type-safe frontmatter. Lightning-fast static output with hydration only where necessary.',
+    bestFor: 'Blogs, docs sites, portfolios, any content-heavy website',
+    files: 'src/{content (collections), pages, components, layouts}/',
+  },
+  'kit-routes': {
+    title: 'SvelteKit File-Based Routing',
+    description: 'SvelteKit architecture with file-system routing — +page.svelte, +layout.svelte, +page.server.js, +server.js. Server-side load functions fetch data in the same file as the page component. Form actions handle mutations. Zero-API layer for most pages. Adaptable to different deployment targets (Node, Vercel, Cloudflare, static).',
+    bestFor: 'Svelte apps, full-stack projects where co-locating data fetching with components is desired',
+    files: 'src/routes/{+page.svelte, +page.server.js, +layout.svelte}/ + lib/',
+  },
+  tailwind: {
+    title: 'Tailwind CSS (Utility-First)',
+    description: 'A single HTML file with Tailwind CSS loaded via CDN. No build step, no JavaScript framework, no npm. Styles are applied through utility classes directly in the HTML markup. Perfect for rapid prototyping, landing pages, and static sites that need to look polished without tooling overhead. Add Alpine.js or HTMX for light interactivity.',
+    bestFor: 'Landing pages, prototypes, static sites, educational projects, rapid experiments',
+    files: 'index.html + optionally components/ as separate HTML files',
+  },
+  bootstrap: {
+    title: 'Bootstrap 5 (Component Library)',
+    description: 'A single HTML file with Bootstrap 5 CSS/JS loaded via CDN. Pre-built components — navbar, cards, modals, forms, carousels — are available as CSS classes. Faster than Tailwind for UI-heavy pages because components already exist. Includes a responsive grid system out of the box. Less customisable than utility-first approaches but faster to ship.',
+    bestFor: 'Admin panels, dashboards, prototypes, projects where speed of development trumps custom design',
+    files: 'index.html + optionally pages/ folders for multi-page sites',
+  },
+  'landing-page': {
+    title: 'Landing Page (Hero, Features, Pricing, CTA)',
+    description: 'A self-contained single-page HTML file organised into sections: hero banner, features grid, testimonials, pricing table, call-to-action, footer. Each section is a semantic <section> with a clear id. Smooth scroll navigation connects the nav links to sections. Includes basic CSS animations and mobile-responsive breakpoints. Ready to deploy as-is.',
+    bestFor: 'Product landing pages, marketing sites, project showcases, single-serve websites',
+    files: 'index.html (single file with all sections inline)',
+  },
+  dashboard: {
+    title: 'Dashboard (Sidebar, Cards, Charts, Table)',
+    description: 'A multi-section dashboard with a fixed sidebar navigation, header bar, stat cards with KPI numbers, a chart area (Chart.js via CDN), and a data table with sorting. Built to be data-dense and functional from the start. Responsive — sidebar collapses to a hamburger menu on mobile. Cards display live stats; table supports sorting by column; chart is interactive.',
+    bestFor: 'Admin panels, analytics dashboards, internal tools, monitoring screens',
+    files: 'index.html (monolithic dashboard) or split into sections/js/ subdirectories',
+  },
 };
-
-function getArchDescription(value) {
-  if (!value) return null;
-  return ARCH_DESCRIPTIONS[value] || null;
-}
-
-function getArchTitle(value) {
-  const titles = {
-    layered: 'Layered Architecture',
-    clean: 'Clean Architecture',
-    hexagonal: 'Hexagonal (Ports & Adapters)',
-    onion: 'Onion Architecture',
-    mvc: 'Model-View-Controller',
-    'modular-monolith': 'Modular Monolith',
-    'vertical-slice': 'Vertical Slice',
-    cqrs: 'Command Query Responsibility Segregation',
-    'event-driven': 'Event-Driven Architecture',
-    serverless: 'Serverless',
-    microservices: 'Microservices',
-  };
-  return (value && titles[value]) || null;
-}
-
-module.exports = { ARCH_DESCRIPTIONS, getArchDescription, getArchTitle };

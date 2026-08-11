@@ -104,8 +104,13 @@ async function _promptInquirer(questions) {
 }
 
 async function _promptTui(questions) {
+  if (!_tuiApp || !_tuiApp.pushQuestion) {
+    throw new Error('TUI app not initialized. Call setTuiApp() first.');
+  }
+
   const { pushQuestion } = _tuiApp;
   const answers = {};
+
   for (const q of questions) {
     const augmented = Object.assign({}, q, {
       stepIndex: _tuiContext.stepIndex || 0,
@@ -114,13 +119,20 @@ async function _promptTui(questions) {
       answers: _tuiContext.answers || {},
       sidebarInfo: q.sidebarInfo || _tuiContext.sidebarInfo || null,
     });
-    const answer = await new Promise((resolve) => {
-      pushQuestion(augmented, (value) => {
-        resolve(value);
-      });
+
+    const answer = await new Promise((resolve, reject) => {
+      try {
+        pushQuestion(augmented, (value) => {
+          resolve(value);
+        });
+      } catch (err) {
+        reject(err);
+      }
     });
+
     answers[q.name] = answer;
   }
+
   return answers;
 }
 

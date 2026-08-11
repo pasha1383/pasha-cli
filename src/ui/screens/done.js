@@ -5,7 +5,7 @@ const chalk = require('chalk');
 const io = require('../io');
 
 function done(outPath, ctx) {
-  if (!io.isTTY() || process.env.CI || process.env.NO_COLOR) {
+  if (!io.isTTY() || io.isCI() || io.noColor()) {
     console.log(`\nProject ready at ${outPath}`);
     console.log(`\nNext: cd ${ctx.projectName}`);
     return;

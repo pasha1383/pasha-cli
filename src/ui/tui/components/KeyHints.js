@@ -9,9 +9,9 @@ function KeyHints({ hints }) {
 
   const { Text, Box } = getInk();
 
-  const items = hints.map((hint, i) => {
-    const sep = i < hints.length - 1 ? ' \u00B7 ' : '';
-    return e(React.Fragment, { key: hint.key },
+  const items = hints.map(function (hint, i) {
+    var sep = i < hints.length - 1 ? ' \u00B7 ' : '';
+    return e(React.Fragment, { key: hint.key || i },
       e(Text, { bold: true, color: 'white' }, hint.key),
       e(Text, { dimColor: true }, ' ' + hint.label + sep)
     );

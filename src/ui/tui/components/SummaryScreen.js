@@ -1,8 +1,8 @@
 'use strict';
 
-const React = require('react');
-const { getInk } = require('../ink-proxy');
-const e = React.createElement;
+var React = require('react');
+var { getInk } = require('../ink-proxy');
+var e = React.createElement;
 
 var SUMMARY_KEYS = [
   ['Project', 'projectName'],
@@ -35,8 +35,13 @@ function fmtBool(val) {
   return val ? 'Yes' : 'No';
 }
 
-function SummaryScreen({ context, onEdit }) {
-  const { Text, Box } = getInk();
+function SummaryScreen(_a) {
+  var context = _a.context;
+  var onEdit = _a.onEdit;
+  var onKey = _a.onKey;
+  var onContinue = _a.onContinue;
+
+  var { Text, Box, useInput } = getInk();
   var ctx = context || {};
   var rows = [];
 
@@ -45,35 +50,73 @@ function SummaryScreen({ context, onEdit }) {
     var key = entry[1];
     var val = ctx[key];
     if (val === undefined || val === null || val === '') return;
-    rows.push([label, String(val)]);
+    rows.push([label, String(val), entry]);
   });
 
   Object.keys(EXTRA_LABELS).forEach(function (key) {
     if (ctx[key] !== undefined) {
-      rows.push([EXTRA_LABELS[key], fmtBool(ctx[key])]);
+      rows.push([EXTRA_LABELS[key], fmtBool(ctx[key]), [EXTRA_LABELS[key], key]]);
     }
   });
 
   var mods = ctx.modules;
   if (Array.isArray(mods) && mods.length) {
-    rows.push(['Modules', String(mods.length) + ' (' + mods.join(', ') + ')']);
+    rows.push(['Modules', String(mods.length) + ' (' + mods.join(', ') + ')', ['Modules', 'modules']]);
   }
+
+  var _b = React.useState(0);
+  var highlighted = _b[0];
+  var setHighlighted = _b[1];
+
+  useInput(function (input, key) {
+    if (key.name === 'upArrow' || input === 'k') {
+      setHighlighted(Math.max(0, highlighted - 1));
+      return;
+    }
+    if (key.name === 'downArrow' || input === 'j') {
+      setHighlighted(Math.min(rows.length - 1, highlighted + 1));
+      return;
+    }
+    if (key.name === 'return') {
+      if (onContinue) onContinue();
+      return;
+    }
+    if (input === 'e' && onEdit) {
+      onEdit();
+      return;
+    }
+
+    var num = parseInt(input, 10);
+    if (!isNaN(num) && num >= 1 && num <= rows.length && onEdit) {
+      if (typeof onEdit === 'function') {
+        onEdit(num - 1);
+      }
+      return;
+    }
+
+    if (onKey) onKey(input, key);
+  });
 
   var rowElements = rows.map(function (entry, idx) {
     var label = entry[0];
     var value = entry[1];
-    var editHint = onEdit ? e(Text, { dimColor: true, color: 'cyan' }, '  [e:' + String(idx + 1) + ' edit]') : null;
+    var isHighlighted = idx === highlighted;
+    var numPrefix = rows.length > 1 ? ' ' + (idx + 1) + '.' : '  ';
+    var editHint = onEdit && isHighlighted
+      ? e(Text, { dimColor: true, color: 'cyan' }, '  [e edit]')
+      : null;
 
     return e(Box, { key: idx, flexDirection: 'row' },
-      e(Text, { bold: true }, '  ' + label),
+      e(Text, { bold: isHighlighted, color: isHighlighted ? 'cyan' : undefined }, numPrefix),
+      e(Text, { bold: isHighlighted, color: isHighlighted ? 'cyan' : undefined }, label),
       e(Text, {}, ' '.repeat(Math.max(1, 20 - label.length))),
-      e(Text, {}, value),
+      e(Text, { color: isHighlighted ? 'cyan' : undefined }, value),
       editHint
     );
   });
 
   var editHelp = onEdit
-    ? e(Box, { marginTop: 1 }, e(Text, { dimColor: true }, '  Press 1-' + rows.length + ' to edit a field'))
+    ? e(Box, { marginTop: 1 }, e(Text, { dimColor: true }, '  \u2191\u2193 to select, e to edit, 1-' + rows.length + ' to jump'))
     : null;
 
   return e(Box, { flexDirection: 'column', paddingTop: 1 },

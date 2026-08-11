@@ -7,35 +7,35 @@ const e = React.createElement;
 
 function HelpOverlay({ context }) {
   const { Text, Box } = getInk();
-  const hints = hintsForContext(context);
+  const hints = hintsForContext(context) || [];
+  const ctxLabel = context || 'wizard';
 
-  const width = 52;
-  const top = '\u250C' + '\u2500'.repeat(width - 2) + '\u2510';
-  const bottom = '\u2514' + '\u2500'.repeat(width - 2) + '\u2518';
-  const sep = '\u2502';
+  const titleLine = '  pasha CLI — Key Bindings (' + ctxLabel + ')';
 
-  const rows = [
-    '',
-    '  ' + 'pasha CLI — Key Bindings',
-    '',
-  ];
+  var rows = ['', titleLine, ''];
 
-  for (const hint of hints) {
-    const keyPad = hint.key.padEnd(10);
-    rows.push('  ' + keyPad + '  ' + hint.label);
+  for (var i = 0; i < hints.length; i++) {
+    var hint = hints[i];
+    var keyPad = (hint.key || '').padEnd(10);
+    rows.push('  ' + keyPad + '  ' + (hint.label || ''));
   }
 
   rows.push('');
-  rows.push('  ' + 'Press Esc to close');
+  rows.push('  Press Esc to close');
 
-  const maxLen = Math.max.apply(null, rows.map(function (r) { return r.length; }));
-  const innerWidth = Math.max(width - 4, maxLen);
+  var maxLen = rows.reduce(function (max, r) { return Math.max(max, r.length); }, 0);
+  var innerWidth = Math.max(44, maxLen);
+  var width = innerWidth + 2;
 
-  const lineElements = rows.map(function (row, idx) {
-    const padRight = Math.max(0, innerWidth - row.length);
+  var top = '\u250C' + '\u2500'.repeat(width - 2) + '\u2510';
+  var bottom = '\u2514' + '\u2500'.repeat(width - 2) + '\u2518';
+  var sep = '\u2502';
+
+  var lineElements = rows.map(function (row, idx) {
+    var padRight = Math.max(0, innerWidth - row.length);
     return e(Box, { key: idx, flexDirection: 'row' },
       e(Text, { color: 'cyan' }, sep),
-      e(Text, { color: idx === 0 ? undefined : undefined, bold: idx === 2 }, row + ' '.repeat(padRight)),
+      e(Text, { bold: idx === 2 }, row + ' '.repeat(padRight)),
       e(Text, { color: 'cyan' }, sep)
     );
   });

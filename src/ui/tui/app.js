@@ -1,24 +1,26 @@
 'use strict';
 
-const React = require('react');
-const { getInk } = require('./ink-proxy');
-const { StepRail } = require('./components/StepRail');
-const { KeyHints } = require('./components/KeyHints');
-const { SidePanel } = require('./components/SidePanel');
-const { SelectPrompt } = require('./components/SelectPrompt');
-const { MultiSelectPrompt } = require('./components/MultiSelectPrompt');
-const { InputPrompt } = require('./components/InputPrompt');
-const { ConfirmPrompt } = require('./components/ConfirmPrompt');
-const { SummaryScreen } = require('./components/SummaryScreen');
-const { ProgressScreen } = require('./components/ProgressScreen');
-const { hintsForContext } = require('./keymap');
-const e = React.createElement;
+var React = require('react');
+var { getInk } = require('./ink-proxy');
+var { StepRail } = require('./components/StepRail');
+var { KeyHints } = require('./components/KeyHints');
+var { SidePanel } = require('./components/SidePanel');
+var { SelectPrompt } = require('./components/SelectPrompt');
+var { MultiSelectPrompt } = require('./components/MultiSelectPrompt');
+var { InputPrompt } = require('./components/InputPrompt');
+var { ConfirmPrompt } = require('./components/ConfirmPrompt');
+var { SummaryScreen } = require('./components/SummaryScreen');
+var { ProgressScreen } = require('./components/ProgressScreen');
+var { HelpOverlay } = require('./components/HelpOverlay');
+var { hintsForContext, mapKey } = require('./keymap');
+var e = React.createElement;
 
-let _resolve = null;
-let _queue = [];
-let _onStateChange = null;
-let _appState = null;
-let _previousView = null;
+var _resolve = null;
+var _queue = [];
+var _onStateChange = null;
+var _appState = null;
+var _previousView = null;
+var _answerHistory = [];
 
 function getState() {
   return _appState;
@@ -30,6 +32,10 @@ function setState(update) {
 }
 
 function pushQuestion(question, resolve) {
+  _answerHistory.push({
+    question: question,
+    resolve: resolve,
+  });
   _queue.push({ question: question, resolve: resolve });
   if (_queue.length === 1) {
     _previousView = _appState ? _appState.view : null;
@@ -58,11 +64,10 @@ function _showCurrentQuestion() {
 }
 
 function _answer(value) {
-  _queue.shift();
-  if (_resolve) {
-    var r = _resolve;
-    _resolve = null;
-    r(value);
+  var item = _queue.shift();
+  _resolve = null;
+  if (item && item.resolve) {
+    item.resolve(value);
   }
   if (_queue.length > 0) {
     _showCurrentQuestion();
@@ -75,7 +80,37 @@ function _answer(value) {
       message: '',
       choices: [],
       answers: getState().answers || {},
+      summaryContext: null,
     });
+  }
+}
+
+function _goBack() {
+  if (_queue.length === 0) return;
+
+  _resolve = null;
+  _queue.shift();
+
+  var prev = _answerHistory.length >= 2 ? _answerHistory[_answerHistory.length - 2] : null;
+  if (prev) {
+    _answerHistory.pop();
+    _answerHistory.pop();
+    _queue.unshift({ question: prev.question, resolve: prev.resolve });
+    _showCurrentQuestion();
+  } else {
+    _answerHistory.pop();
+    if (_queue.length > 0) {
+      _showCurrentQuestion();
+    } else {
+      setState({
+        view: 'idle',
+        questionType: null,
+        message: '',
+        choices: [],
+        answers: getState().answers || {},
+        summaryContext: null,
+      });
+    }
   }
 }
 
@@ -102,6 +137,12 @@ function showSummary(context, onEditCallback) {
   });
 }
 
+function _showSummaryFromCurrent() {
+  var state = getState();
+  if (state.view === 'summary') return;
+  showSummary(state.answers || {});
+}
+
 function showDone(message) {
   setState({
     view: 'done',
@@ -121,18 +162,6 @@ var STEPS = [
   { name: 'review', label: 'Review' },
 ];
 
-var LOGO_LINES = [
-  '  ____  _   _   _    ____    _    ____ ',
-  ' |  _ \\| | | | / \\  / ___|  / \\  / ___|',
-  ' | |_) | |_| |/ _ \\ \\___ \\ / _ \\ \\___ \\',
-  ' |  __/|  _  / ___ \\ ___) / ___ \\ ___) |',
-  ' |_|   |_| |_/_/ __\\_\\____/_/ __\\_\\____/',
-  ' |  _ \\ / \\ \\/ /_ _|  |  \\/  | ____|',
-  ' | |_) / _ \\\\  / | |   | |\\/| |  _|',
-  ' |  __/ ___ \\/ /_ | |   | |  | | |___',
-  ' |_| /_/   \\_\\____|___| |_|  |_|_____|',
-];
-
 var LOGO_SHORT = [
   '  ____  _   _   _    ____    _    ____ ',
   ' |  _ \\| | | | / \\  / ___|  / \\  / ___|',
@@ -141,9 +170,9 @@ var LOGO_SHORT = [
 ];
 
 function App() {
-  const { Text, Box, useInput, useApp } = getInk();
+  var { Text, Box, useInput, useApp } = getInk();
   var { exit } = useApp();
-  var [state, setLocalState] = React.useState(function () {
+  var _a = React.useState(function () {
     return _appState || {
       view: 'welcome',
       questionType: null,
@@ -157,16 +186,33 @@ function App() {
       summaryContext: null,
     };
   });
+  var state = _a[0];
+  var setLocalState = _a[1];
 
-  var [welcomeDismissed, setWelcomeDismissed] = React.useState(false);
-  var [panelKey, setPanelKey] = React.useState(0);
-  var [doneAnimFrame, setDoneAnimFrame] = React.useState(0);
+  var _b = React.useState(false);
+  var welcomeDismissed = _b[0];
+  var setWelcomeDismissed = _b[1];
+  var _c = React.useState(null);
+  var highlightedArch = _c[0];
+  var setHighlightedArch = _c[1];
+  var _d = React.useState(0);
+  var doneAnimFrame = _d[0];
+  var setDoneAnimFrame = _d[1];
+
+  var _e = React.useState(false);
+  var helpVisible = _e[0];
+  var setHelpVisible = _e[1];
+  var _f = React.useState(false);
+  var quitConfirmVisible = _f[0];
+  var setQuitConfirmVisible = _f[1];
+  var _g = React.useState(0);
+  var renderKey = _g[0];
+  var setRenderKey = _g[1];
 
   _onStateChange = function (newState) {
     setLocalState(Object.assign({}, newState));
   };
 
-  var prevSidebarInfoRef = React.useRef(null);
   var doneTimerRef = React.useRef(null);
 
   React.useEffect(function () {
@@ -185,13 +231,6 @@ function App() {
   }, [state.view === 'done']);
 
   React.useEffect(function () {
-    if (state.sidebarInfo && state.sidebarInfo !== prevSidebarInfoRef.current) {
-      setPanelKey(function (k) { return k + 1; });
-      prevSidebarInfoRef.current = state.sidebarInfo;
-    }
-  }, [state.sidebarInfo]);
-
-  React.useEffect(function () {
     if (_queue.length > 0 && state.view === 'welcome' && welcomeDismissed) {
       _showCurrentQuestion();
     }
@@ -200,19 +239,159 @@ function App() {
     }
   }, [welcomeDismissed]);
 
+  React.useEffect(function () {
+    setHighlightedArch(null);
+  }, [state.choices, state.questionType]);
+
+  function determineContext() {
+    if (quitConfirmVisible) return 'confirm-quit';
+    if (helpVisible) return 'help';
+    if (state.view === 'done') return 'done';
+    if (state.view === 'progress') return 'progress';
+    if (state.view === 'summary') return 'summary';
+    if (state.view === 'welcome') return 'welcome';
+    if (state.view === 'idle') return null;
+    if (state.questionType === 'checkbox') return 'multi-select';
+    if (state.questionType === 'list' || state.questionType === 'select') return 'select';
+    if (state.questionType === 'input') return 'input';
+    if (state.questionType === 'confirm') return 'confirm';
+    return null;
+  }
+
+  function createOnKey() {
+    return function (input, key) {
+      var ctx = determineContext();
+      if (!ctx) return;
+      var action = mapKey(input, key, ctx);
+
+      if (action === 'help') {
+        setHelpVisible(function (prev) { return !prev; });
+        return;
+      }
+      if (action === 'closeOverlay') {
+        if (helpVisible) { setHelpVisible(false); return; }
+        if (quitConfirmVisible) { setQuitConfirmVisible(false); return; }
+        return;
+      }
+      if (action === 'summary') {
+        _showSummaryFromCurrent();
+        return;
+      }
+      if (action === 'back') {
+        _goBack();
+        return;
+      }
+      if (action === 'quit') {
+        if (quitConfirmVisible) {
+          exit();
+          return;
+        }
+        if (state.view === 'done') {
+          exit();
+          return;
+        }
+        setQuitConfirmVisible(true);
+        return;
+      }
+      if (action === 'redraw') {
+        setRenderKey(function (k) { return k + 1; });
+        return;
+      }
+      if (action === 'exit') {
+        exit();
+        return;
+      }
+      if (action === 'edit') {
+        if (state.view === 'summary' && state.onEdit) {
+          state.onEdit();
+        }
+        return;
+      }
+    };
+  }
+
+  var onKey = createOnKey();
+
   useInput(function (input, key) {
-    if (state.view === 'welcome') {
+    if (state.view === 'welcome' && !welcomeDismissed) {
       setWelcomeDismissed(true);
       setLocalState(Object.assign({}, state, { view: 'idle' }));
       return;
     }
 
-    if (key.escape && (state.view === 'summary' || state.view === 'progress')) {
-      setLocalState(Object.assign({}, state, { view: 'question' }));
+    if (quitConfirmVisible) {
+      if (key.name === 'escape' || input === 'n') {
+        setQuitConfirmVisible(false);
+        return;
+      }
+      if (input === 'y') {
+        exit();
+        return;
+      }
       return;
     }
-    if (key.return && state.view === 'done') {
-      exit();
+
+    if (helpVisible) {
+      if (key.name === 'escape') {
+        setHelpVisible(false);
+        return;
+      }
+      return;
+    }
+
+    if (state.view === 'done') {
+      if (key.name === 'return') {
+        exit();
+        return;
+      }
+      var ctrlC = key.ctrl && !key.meta && (input === 'c' || input === '\x03');
+      if (ctrlC) {
+        exit();
+        return;
+      }
+      return;
+    }
+
+    if (state.view === 'progress') {
+      var ctrlC2 = key.ctrl && !key.meta && (input === 'c' || input === '\x03');
+      if (ctrlC2) {
+        setQuitConfirmVisible(true);
+        return;
+      }
+      return;
+    }
+
+    if (state.view === 'summary') {
+      var ctrlC3 = key.ctrl && !key.meta && (input === 'c' || input === '\x03');
+      if (ctrlC3) {
+        setQuitConfirmVisible(true);
+        return;
+      }
+      if (key.name === 'escape') {
+        setLocalState(Object.assign({}, state, { view: 'idle' }));
+        _showCurrentQuestion();
+        return;
+      }
+      if (key.name === 'return' || input === 's') {
+        setLocalState(Object.assign({}, state, { view: 'idle' }));
+        _showCurrentQuestion();
+        return;
+      }
+      return;
+    }
+
+    if (state.view === 'idle') return;
+
+    if (state.view === 'question') {
+      var ctrlC4 = key.ctrl && !key.meta && (input === 'c' || input === '\x03');
+      if (ctrlC4) {
+        setQuitConfirmVisible(true);
+        return;
+      }
+      if (key.ctrl && !key.meta && (input === 'l' || input === '\x0c')) {
+        setRenderKey(function (k) { return k + 1; });
+        return;
+      }
       return;
     }
   });
@@ -261,13 +440,19 @@ function App() {
         fileCount: state.fileCount,
         fileTotal: state.fileTotal,
         failedCount: state.failedCount,
+        onKey: onKey,
       });
     }
 
     if (state.view === 'summary') {
       return e(SummaryScreen, {
-        context: state.summaryContext,
-        onEdit: state.onEdit,
+        context: state.summaryContext || state.answers,
+        onEdit: state.onEdit || null,
+        onContinue: function () {
+          setLocalState(Object.assign({}, state, { view: 'idle' }));
+          _showCurrentQuestion();
+        },
+        onKey: onKey,
       });
     }
 
@@ -307,9 +492,16 @@ function App() {
         return typeof c === 'object' ? c : { name: String(c), value: c };
       });
 
-      var sidebar = state.sidebarInfo
-        ? e(SidePanel, { key: 'panel-' + panelKey, title: state.sidebarInfo.title, description: state.sidebarInfo.description, visible: true })
-        : null;
+      var currentArch = highlightedArch;
+      if (currentArch === null && mappedChoices.length > 0) {
+        var initCh = mappedChoices[Math.max(0, defaultIdx)];
+        currentArch = initCh ? initCh.value : null;
+      }
+
+      var sidebar = e(SidePanel, {
+        architecture: currentArch,
+        visible: !!currentArch,
+      });
 
       return e(Box, { flexDirection: 'row' },
         e(Box, { flexDirection: 'column', flexGrow: 1 },
@@ -320,6 +512,12 @@ function App() {
             onSelect: function (chosen) {
               _answer(chosen.value !== undefined ? chosen.value : chosen);
             },
+            onHighlight: function (idx, filtered) {
+              var choice = filtered[idx];
+              var val = choice ? choice.value : null;
+              if (val !== highlightedArch) setHighlightedArch(val);
+            },
+            onKey: onKey,
           })
         ),
         sidebar
@@ -341,6 +539,7 @@ function App() {
             choices: mappedMulti,
             initialChecked: initialChecked,
             onConfirm: function (values) { _answer(values); },
+            onKey: onKey,
           })
         )
       );
@@ -352,6 +551,7 @@ function App() {
         defaultValue: def !== undefined ? String(def) : '',
         validate: state.validate,
         onSubmit: function (val) { _answer(val); },
+        onKey: onKey,
       });
     }
 
@@ -360,6 +560,7 @@ function App() {
         message: msg,
         defaultValue: def !== false,
         onConfirm: function (val) { _answer(val); },
+        onKey: onKey,
       });
     }
 
@@ -368,16 +569,37 @@ function App() {
     );
   }
 
-  var ctx;
-  if (state.view === 'done') ctx = 'done';
-  else if (state.view === 'progress') ctx = 'progress';
-  else if (state.view === 'summary') ctx = 'summary';
-  else if (state.view === 'welcome') ctx = 'welcome';
-  else if (state.questionType === 'checkbox') ctx = 'multi-select';
-  else if (state.questionType === 'list' || state.questionType === 'select') ctx = 'select';
-  else ctx = 'wizard';
+  function getOverlayContext() {
+    if (quitConfirmVisible) return 'confirm-quit';
+    if (helpVisible) return determineContext() || 'welcome';
+    return null;
+  }
 
-  return e(Box, { flexDirection: 'column', paddingLeft: 1, paddingRight: 1, minHeight: 24 },
+  var overlayCtx = getOverlayContext();
+  var overlayEl = null;
+  if (helpVisible) {
+    var helpCtx = state.questionType === 'checkbox' ? 'multi-select'
+      : state.questionType === 'list' || state.questionType === 'select' ? 'select'
+      : state.questionType === 'input' ? 'input'
+      : state.questionType === 'confirm' ? 'confirm'
+      : state.view === 'summary' ? 'summary'
+      : state.view === 'progress' ? 'progress'
+      : state.view === 'done' ? 'done'
+      : 'select';
+    overlayEl = e(HelpOverlay, { context: helpCtx });
+  } else if (quitConfirmVisible) {
+    overlayEl = e(Box, { flexDirection: 'column', marginTop: 1, borderStyle: 'single', borderColor: 'red', paddingLeft: 2, paddingRight: 2, paddingTop: 1, paddingBottom: 1 },
+      e(Text, { bold: true, color: 'red' }, 'Quit pasha?'),
+      e(Box, { marginTop: 1 },
+        e(Text, { color: 'white' }, 'Press y to quit, n or Esc to cancel')
+      )
+    );
+  }
+
+  var hintCtx = determineContext();
+  var hints = hintsForContext(hintCtx || 'select');
+
+  return e(Box, { flexDirection: 'column', paddingLeft: 1, paddingRight: 1, minHeight: 24, key: 'r-' + renderKey },
     e(Box, { flexDirection: 'row', justifyContent: 'space-between', paddingTop: 0, paddingBottom: 0 },
       e(Text, { bold: true, color: 'magenta' }, 'pasha v2.1.0'),
       e(Text, { dimColor: true }, headerBreadcrumb())
@@ -385,9 +607,12 @@ function App() {
     divider,
     e(StepRail, { steps: STEPS, currentIndex: state.stepIndex, width: 78 }),
     divider,
-    e(Box, { flexDirection: 'column', flexGrow: 1, minHeight: 14 }, renderBody()),
+    e(Box, { flexDirection: 'column', flexGrow: 1, minHeight: 14 },
+      renderBody(),
+      overlayEl
+    ),
     divider,
-    e(KeyHints, { hints: hintsForContext(ctx) })
+    e(KeyHints, { hints: hints })
   );
 }
 

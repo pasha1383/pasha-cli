@@ -5,7 +5,7 @@ const chalk = require('chalk');
 const io = require('../io');
 
 function welcome() {
-  if (!io.isTTY() || process.env.CI || process.env.NO_COLOR) return;
+  if (!io.isTTY() || io.isCI() || io.noColor()) return;
 
   const logo = [
     '  ____             __         ',

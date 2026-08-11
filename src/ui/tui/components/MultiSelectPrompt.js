@@ -1,20 +1,32 @@
 'use strict';
 
-const React = require('react');
-const { getInk } = require('../ink-proxy');
-const e = React.createElement;
+var React = require('react');
+var { getInk } = require('../ink-proxy');
+var e = React.createElement;
 
 var CHECKBOX_ON = '\u25C9';
 var CHECKBOX_OFF = '\u25CB';
 
-function MultiSelectPrompt({ message, choices, initialChecked, onConfirm }) {
-  const { Text, Box, useInput } = getInk();
+function MultiSelectPrompt(_a) {
+  var message = _a.message;
+  var choices = _a.choices;
+  var initialChecked = _a.initialChecked;
+  var onConfirm = _a.onConfirm;
+  var onKey = _a.onKey;
+
+  var { Text, Box, useInput } = getInk();
   var allChoices = choices || [];
-  var [checked, setChecked] = React.useState(function () {
+  var _b = React.useState(function () {
     return new Set(initialChecked || []);
   });
-  var [highlighted, setHighlighted] = React.useState(0);
-  var [filter, setFilter] = React.useState('');
+  var checked = _b[0];
+  var setChecked = _b[1];
+  var _c = React.useState(0);
+  var highlighted = _c[0];
+  var setHighlighted = _c[1];
+  var _d = React.useState('');
+  var filter = _d[0];
+  var setFilter = _d[1];
 
   var filtered = allChoices.filter(function (c) {
     if (!filter) return true;
@@ -29,28 +41,25 @@ function MultiSelectPrompt({ message, choices, initialChecked, onConfirm }) {
   var clampedHighlight = Math.min(highlighted, maxIdx);
 
   useInput(function (input, key) {
-    if (key.escape) {
+    if (key.name === 'escape') {
       setFilter('');
+      if (onKey) onKey(input, key);
       return;
     }
-    if (key.backspace || key.delete) {
-      setFilter(function (prev) { return prev.slice(0, -1); });
-      setHighlighted(0);
+    if (key.name === 'backspace' || key.name === 'delete') {
+      if (filter.length > 0) {
+        setFilter(function (prev) { return prev.slice(0, -1); });
+        setHighlighted(0);
+      } else {
+        if (onKey) onKey(input, key);
+      }
       return;
     }
-    if (key.upArrow) {
+    if (key.name === 'upArrow' || input === 'k') {
       setHighlighted(Math.max(0, clampedHighlight - 1));
       return;
     }
-    if (key.downArrow) {
-      setHighlighted(Math.min(maxIdx, clampedHighlight + 1));
-      return;
-    }
-    if (input === 'k') {
-      setHighlighted(Math.max(0, clampedHighlight - 1));
-      return;
-    }
-    if (input === 'j') {
+    if (key.name === 'downArrow' || input === 'j') {
       setHighlighted(Math.min(maxIdx, clampedHighlight + 1));
       return;
     }
@@ -74,7 +83,7 @@ function MultiSelectPrompt({ message, choices, initialChecked, onConfirm }) {
       setChecked(new Set());
       return;
     }
-    if (key.return) {
+    if (key.name === 'return') {
       if (onConfirm) {
         var result = allChoices
           .filter(function (c) { return checked.has(c.value); })
@@ -83,10 +92,16 @@ function MultiSelectPrompt({ message, choices, initialChecked, onConfirm }) {
       }
       return;
     }
-    if (input && input.length === 1 && !key.ctrl && !key.meta && !key.tab) {
+    if (key.name === 'leftArrow') {
+      if (onKey) onKey(input, key);
+      return;
+    }
+    if (input && input.length === 1 && !key.ctrl && !key.meta) {
       setFilter(function (prev) { return prev + input; });
       setHighlighted(0);
+      return;
     }
+    if (onKey) onKey(input, key);
   });
 
   var checkedCount = allChoices.filter(function (c) { return checked.has(c.value); }).length;
@@ -97,7 +112,7 @@ function MultiSelectPrompt({ message, choices, initialChecked, onConfirm }) {
   if (filtered.length === 0) {
     return e(Box, { flexDirection: 'column', paddingTop: 1 },
       e(Text, { bold: true, color: 'yellow' }, message),
-      filter ? e(Text, { color: 'gray' }, 'Filter: ' + filter) : null,
+      filter ? e(Text, { color: 'gray' }, 'Filter: ' + filter + '  (Esc to clear)') : null,
       e(Box, { flexDirection: 'column', marginTop: 1 },
         e(Text, { dimColor: true }, 'No matches found.')
       )

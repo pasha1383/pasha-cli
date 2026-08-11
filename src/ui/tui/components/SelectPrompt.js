@@ -1,20 +1,35 @@
 'use strict';
 
-const React = require('react');
-const { getInk } = require('../ink-proxy');
-const { useAnimation, isAnimationEnabled } = require('../hooks/useAnimation');
-const e = React.createElement;
+var React = require('react');
+var { getInk } = require('../ink-proxy');
+var { useAnimation, isAnimationEnabled } = require('../hooks/useAnimation');
+var e = React.createElement;
 
-const ARROW = '\u276F';
+var ARROW = '\u276F';
 
-function SelectPrompt({ message, choices, selectedIndex, filter, onSelect, onHighlight, onChange }) {
-  const { Text, Box, useInput } = getInk();
-  const allChoices = choices || [];
-  const [highlighted, setHighlighted] = React.useState(selectedIndex || 0);
-  const prevHighlightRef = React.useRef(highlighted);
-  const transitionRef = React.useRef({ from: 0, startFrame: 0 });
-  const anim = useAnimation({ fps: 30 });
-  const enabled = isAnimationEnabled();
+function SelectPrompt(_a) {
+  var message = _a.message;
+  var choices = _a.choices;
+  var selectedIndex = _a.selectedIndex;
+  var onSelect = _a.onSelect;
+  var onHighlight = _a.onHighlight;
+  var onKey = _a.onKey;
+
+  var { Text, Box, useInput } = getInk();
+  var allChoices = choices || [];
+  var _b = React.useState(selectedIndex || 0);
+  var highlighted = _b[0];
+  var setHighlighted = _b[1];
+  var _c = React.useState('');
+  var filter = _c[0];
+  var setFilter = _c[1];
+  var _d = React.useState(false);
+  var filterActive = _d[0];
+  var setFilterActive = _d[1];
+  var prevHighlightRef = React.useRef(highlighted);
+  var transitionRef = React.useRef({ from: 0, startFrame: 0 });
+  var anim = useAnimation({ fps: 30 });
+  var enabled = isAnimationEnabled();
 
   React.useEffect(function () {
     if (prevHighlightRef.current !== highlighted) {
@@ -26,36 +41,82 @@ function SelectPrompt({ message, choices, selectedIndex, filter, onSelect, onHig
     }
   }, [highlighted]);
 
-  const filtered = allChoices.filter(function (c) {
+  var filtered = allChoices.filter(function (c) {
     if (!filter) return true;
     var label = (c.name || c.label || c.value || '').toLowerCase();
     return label.includes(filter.toLowerCase());
   });
 
-  const maxIdx = Math.max(0, filtered.length - 1);
-  const clampedHighlight = Math.min(highlighted, maxIdx);
+  var maxIdx = Math.max(0, filtered.length - 1);
+  var clampedHighlight = Math.min(highlighted, maxIdx);
 
   React.useEffect(function () {
     if (onHighlight) onHighlight(clampedHighlight, filtered);
   }, [clampedHighlight]);
 
   useInput(function (input, key) {
-    if (key.upArrow || input === 'k') {
+    if (filterActive) {
+      if (key.name === 'escape') {
+        setFilter('');
+        setFilterActive(false);
+        return;
+      }
+      if (key.name === 'backspace' || key.name === 'delete') {
+        setFilter(function (prev) { return prev.slice(0, -1); });
+        setHighlighted(0);
+        return;
+      }
+      if (key.name === 'upArrow' || input === 'k') {
+        setHighlighted(Math.max(0, clampedHighlight - 1));
+        return;
+      }
+      if (key.name === 'downArrow' || input === 'j') {
+        setHighlighted(Math.min(maxIdx, clampedHighlight + 1));
+        return;
+      }
+      if (key.name === 'return') {
+        setFilterActive(false);
+        if (onSelect && filtered[clampedHighlight]) {
+          onSelect(filtered[clampedHighlight]);
+        }
+        return;
+      }
+      if (input && input.length === 1 && !key.ctrl && !key.meta) {
+        setFilter(function (prev) { return prev + input; });
+        setHighlighted(0);
+        return;
+      }
+      if (onKey) onKey(input, key);
+      return;
+    }
+
+    if (key.name === 'upArrow' || input === 'k') {
       setHighlighted(Math.max(0, clampedHighlight - 1));
-    } else if (key.downArrow || input === 'j') {
-      setHighlighted(Math.min(filtered.length - 1, clampedHighlight + 1));
-    } else if (key.return) {
+      return;
+    }
+    if (key.name === 'downArrow' || input === 'j') {
+      setHighlighted(Math.min(maxIdx, clampedHighlight + 1));
+      return;
+    }
+    if (key.name === 'return') {
       if (onSelect && filtered[clampedHighlight]) {
         onSelect(filtered[clampedHighlight]);
       }
-    } else if (onChange) {
-      onChange(input, key);
+      return;
     }
+    if (input === '/') {
+      setFilterActive(true);
+      return;
+    }
+    if (onKey) onKey(input, key);
   });
 
   if (filtered.length === 0) {
     return e(Box, { flexDirection: 'column', paddingTop: 1 },
       e(Text, { bold: true, color: 'yellow' }, message),
+      filter
+        ? e(Text, { dimColor: true, color: 'gray' }, 'Filter: ' + filter + '  (Esc to clear)')
+        : null,
       e(Box, { flexDirection: 'column', marginTop: 1 },
         e(Text, { dimColor: true }, 'No matches found.')
       )
@@ -71,7 +132,11 @@ function SelectPrompt({ message, choices, selectedIndex, filter, onSelect, onHig
     transitionFrom = transitionRef.current.from;
   }
 
-  var filterEl = filter ? e(Text, { dimColor: true, color: 'gray' }, 'Filter: ' + filter) : null;
+  var filterEl = filter
+    ? e(Text, { dimColor: true, color: 'gray' }, 'Filter: ' + filter + '  (Esc to clear)')
+    : filterActive
+      ? e(Text, { dimColor: true, color: 'gray' }, 'Filter: _')
+      : null;
 
   var choiceElements = filtered.map(function (choice, idx) {
     var isHighlighted = idx === clampedHighlight;
@@ -79,23 +144,10 @@ function SelectPrompt({ message, choices, selectedIndex, filter, onSelect, onHig
     var label = choice.name || choice.label || choice.value || '?';
     var desc = choice.description;
 
-    var highlightBright = 1;
-    if (enabled && transitionT < 1) {
-      if (isHighlighted) {
-        highlightBright = transitionT;
-      } else if (wasHighlighted) {
-        highlightBright = 1 - transitionT;
-      } else {
-        highlightBright = 0;
-      }
-    }
-
-    var hasHighlight = isHighlighted || (wasHighlighted && transitionT < 1);
-    var fadedHighlight = !isHighlighted && wasHighlighted && transitionT < 1;
-    var arrowChar = hasHighlight ? ARROW : ' ';
-    var arrowColor = hasHighlight ? (fadedHighlight ? undefined : 'cyan') : undefined;
+    var arrowChar = isHighlighted ? ARROW : ' ';
+    var arrowColor = isHighlighted ? 'cyan' : undefined;
     var arrowBold = isHighlighted;
-    var textColor = hasHighlight ? (fadedHighlight ? undefined : 'cyan') : undefined;
+    var textColor = isHighlighted ? 'cyan' : undefined;
     var textBold = isHighlighted;
 
     return e(Box, { key: choice.value || idx, flexDirection: 'row' },

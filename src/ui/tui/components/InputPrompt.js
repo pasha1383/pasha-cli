@@ -1,15 +1,25 @@
 'use strict';
 
-const React = require('react');
-const { getInk, getInkTextInput } = require('../ink-proxy');
-const e = React.createElement;
+var React = require('react');
+var { getInk, getInkTextInput } = require('../ink-proxy');
+var e = React.createElement;
 
-function InputPrompt({ message, defaultValue, validate, onSubmit }) {
-  const { Text, Box } = getInk();
-  const { UncontrolledTextInput } = getInkTextInput();
+function InputPrompt(_a) {
+  var message = _a.message;
+  var defaultValue = _a.defaultValue;
+  var validate = _a.validate;
+  var onSubmit = _a.onSubmit;
+  var onKey = _a.onKey;
+
+  var { Text, Box, useInput } = getInk();
+  var { UncontrolledTextInput } = getInkTextInput();
   var def = defaultValue || '';
-  var [value, setValue] = React.useState(def);
-  var [error, setError] = React.useState(null);
+  var _b = React.useState(def);
+  var value = _b[0];
+  var setValue = _b[1];
+  var _c = React.useState(null);
+  var error = _c[0];
+  var setError = _c[1];
 
   function handleSubmit(val) {
     if (validate) {
@@ -31,17 +41,38 @@ function InputPrompt({ message, defaultValue, validate, onSubmit }) {
     }
   }
 
-  var children = [
-    e(Text, { bold: true, color: 'yellow' }, message),
-    e(Box, { flexDirection: 'row', marginTop: 1, key: 'input-row' },
-      e(Text, { color: 'cyan' }, '> '),
-      e(UncontrolledTextInput, {
-        initialValue: def,
-        onSubmit: handleSubmit,
-        onChange: handleChange,
-      })
-    ),
-  ];
+  useInput(function (input, key) {
+    var ctrl = key.ctrl && !key.meta;
+    if (ctrl && input === 'c') {
+      if (onKey) onKey(input, key);
+      return;
+    }
+    if (key.name === 'escape') {
+      if (onKey) onKey(input, key);
+      return;
+    }
+    if (input === '?' && !key.shift) {
+      if (onKey) onKey(input, key);
+      return;
+    }
+    if (input === '?' && key.shift) {
+      if (onKey) onKey(input, key);
+      return;
+    }
+    return;
+  });
+
+  var children = [];
+
+  children.push(e(Text, { bold: true, color: 'yellow' }, message));
+  children.push(e(Box, { flexDirection: 'row', marginTop: 1, key: 'input-row' },
+    e(Text, { color: 'cyan' }, '> '),
+    e(UncontrolledTextInput, {
+      initialValue: def,
+      onSubmit: handleSubmit,
+      onChange: handleChange,
+    })
+  ));
 
   if (error) {
     children.push(e(Text, { color: 'red', bold: true, key: 'error' }, error));

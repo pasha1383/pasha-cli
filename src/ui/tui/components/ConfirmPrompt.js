@@ -6,16 +6,25 @@ const e = React.createElement;
 
 function ConfirmPrompt({ message, defaultValue, onConfirm }) {
   const { Text, Box, useInput } = getInk();
-  var def = defaultValue !== undefined ? defaultValue : true;
-  var [selected, setSelected] = React.useState(def);
+  const def = defaultValue !== undefined ? defaultValue : true;
+  const [selected, setSelected] = React.useState(def);
 
   useInput(function (input, key) {
-    if (key.leftArrow || key.rightArrow || input === 'y' || input === 'n') {
-      if (input === 'y') setSelected(true);
-      else if (input === 'n') setSelected(false);
-      else setSelected(!selected);
-    } else if (key.return) {
+    if (key.leftArrow || key.rightArrow) {
+      setSelected(function (prev) { return !prev; });
+      return;
+    }
+    if (input === 'y') {
+      setSelected(true);
+      return;
+    }
+    if (input === 'n') {
+      setSelected(false);
+      return;
+    }
+    if (key.return) {
       if (onConfirm) onConfirm(selected);
+      return;
     }
   });
 

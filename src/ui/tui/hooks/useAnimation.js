@@ -5,6 +5,7 @@ const React = require('react');
 let _clock = null;
 let _reducedMotion = null;
 let _fpsCap = 30;
+let _forceMode = false;
 
 function _detectReducedMotion() {
   if (process.env.NO_MOTION || process.env.REDUCED_MOTION) return true;
@@ -13,6 +14,7 @@ function _detectReducedMotion() {
 }
 
 function _isTTY() {
+  if (_forceMode) return true;
   return process.stdout.isTTY && process.stdin.isTTY;
 }
 
@@ -28,6 +30,10 @@ function disableAnimation() {
 
 function enableAnimation() {
   _reducedMotion = false;
+}
+
+function setForceMode(val) {
+  _forceMode = !!val;
 }
 
 function setClock(fn) {
@@ -62,7 +68,7 @@ function useAnimation({ fps, autoStart } = {}) {
   React.useEffect(() => {
     if (!enabled) return;
 
-    const now = _clock ? _clock() : Date.now;
+    const nowFn = _clock || Date.now;
 
     function tick(time) {
       if (!runningRef.current) return;
@@ -72,11 +78,11 @@ function useAnimation({ fps, autoStart } = {}) {
         frameRef.current = frameRef.current + 1;
         setFrame(frameRef.current);
       }
-      rafRef.current = setTimeout(function () { tick(now()); }, Math.max(1, Math.floor(minInterval * 0.5)));
+      rafRef.current = setTimeout(function () { tick(nowFn()); }, Math.max(1, Math.floor(minInterval * 0.5)));
     }
 
-    lastRef.current = now();
-    rafRef.current = setTimeout(function () { tick(now()); }, Math.floor(minInterval * 0.5));
+    lastRef.current = nowFn();
+    rafRef.current = setTimeout(function () { tick(nowFn()); }, Math.floor(minInterval * 0.5));
 
     return function () {
       if (rafRef.current) {
@@ -103,4 +109,4 @@ function useAnimation({ fps, autoStart } = {}) {
   return { frame, running, start, stop, reset, enabled };
 }
 
-module.exports = { useAnimation, isAnimationEnabled, disableAnimation, enableAnimation, setClock, setFpsCap };
+module.exports = { useAnimation, isAnimationEnabled, disableAnimation, enableAnimation, setClock, setFpsCap, setForceMode };

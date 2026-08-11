@@ -1,18 +1,28 @@
 'use strict';
 
-const React = require('react');
-const { getInk } = require('../ink-proxy');
-const { Spinner } = require('./Spinner');
-const e = React.createElement;
+var React = require('react');
+var { getInk } = require('../ink-proxy');
+var { Spinner } = require('./Spinner');
+var e = React.createElement;
 
-const CHECK = '\u2713';
-const CROSS = '\u2717';
-const HOLLOW = '\u25CB';
-const FILL = '\u2588';
-const EMPTY = '\u2591';
+var CHECK = '\u2713';
+var CROSS = '\u2717';
+var HOLLOW = '\u25CB';
+var FILL = '\u2588';
+var EMPTY = '\u2591';
 
-function ProgressScreen({ phases, currentPhase, message, completedPhases, filePath, fileCount, fileTotal, failedCount }) {
-  const { Text, Box } = getInk();
+function ProgressScreen(_a) {
+  var phases = _a.phases;
+  var currentPhase = _a.currentPhase;
+  var message = _a.message;
+  var completedPhases = _a.completedPhases;
+  var filePath = _a.filePath;
+  var fileCount = _a.fileCount;
+  var fileTotal = _a.fileTotal;
+  var failedCount = _a.failedCount;
+  var onKey = _a.onKey;
+
+  var { Text, Box } = getInk();
 
   var ph = phases || [];
   var cur = currentPhase !== undefined ? currentPhase : -1;
@@ -33,27 +43,23 @@ function ProgressScreen({ phases, currentPhase, message, completedPhases, filePa
   var pctText = known ? ' ' + pct + '%' : '';
 
   var phaseElements = ph.map(function (phase, idx) {
-    var status;
     var indicator;
     var label = phase.label || phase;
 
     if (comp[idx]) {
-      status = { text: CHECK, color: 'green' };
       indicator = e(Text, { color: 'green' }, '  ' + CHECK);
     } else if (idx < cur) {
-      status = { text: CHECK, color: 'green' };
       indicator = e(Text, { color: 'green' }, '  ' + CHECK);
     } else if (idx === cur) {
-      status = { text: '*', color: 'cyan' };
       indicator = e(Spinner, { color: 'cyan' });
     } else {
-      status = { text: HOLLOW, color: 'gray' };
       indicator = e(Text, { color: 'gray' }, '  ' + HOLLOW);
     }
 
+    var color = idx === cur ? 'cyan' : (idx < cur || comp[idx] ? 'green' : 'gray');
     return e(Box, { key: idx, flexDirection: 'row' },
       e(Box, { width: 4 }, indicator),
-      e(Text, { color: status.color, dimColor: idx > cur }, label)
+      e(Text, { color: color, dimColor: idx > cur && !comp[idx] }, label)
     );
   });
 

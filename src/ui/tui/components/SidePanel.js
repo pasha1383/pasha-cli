@@ -19,9 +19,9 @@ var WIDE_THRESHOLD = 120;
 var CROSSFADE_FRAMES = 10;
 
 var SECTION_TITLE = 'title';
+var SECTION_HEADER = 'header';
 var SECTION_DESC = 'desc';
-var SECTION_BEST_FOR = 'bestFor';
-var SECTION_FILES = 'files';
+var SECTION_CONTENT = 'content';
 var SECTION_BLANK = 'blank';
 
 function getPanelWidth() {
@@ -60,6 +60,8 @@ function buildTaggedLines(boxInfo, innerWidth) {
   lines.push({ text: boxInfo.title, section: SECTION_TITLE });
   lines.push({ text: '', section: SECTION_BLANK });
 
+  lines.push({ text: 'What is this?', section: SECTION_HEADER });
+
   var descBody = wrapLines(boxInfo.description, innerWidth);
   for (var di = 0; di < descBody.length; di++) {
     lines.push({ text: descBody[di], section: SECTION_DESC });
@@ -68,18 +70,18 @@ function buildTaggedLines(boxInfo, innerWidth) {
 
   if (boxInfo.bestFor) {
     var bestBody = wrapLines(boxInfo.bestFor, innerWidth);
-    lines.push({ text: 'Best for:', section: SECTION_BEST_FOR });
+    lines.push({ text: 'Best for:', section: SECTION_HEADER });
     for (var bi = 0; bi < bestBody.length; bi++) {
-      lines.push({ text: bestBody[bi], section: SECTION_BEST_FOR });
+      lines.push({ text: bestBody[bi], section: SECTION_DESC });
     }
     lines.push({ text: '', section: SECTION_BLANK });
   }
 
   if (boxInfo.files) {
     var fileBody = wrapLines(boxInfo.files, innerWidth);
-    lines.push({ text: 'File structure:', section: SECTION_FILES });
+    lines.push({ text: 'File structure:', section: SECTION_HEADER });
     for (var fi = 0; fi < fileBody.length; fi++) {
-      lines.push({ text: fileBody[fi], section: SECTION_FILES });
+      lines.push({ text: fileBody[fi], section: SECTION_CONTENT });
     }
     lines.push({ text: '', section: SECTION_BLANK });
   }
@@ -120,30 +122,15 @@ function renderPanelFrame(boxInfo, isOld, crossfadeT, animEnabled, boxWidth) {
     var bold = false;
     var dim = dimDefault;
 
-    var isLabel = (
-      line === boxInfo.title ||
-      line === 'Best for:' ||
-      line === 'File structure:'
-    );
-
     if (section === SECTION_TITLE) {
       color = dimDefault ? 'gray' : 'cyan';
       bold = true;
-    } else if (section === SECTION_BEST_FOR) {
-      if (isLabel) {
-        color = dimDefault ? 'gray' : 'yellow';
-        bold = true;
-      } else {
-        color = dimDefault ? 'gray' : undefined;
-      }
-    } else if (section === SECTION_FILES) {
-      if (isLabel) {
-        color = dimDefault ? 'gray' : 'cyan';
-        bold = true;
-      } else {
-        color = dimDefault ? 'gray' : undefined;
-        dim = true;
-      }
+    } else if (section === SECTION_HEADER) {
+      color = dimDefault ? 'gray' : 'yellow';
+      bold = true;
+    } else if (section === SECTION_CONTENT) {
+      color = dimDefault ? 'gray' : undefined;
+      dim = true;
     } else if (section === SECTION_BLANK || section === SECTION_DESC) {
       color = dimDefault ? 'gray' : undefined;
     }

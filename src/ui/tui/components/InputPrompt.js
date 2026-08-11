@@ -64,9 +64,9 @@ function InputPrompt(_a) {
 
   var children = [];
 
-  children.push(e(Text, { bold: true, color: 'yellow' }, message));
+  children.push(e(Text, { bold: true, color: 'white' }, message));
   children.push(e(Box, { flexDirection: 'row', marginTop: 1, key: 'input-row' },
-    e(Text, { color: 'cyan' }, '> '),
+    e(Text, { color: 'cyan', bold: true }, '  \u276F '),
     e(UncontrolledTextInput, {
       initialValue: def,
       onSubmit: handleSubmit,
@@ -75,11 +75,15 @@ function InputPrompt(_a) {
   ));
 
   if (error) {
-    children.push(e(Text, { color: 'red', bold: true, key: 'error' }, error));
+    children.push(e(Box, { marginTop: 1, key: 'error' },
+      e(Text, { color: 'red', bold: true }, '  ' + error)
+    ));
   }
 
   if (def && !value) {
-    children.push(e(Text, { dimColor: true, key: 'default' }, 'Default: ' + def));
+    children.push(e(Box, { marginTop: 0, key: 'default' },
+      e(Text, { dimColor: true, color: 'gray' }, '  Default: ' + def)
+    ));
   }
 
   return e(Box, { flexDirection: 'column', paddingTop: 1 }, ...children);

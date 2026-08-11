@@ -46,12 +46,20 @@ function KeyHints({ hints, compact }) {
 
   var children = [];
   for (var j = 0; j < fit.length; j++) {
-    if (j > 0) children.push(e(Text, { key: 's-' + j }, SEP));
+    if (j > 0) children.push(e(Text, { key: 's-' + j, dimColor: true, color: 'gray' }, SEP));
     children.push(e(Text, { key: 'k-' + j, bold: true, color: 'white' }, fit[j].key));
-    children.push(e(Text, { key: 'l-' + j, dimColor: true }, ' ' + fit[j].label));
+    children.push(e(Text, { key: 'l-' + j, dimColor: true, color: 'gray' }, ' ' + fit[j].label));
   }
 
-  return e(Box, { flexDirection: 'row', justifyContent: 'center', paddingTop: 1, paddingBottom: 0 }, ...children);
+  var cols2 = Math.min(cols, 120);
+  var topBorder = '\u251C' + '\u2500'.repeat(Math.max(0, cols2 - 2)) + '\u2524';
+
+  return e(Box, { flexDirection: 'column' },
+    e(Box, { flexDirection: 'row' },
+      e(Text, { color: 'gray' }, topBorder)
+    ),
+    e(Box, { flexDirection: 'row', justifyContent: 'center', paddingTop: 1, paddingBottom: 0 }, ...children)
+  );
 }
 
 module.exports = { KeyHints };

@@ -1112,22 +1112,21 @@ async function createTui(options) {
 
   let _cleanupExitHandlers = null;
   try {
+    tuiTerminal.setup();
     await initInk();
     const ink = getInk();
 
     const tuiApp = require('../../ui/tui/app');
     const { showProgress, showSummary, showDone, updateProgress, getState } = tuiApp;
 
+    const React = require('react');
+    const { waitUntilExit, rerender } = ink.render(
+      React.createElement(tuiApp.App),
+      { stdin: process.stdin, stdout: process.stdout, exitOnCtrlC: false }
+    );
+
     setTuiMode(true);
     setTuiApp(tuiApp);
-
-    tuiTerminal.setup();
-    _cleanupExitHandlers = tuiTerminal.registerExitHandlers(() => {
-      tuiTerminal.restore();
-    });
-
-    const React = require('react');
-    const { waitUntilExit } = ink.render(React.createElement(tuiApp.App));
 
     const _log = console.log;
     const _error = console.error;
@@ -1135,6 +1134,10 @@ async function createTui(options) {
     console.error = function () {
       _error.apply(console, arguments);
     };
+
+    _cleanupExitHandlers = tuiTerminal.registerExitHandlers(() => {
+      tuiTerminal.restore();
+    });
     let manifest;
     try { manifest = await loadManifest(); }
     catch (err) {

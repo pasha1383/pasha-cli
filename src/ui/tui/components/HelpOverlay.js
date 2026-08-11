@@ -18,7 +18,7 @@ function HelpOverlay({ visible, context, hints, onClose }) {
 
   const hintList = hints || [];
   const ctxLabel = context || 'wizard';
-  const titleStr = 'Help \u2014 ' + ctxLabel;
+  const titleStr = 'Help  \u2014  ' + ctxLabel;
 
   var maxKey = 0;
   for (var i = 0; i < hintList.length; i++) {
@@ -27,12 +27,13 @@ function HelpOverlay({ visible, context, hints, onClose }) {
   }
 
   var innerWidth = titleStr.length + 4;
-  if (innerWidth < 48) innerWidth = 48;
+  if (innerWidth < 50) innerWidth = 50;
   var boxWidth = innerWidth + 2;
 
   var top_ = '\u250C' + '\u2500'.repeat(boxWidth - 2) + '\u2510';
   var bottom_ = '\u2514' + '\u2500'.repeat(boxWidth - 2) + '\u2518';
   var sep = '\u2502';
+  var thin = '\u2500';
 
   var titlePad = Math.max(0, innerWidth - titleStr.length);
   var titleLeft = Math.floor(titlePad / 2);
@@ -53,7 +54,7 @@ function HelpOverlay({ visible, context, hints, onClose }) {
   rows.push(
     e(Box, { key: 'gap', flexDirection: 'row' },
       e(Text, { color: 'cyan' }, sep),
-      e(Text, { color: 'cyan' }, '\u2500'.repeat(innerWidth)),
+      e(Text, { color: 'gray' }, thin.repeat(innerWidth)),
       e(Text, { color: 'cyan' }, sep)
     )
   );
@@ -78,7 +79,7 @@ function HelpOverlay({ visible, context, hints, onClose }) {
   rows.push(
     e(Box, { key: 'close', flexDirection: 'row' },
       e(Text, { color: 'cyan' }, sep),
-      e(Text, { dimColor: true }, ' '.repeat(closePad) + closeText),
+      e(Text, { dimColor: true, color: 'gray' }, ' '.repeat(closePad) + closeText),
       e(Text, { color: 'cyan' }, sep)
     )
   );

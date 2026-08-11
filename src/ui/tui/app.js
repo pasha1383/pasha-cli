@@ -463,7 +463,7 @@ function App() {
     }
 
     if (quitConfirmVisible) {
-      if (key.name === 'escape' || input === 'n' || input === 'N') {
+      if (key.escape || input === 'n' || input === 'N') {
         setQuitConfirmVisible(false);
         return;
       }
@@ -475,7 +475,7 @@ function App() {
     }
 
     if (helpVisible) {
-      if (key.name === 'escape' || input === '?') {
+      if (key.escape || input === '?') {
         setHelpVisible(false);
         return;
       }
@@ -483,7 +483,7 @@ function App() {
     }
 
     if (state.view === 'done') {
-      if (key.name === 'return') {
+      if (key.return) {
         exit();
         return;
       }
@@ -514,12 +514,12 @@ function App() {
         }
         return;
       }
-      if (key.name === 'escape') {
+      if (key.escape) {
         setLocalState(Object.assign({}, state, { view: 'idle' }));
         _showCurrentQuestion();
         return;
       }
-      if (key.name === 'return' || input === 's') {
+      if (key.return || input === 's') {
         setLocalState(Object.assign({}, state, { view: 'idle' }));
         _showCurrentQuestion();
         return;
@@ -556,7 +556,37 @@ function App() {
     return parts.length > 0 ? parts.join(' \u00B7 ') : '';
   }
 
-  var divider = e(Text, { color: 'gray' }, '\u2500'.repeat(78));
+  function renderHeaderBar() {
+    var cols = 80;
+    try { cols = process.stdout.columns || 80; } catch (_) {}
+
+    var title = 'pasha v3.0.0';
+    var bread = headerBreadcrumb();
+    var maxWidth = Math.min(cols, 100);
+
+    var topBorder = '\u250C' + '\u2500'.repeat(maxWidth - 2) + '\u2510';
+
+    return e(Box, { flexDirection: 'column' },
+      e(Text, { color: 'gray' }, topBorder),
+      e(Box, { flexDirection: 'row', paddingTop: 0, paddingBottom: 0 },
+        e(Text, { bold: true, color: 'magenta' }, '  ' + title),
+        e(Text, { color: 'gray' }, ' \u2500 '),
+        e(Text, { dimColor: true, color: 'gray' }, bread),
+        e(Text, { color: 'gray' }, ' \u2500'.repeat(Math.max(0, maxWidth - title.length - bread.length - 10)))
+      ),
+      e(Text, { color: 'gray' }, '\u251C' + '\u2500'.repeat(maxWidth - 2) + '\u2524')
+    );
+  }
+
+  function renderFooterBar() {
+    var cols = 80;
+    try { cols = process.stdout.columns || 80; } catch (_) {}
+    var maxWidth = Math.min(cols, 100);
+    return e(Text, { color: 'gray' }, '\u2514' + '\u2500'.repeat(maxWidth - 2) + '\u2518');
+  }
+
+  var headerBar = renderHeaderBar();
+  var footerBar = renderFooterBar();
 
   function renderBody() {
     if (state.view === 'welcome' && !welcomeDismissed) {
@@ -842,13 +872,8 @@ function App() {
   var isWelcome = state.view === 'welcome' && !welcomeDismissed;
 
   return e(Box, { flexDirection: 'column', paddingLeft: 1, paddingRight: 1, minHeight: 24, key: 'r-' + renderKey },
-    e(Box, { flexDirection: 'row', justifyContent: 'space-between', paddingTop: 0, paddingBottom: 0 },
-      e(Text, { bold: true, color: 'magenta' }, 'pasha v2.1.0'),
-      e(Text, { dimColor: true }, headerBreadcrumb())
-    ),
-    divider,
+    isWelcome || state.view === 'done' ? null : headerBar,
     isWelcome ? null : e(StepRail, { steps: STEPS, currentIndex: state.stepIndex, width: compact ? process.stdout.columns : 78, compact: compact }),
-    isWelcome ? null : divider,
     e(Box, { flexDirection: 'column', flexGrow: 1, minHeight: 14 },
       helpVisible
         ? e(HelpOverlay, { visible: true, context: helpCtx, hints: hintsForContext(helpCtx), onClose: function () { setHelpVisible(false); } })
@@ -856,8 +881,7 @@ function App() {
           ? quitOverlayEl
           : e(React.Fragment, null, renderBody(), quitOverlayEl)
     ),
-    isWelcome ? null : divider,
-    isWelcome ? null : e(KeyHints, { hints: hints, compact: compact })
+    isWelcome || state.view === 'done' ? null : e(KeyHints, { hints: hints, compact: compact })
   );
 }
 
@@ -868,6 +892,9 @@ function WrappedApp() {
 module.exports = {
   App: WrappedApp,
   pushQuestion: pushQuestion,
+  _answer: _answer,
+  _showCurrentQuestion: _showCurrentQuestion,
+  _goBack: _goBack,
   showProgress: showProgress,
   updateProgress: updateProgress,
   showSummary: showSummary,

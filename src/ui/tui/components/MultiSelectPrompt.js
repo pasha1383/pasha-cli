@@ -126,29 +126,35 @@ function MultiSelectPrompt(_a) {
   var checkedCount = allChoices.filter(function (c) { return checked.has(c.value); }).length;
   var totalItems = filtered.length;
   var pos = totalItems > 0 ? clampedHighlight + 1 : 0;
-  var scrollInfo = totalItems > 5 ? ' (' + pos + '/' + totalItems + ')' : '';
 
   if (filtered.length === 0) {
-    var noMatchFilterEl = filter
-      ? e(Text, { color: 'gray' }, 'Filter: ' + filter + '  (Esc to clear)')
-      : filterActive
-        ? e(Text, { color: 'gray' }, 'Filter: _')
-        : null;
-
     return e(Box, { flexDirection: 'column', paddingTop: 1 },
-      e(Text, { bold: true, color: 'yellow' }, message),
-      noMatchFilterEl,
+      e(Text, { bold: true, color: 'white' }, message),
+      filter || filterActive
+        ? e(Box, { flexDirection: 'row' },
+            e(Text, { color: 'yellow' }, '  Filter: '),
+            e(Text, { color: 'white' }, filter),
+            e(Text, { color: 'yellow' }, filterActive ? '_' : ''),
+            e(Text, { dimColor: true, color: 'gray' }, '  (Esc to clear)')
+          )
+        : null,
       e(Box, { flexDirection: 'column', marginTop: 1 },
-        e(Text, { dimColor: true }, 'No matches found.')
+        e(Text, { dimColor: true, color: 'gray' }, '  No matches found.')
       )
     );
   }
 
-  var filterEl = filter
-    ? e(Text, { color: 'gray' }, 'Filter: ' + filter + '  (Esc to clear)')
-    : filterActive
-      ? e(Text, { color: 'gray' }, 'Filter: _')
-      : null;
+  var filterEl = null;
+  if (filter || filterActive) {
+    filterEl = e(Box, { flexDirection: 'row' },
+      e(Text, { color: 'yellow' }, '  Filter: '),
+      e(Text, { color: 'white' }, filter),
+      e(Text, { color: 'yellow' }, filterActive ? '_' : ''),
+      e(Text, { dimColor: true, color: 'gray' }, '  (Esc to clear)')
+    );
+  }
+
+  var totalAll = allChoices.length;
 
   var choiceElements = filtered.map(function (choice, idx) {
     var isHighlighted = idx === clampedHighlight;
@@ -156,20 +162,36 @@ function MultiSelectPrompt(_a) {
     var label = choice.name || choice.label || choice.value || '?';
     var desc = choice.description;
 
+    var checkbox = isChecked ? CHECKBOX_ON : CHECKBOX_OFF;
+    var checkColor = isChecked ? 'green' : 'gray';
+
     return e(Box, { key: choice.value || idx, flexDirection: 'row' },
-      e(Text, { color: isChecked ? 'green' : 'gray' }, isChecked ? CHECKBOX_ON : CHECKBOX_OFF),
-      e(Text, { color: isHighlighted ? 'cyan' : undefined, bold: isHighlighted }, ' ' + label),
-      desc ? e(Text, { dimColor: true }, '  ' + desc) : null,
-      isHighlighted && totalItems > 5 ? e(Text, { dimColor: true, color: 'gray' }, scrollInfo) : null
+      e(Text, {}, '  '),
+      e(Text, { color: checkColor }, checkbox),
+      e(Text, { color: 'white', bold: isHighlighted }, ' ' + label),
+      desc ? e(Text, { dimColor: true, color: 'gray' }, '  ' + desc) : null
     );
   });
 
+  if (filtered.length > 8) {
+    choiceElements.push(
+      e(Box, { key: 'scroll-info', flexDirection: 'row' },
+        e(Text, { dimColor: true, color: 'gray' }, '  (' + pos + '/' + totalItems + ')')
+      )
+    );
+  }
+
+  var headerSep = e(Box, { flexDirection: 'row' },
+    e(Text, { color: 'gray' }, '  ' + '\u2500'.repeat(48))
+  );
+
   return e(Box, { flexDirection: 'column', paddingTop: 1 },
     e(Box, { flexDirection: 'row' },
-      e(Text, { bold: true, color: 'yellow' }, message),
-      e(Text, { dimColor: true, color: 'gray' }, ' (' + checkedCount + ' selected')
+      e(Text, { bold: true, color: 'white' }, message),
+      e(Text, { dimColor: true, color: 'gray' }, '  [' + checkedCount + '/' + totalAll + ' selected]')
     ),
     filterEl,
+    headerSep,
     e(Box, { flexDirection: 'column', marginTop: 1 }, ...choiceElements)
   );
 }

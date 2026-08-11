@@ -101,26 +101,26 @@ function SummaryScreen(_a) {
     var label = entry[0];
     var value = entry[1];
     var isHighlighted = idx === highlighted;
-    var numPrefix = rows.length > 1 ? ' ' + (idx + 1) + '.' : '  ';
-    var editHint = onEdit && isHighlighted
-      ? e(Text, { dimColor: true, color: 'cyan' }, '  [e edit]')
-      : null;
+    var numLabel = rows.length > 1 ? (idx + 1) + '. ' : '  ';
 
     return e(Box, { key: idx, flexDirection: 'row' },
-      e(Text, { bold: isHighlighted, color: isHighlighted ? 'cyan' : undefined }, numPrefix),
-      e(Text, { bold: isHighlighted, color: isHighlighted ? 'cyan' : undefined }, label),
-      e(Text, {}, ' '.repeat(Math.max(1, 20 - label.length))),
+      e(Text, { dimColor: true, color: 'gray' }, '  ' + numLabel),
+      e(Text, { bold: isHighlighted, color: isHighlighted ? 'white' : 'white' }, label),
+      e(Text, { color: 'gray' }, ' '.repeat(Math.max(1, 22 - label.length))),
       e(Text, { color: isHighlighted ? 'cyan' : undefined }, value),
-      editHint
+      isHighlighted && onEdit ? e(Text, { dimColor: true, color: 'cyan' }, '  [e edit]') : null
     );
   });
 
   var editHelp = onEdit
-    ? e(Box, { marginTop: 1 }, e(Text, { dimColor: true }, '  \u2191\u2193 to select, e to edit, 1-' + rows.length + ' to jump'))
+    ? e(Box, { marginTop: 1 }, e(Text, { dimColor: true, color: 'gray' }, '  Arrow keys to select, Enter to continue, e to edit, 1-' + rows.length + ' to jump'))
     : null;
 
   return e(Box, { flexDirection: 'column', paddingTop: 1 },
-    e(Box, { flexDirection: 'row' }, e(Text, { bold: true, color: 'white' }, '  Configuration Summary')),
+    e(Box, { flexDirection: 'row' },
+      e(Text, { bold: true, color: 'white' }, '  Configuration Summary'),
+      e(Text, { dimColor: true, color: 'gray' }, '  (' + rows.length + ' items)')
+    ),
     e(Box, { flexDirection: 'column', marginTop: 1 }, ...rowElements),
     editHelp
   );

@@ -19,7 +19,7 @@ function setup() {
   const stdout = io.getIO().output;
 
   _saved = {
-    isRaw: stdin && stdin.isRaw,
+    isRaw: stdin ? stdin.isRaw || false : false,
     cursorVisible: true,
   };
 
@@ -28,6 +28,7 @@ function setup() {
     try { stdout.write('\x1b[?25l'); } catch (_) {}  // hide cursor
   }
   if (stdin) {
+    try { stdin.setEncoding('utf8'); } catch (_) {}
     try { stdin.setRawMode(true); } catch (_) {}
     try { stdin.resume(); } catch (_) {}
   }

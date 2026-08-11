@@ -114,12 +114,17 @@ function SelectPrompt(_a) {
 
   if (filtered.length === 0) {
     return e(Box, { flexDirection: 'column', paddingTop: 1 },
-      e(Text, { bold: true, color: 'yellow' }, message),
-      filter
-        ? e(Text, { dimColor: true, color: 'gray' }, 'Filter: ' + filter + '  (Esc to clear)')
+      e(Text, { bold: true, color: 'white' }, message),
+      filter || filterActive
+        ? e(Box, { flexDirection: 'row' },
+            e(Text, { color: 'yellow' }, '  Filter: '),
+            e(Text, { color: 'white' }, filter),
+            e(Text, { color: 'yellow' }, filterActive ? '_' : ''),
+            e(Text, { dimColor: true, color: 'gray' }, '  (Esc to clear)')
+          )
         : null,
       e(Box, { flexDirection: 'column', marginTop: 1 },
-        e(Text, { dimColor: true }, 'No matches found.')
+        e(Text, { dimColor: true, color: 'gray' }, '  No matches found.')
       )
     );
   }
@@ -133,37 +138,50 @@ function SelectPrompt(_a) {
     transitionFrom = transitionRef.current.from;
   }
 
-  var filterEl = compact
-    ? null
-    : filter
-      ? e(Text, { dimColor: true, color: 'gray' }, 'Filter: ' + filter + '  (Esc to clear)')
-      : filterActive
-        ? e(Text, { dimColor: true, color: 'gray' }, 'Filter: _')
-        : null;
+  var filterEl = null;
+  if (!compact) {
+    if (filter || filterActive) {
+      filterEl = e(Box, { flexDirection: 'row', marginTop: 0 },
+        e(Text, { color: 'yellow' }, '  Filter: '),
+        e(Text, { color: 'white' }, filter),
+        e(Text, { color: 'yellow' }, filterActive ? '_' : ''),
+        e(Text, { dimColor: true, color: 'gray' }, '  (Esc to clear)')
+      );
+    }
+  }
 
   var choiceElements = filtered.map(function (choice, idx) {
     var isHighlighted = idx === clampedHighlight;
-    var wasHighlighted = idx === transitionFrom;
     var label = choice.name || choice.label || choice.value || '?';
     var desc = choice.description;
 
     var arrowChar = isHighlighted ? ARROW : ' ';
     var arrowColor = isHighlighted ? 'cyan' : undefined;
-    var arrowBold = isHighlighted;
-    var textColor = isHighlighted ? 'cyan' : undefined;
-    var textBold = isHighlighted;
 
     return e(Box, { key: choice.value || idx, flexDirection: 'row' },
-      e(Text, { color: arrowColor, bold: arrowBold },
-        arrowChar + ' ' + label
-      ),
-      desc ? e(Text, { dimColor: true }, '  ' + desc) : null
+      e(Text, {}, '  '),
+      e(Text, { color: arrowColor, bold: isHighlighted }, arrowChar),
+      e(Text, { color: 'white', bold: isHighlighted }, ' ' + label),
+      desc ? e(Text, { dimColor: true, color: 'gray' }, '  ' + desc) : null
     );
   });
 
+  if (filtered.length > 8) {
+    choiceElements.push(
+      e(Box, { key: 'scroll-info', flexDirection: 'row' },
+        e(Text, { dimColor: true, color: 'gray' }, '  (' + (clampedHighlight + 1) + '/' + filtered.length + ')')
+      )
+    );
+  }
+
+  var headerSep = e(Box, { flexDirection: 'row' },
+    e(Text, { color: 'gray' }, '  ' + '\u2500'.repeat(40))
+  );
+
   return e(Box, { flexDirection: 'column', paddingTop: 1 },
-    e(Text, { bold: true, color: 'yellow' }, message),
+    e(Text, { bold: true, color: 'white' }, message),
     filterEl,
+    headerSep,
     e(Box, { flexDirection: 'column', marginTop: 1 }, ...choiceElements)
   );
 }

@@ -6,12 +6,8 @@ const { useAnimation, isAnimationEnabled } = require('../hooks/useAnimation');
 const e = React.createElement;
 
 const COMPLETED = '\u25CF';
-const ACTIVE = '\u25CB';
-const ACTIVE_FILLED = '\u25CF';
-
-function _easeOutCubic(t) {
-  return 1 - Math.pow(1 - t, 3);
-}
+const PENDING = '\u25CB';
+const CONNECTOR = '\u2501';
 
 function StepRail({ steps, currentIndex, width, compact }) {
   const { Text, Box } = getInk();
@@ -20,7 +16,7 @@ function StepRail({ steps, currentIndex, width, compact }) {
   const maxWidth = width || 80;
   const usable = maxWidth - 4;
   const stepCount = allSteps.length || 1;
-  const slotWidth = Math.max(8, Math.floor(usable / stepCount));
+  const slotWidth = Math.max(9, Math.floor(usable / stepCount));
   const padding = Math.max(0, Math.floor((maxWidth - stepCount * slotWidth - 2) / 2));
 
   const animate = useAnimation({ fps: 30 });
@@ -31,23 +27,26 @@ function StepRail({ steps, currentIndex, width, compact }) {
   var items = allSteps.map(function (step, i) {
     var isCompleted = i < idx;
     var isActive = i === idx;
+    var isPending = i > idx;
+
     var color = 'gray';
     if (isCompleted) color = 'green';
     else if (isActive) color = 'cyan';
 
-    var marker = isCompleted ? COMPLETED : (isActive ? ACTIVE_FILLED : ACTIVE);
-    var segment = '\u2501'.repeat(Math.max(1, slotWidth - 6));
+    var marker = isCompleted ? COMPLETED : (isActive ? COMPLETED : PENDING);
+    var connectorLen = Math.max(1, slotWidth - 7);
     var label = step.label || step.name || '?';
     var shortLabel;
     if (compact) {
       shortLabel = label.length > 3 ? label.slice(0, 3) : label;
     } else {
-      shortLabel = label.length > slotWidth - 4 ? label.slice(0, slotWidth - 5) + '.' : label;
+      shortLabel = label.length > slotWidth - 5 ? label.slice(0, slotWidth - 6) : label;
     }
 
     return e(React.Fragment, { key: step.name || i },
-      e(Text, { color: color, bold: isActive }, marker + segment + ' '),
-      e(Text, { dimColor: !isActive && !isCompleted, color: color, bold: isActive }, shortLabel)
+      e(Text, { color: color, bold: isActive }, marker),
+      e(Text, { color: color, dimColor: isPending }, ' ' + shortLabel + ' '),
+      e(Text, { color: 'gray', dimColor: true }, CONNECTOR.repeat(connectorLen))
     );
   });
 

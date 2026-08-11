@@ -6,7 +6,6 @@ var { Spinner } = require('./Spinner');
 var e = React.createElement;
 
 var CHECK = '\u2713';
-var CROSS = '\u2717';
 var HOLLOW = '\u25CB';
 var FILL = '\u2588';
 var EMPTY = '\u2591';
@@ -36,59 +35,78 @@ function ProgressScreen(_a) {
   var known = total > 0;
   var pct = known ? Math.min(100, Math.round((done / total) * 100)) : 0;
   var barWidth = 30;
-  var filled = known ? Math.round((done / total) * barWidth) : 0;
+  var exactFilled = known ? (done / Math.max(1, total)) * barWidth : 0;
+  var filled = Math.floor(exactFilled);
+  var frac = exactFilled - filled;
+  var partialBlock = frac >= 0.3 && filled < barWidth;
+  var remaining = barWidth - filled - (partialBlock ? 1 : 0);
+
   var bar = known
-    ? FILL.repeat(filled) + EMPTY.repeat(Math.max(0, barWidth - filled))
+    ? FILL.repeat(filled) + (partialBlock ? '\u2593' : '') + EMPTY.repeat(Math.max(0, remaining))
     : null;
+
   var pctText = known ? ' ' + pct + '%' : '';
+  var fileProgress = known ? done + '/' + total + ' files' : '';
+  if (failed > 0) fileProgress += '  ' + failed + ' failed';
 
   var phaseElements = ph.map(function (phase, idx) {
-    var indicator;
     var label = phase.label || phase;
 
     if (comp[idx]) {
-      indicator = e(Text, { color: 'green' }, '  ' + CHECK);
-    } else if (idx < cur) {
-      indicator = e(Text, { color: 'green' }, '  ' + CHECK);
-    } else if (idx === cur) {
-      indicator = e(Spinner, { color: 'cyan' });
-    } else {
-      indicator = e(Text, { color: 'gray' }, '  ' + HOLLOW);
+      return e(Box, { key: idx, flexDirection: 'row' },
+        e(Text, { color: 'green' }, '  ' + CHECK + ' '),
+        e(Text, { color: 'green' }, label)
+      );
     }
 
-    var color = idx === cur ? 'cyan' : (idx < cur || comp[idx] ? 'green' : 'gray');
+    if (idx < cur) {
+      return e(Box, { key: idx, flexDirection: 'row' },
+        e(Text, { color: 'green' }, '  ' + CHECK + ' '),
+        e(Text, { color: 'green' }, label)
+      );
+    }
+
+    if (idx === cur) {
+      return e(Box, { key: idx, flexDirection: 'row' },
+        e(Text, { color: 'cyan' }, '  '),
+        e(Spinner, { color: 'cyan' }),
+        e(Text, { color: 'cyan', bold: true }, ' ' + label)
+      );
+    }
+
     return e(Box, { key: idx, flexDirection: 'row' },
-      e(Box, { width: 4 }, indicator),
-      e(Text, { color: color, dimColor: idx > cur && !comp[idx] }, label)
+      e(Text, { color: 'gray', dimColor: true }, '  ' + HOLLOW + ' '),
+      e(Text, { color: 'gray', dimColor: true }, label)
     );
   });
 
   var barEl = null;
   if (known && cur >= 0) {
-    barEl = e(Box, { flexDirection: 'row', marginTop: 1 },
-      e(Text, { color: 'cyan', bold: true }, '['),
-      e(Text, { color: 'cyan' }, bar),
-      e(Text, { color: 'cyan', bold: true }, ']'),
-      e(Text, { color: 'white' }, pctText)
+    barEl = e(Box, { flexDirection: 'column', marginTop: 0 },
+      e(Box, { flexDirection: 'row' },
+        e(Text, { color: 'cyan' }, '  ['),
+        e(Text, { color: 'cyan' }, bar),
+        e(Text, { color: 'cyan' }, ']'),
+        e(Text, { bold: true, color: 'white' }, pctText)
+      ),
+      e(Text, { dimColor: true, color: 'gray' }, '  ' + fileProgress)
     );
   }
 
-  var fileEl = fp ? e(Box, { marginTop: 0 },
-    e(Text, { dimColor: true }, '  \u2514 ' + fp)
-  ) : null;
-
-  var countEl = known ? e(Box, { marginTop: 0 },
-    e(Text, { dimColor: true }, '  ' + done + '/' + total + ' files' + (failed > 0 ? ' (' + failed + ' failed)' : ''))
+  var fileEl = fp && !known ? e(Box, { marginTop: 0 },
+    e(Text, { dimColor: true, color: 'gray' }, '  \u2514 ' + fp)
   ) : null;
 
   var msgEl = msg ? e(Box, { marginTop: 1 },
-    e(Text, { dimColor: true }, msg)
+    e(Text, { dimColor: true }, '  ' + msg)
   ) : null;
 
   return e(Box, { flexDirection: 'column', paddingTop: 2 },
-    e(Text, { bold: true, color: 'white' }, 'Generating project...'),
+    e(Box, { flexDirection: 'row' },
+      e(Text, { bold: true, color: 'white' }, '  Generating project'),
+      cur >= 0 && ph[cur] ? e(Text, { dimColor: true, color: 'gray' }, '  \u00B7  ' + (ph[cur].label || ph[cur])) : null
+    ),
     barEl,
-    countEl,
     e(Box, { flexDirection: 'column', marginTop: 1 }, ...phaseElements),
     fileEl,
     msgEl

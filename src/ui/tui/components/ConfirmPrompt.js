@@ -28,15 +28,23 @@ function ConfirmPrompt({ message, defaultValue, onConfirm }) {
     }
   });
 
-  var yesLabel = selected ? ' \u276F Yes' : '   Yes';
-  var noLabel = !selected ? ' \u276F No' : '   No';
+  var arrowChar = '\u276F';
 
   return e(Box, { flexDirection: 'column', paddingTop: 1 },
-    e(Text, { bold: true, color: 'yellow' }, message),
-    e(Box, { flexDirection: 'row', marginTop: 1 },
-      e(Text, { color: selected ? 'green' : undefined, bold: selected }, yesLabel),
-      e(Text, {}, '    '),
-      e(Text, { color: !selected ? 'red' : undefined, bold: !selected }, noLabel)
+    e(Text, { bold: true, color: 'white' }, message),
+    e(Box, { flexDirection: 'column', marginTop: 1 },
+      e(Box, { flexDirection: 'row' },
+        e(Text, {}, '  '),
+        e(Text, { color: selected ? 'cyan' : 'gray' }, selected ? arrowChar : ' '),
+        e(Text, { color: 'white', bold: selected }, ' Yes'),
+        e(Text, { dimColor: true, color: 'gray' }, selected ? '  (default)' : '')
+      ),
+      e(Box, { flexDirection: 'row' },
+        e(Text, {}, '  '),
+        e(Text, { color: !selected ? 'cyan' : 'gray' }, !selected ? arrowChar : ' '),
+        e(Text, { color: 'white', bold: !selected }, ' No'),
+        e(Text, { dimColor: true, color: 'gray' }, !selected ? '  (default)' : '')
+      )
     )
   );
 }

@@ -1,0 +1,5 @@
+  … Generating files...
+  ✗ Parse error on line 10:
+...<p class="count">{{ count() }}</p>
+-----------------------^
+Expecting 'ID', 'STRING', 'NUMBER', 'BOOLEAN', 'UNDEFINED', 'NULL', 'DATA', got 'INVALID'

@@ -1,0 +1,9 @@
+-1: ❌ Unknown stack flavor "false" — available: nestjs, express, fastify, koa, serverless, python, flask, go, go-stdlib, chi, hapi, spring-boot, aspnet, adonis, litestar, tornado, laravel, axum, rails
++1:   … Generating files...
+-2: 
++2:   ✓ Files generated (1 module)
++3: 
++4: Project ready at <OUT_DIR>/<PROJ_NAME>
++5: 
++6: Next: cd <PROJ_NAME>
++7: 

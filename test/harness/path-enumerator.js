@@ -36,13 +36,14 @@ async function buildPath(manifest, lang, fw, arch) {
     const mod = stackFlavor ? REGISTRY[stackFlavor] : null;
 
     const orms = mod ? mod.ormChoices(fw).map(c => c.value) : ['none'];
-    const firstOrm = orms[0];
+    const isFrontend = lang === 'frontend' || orms.length === 0;
+    const firstOrm = isFrontend ? 'none' : orms[0];
     const dbs = firstOrm !== 'none' && mod ? mod.databaseChoices(firstOrm).map(c => c.value) : ['none'];
-    const firstDb = dbs[0] || 'none';
+    const firstDb = isFrontend ? 'none' : (dbs[0] || 'none');
     const validations = mod ? mod.validationChoices().map(c => c.value) : ['none'];
-    const firstValidation = validations[0];
+    const firstValidation = validations[0] || 'none';
     const brokers = mod ? mod.brokerChoices().map(c => c.value) : ['none'];
-    const firstBroker = brokers[0];
+    const firstBroker = isFrontend ? 'none' : (brokers[0] || 'none');
     const defaultModule = tc.modules && tc.modules.enabled ? [tc.modules.default || 'product'] : [];
 
     return {
@@ -91,19 +92,29 @@ async function enumerateFull() {
   return enumerateSmoke();
 }
 
+const FRONTEND_LANGUAGES = ['frontend', 'html'];
+
 function pathToCliArgs(p) {
+  const isFrontend = FRONTEND_LANGUAGES.includes(p.language);
+
   const args = [
     'create', '--yes',
     '--language', p.language,
     '--framework', p.framework,
     '--architecture', p.architecture,
-    '--orm', p.orm,
-    '--database', p.database,
+  ];
+
+  if (!isFrontend) {
+    args.push('--orm', p.orm);
+    args.push('--database', p.database);
+    args.push('--broker', p.broker);
+  }
+
+  args.push(
     '--validation', p.validation,
-    '--broker', p.broker,
     '--skip-install',
     '--skip-git',
-  ];
+  );
 
   if (p.useRedis) args.push('--redis');
   else args.push('--no-redis');

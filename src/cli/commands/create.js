@@ -21,6 +21,7 @@ const { error, section, divider } = require('../../ui/screens/error');
 const { Spinner } = require('../../ui/screens/progress');
 const history = require('../../core/session/history');
 const { loadPreset, savePreset } = require('../../core/session/presets');
+const io = require('../../ui/io');
 
 let _inkApp = null;
 let _inkInstance = null;
@@ -1059,8 +1060,13 @@ async function createTui(options) {
     disableAnimation();
   }
 
-  if (!process.stdout.isTTY || !process.stdin.isTTY) {
-    log.warn('TUI mode requires a real terminal. Falling back to non-interactive.');
+  if (options.tuiForce) {
+    tuiTerminal.setForceMode(true);
+    require('../../ui/tui/hooks/useAnimation').setForceMode(true);
+  }
+
+  if (!io.canUseTui(options)) {
+    log.warn('TUI mode unavailable. Falling back to sequential prompts.');
     return await create(Object.assign({}, options, { tui: false }));
   }
 
@@ -1284,7 +1290,11 @@ async function createTui(options) {
 
 async function create(options = {}) {
   try {
-    if (options.tui) {
+    if (options.plain && !io.isPlainMode()) {
+      io.setPlainMode(true);
+      try { require('chalk').level = 0; } catch (_e) {}
+    }
+    if ((options.tui || options.tuiForce) && io.canUseTui(options)) {
       return createTui(options);
     }
     if (options.yes) {

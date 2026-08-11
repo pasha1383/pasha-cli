@@ -4,6 +4,7 @@ const pkg = require('../../package.json');
 const { create } = require('./commands/create');
 const { doctor } = require('./commands/doctor');
 const log = require('../utils/logger');
+const io = require('../ui/io');
 
 const program = new Command();
 
@@ -40,8 +41,16 @@ program
   .option('--skip-git', 'Skip git init prompt')
   .option('--dry-run', 'Print file tree without writing')
   .option('--tui', 'Use full-screen terminal UI (experimental)')
+  .option('--tui-force', 'Force TUI mode even without a real terminal (for development/testing)')
+  .option('--no-tui', 'Disable full-screen terminal UI, use sequential prompts')
+  .option('--plain', 'Plain mode: no TUI, no colours, ASCII-only')
+  .option('--no-animation', 'Disable animations in TUI mode')
   .action(async (opts) => {
     try {
+      if (opts.plain) {
+        io.setPlainMode(true);
+        try { require('chalk').level = 0; } catch (_e) {}
+      }
       await create(opts);
     } catch (err) {
       if (err.name === 'ExitPromptError') {

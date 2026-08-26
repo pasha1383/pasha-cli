@@ -7,7 +7,7 @@ const {
   resolveCommandPath,
   checkTool,
   checkAll,
-} = require('../../lib/core/prerequisites');
+} = require('../../src/core/system/prerequisites');
 
 describe('prerequisites', () => {
   describe('PLATFORM', () => {

@@ -12,7 +12,7 @@ async function doctor() {
   console.log(chalk.cyan('─'.repeat(65)));
 
   if (!SUPPORTED_PLATFORMS.includes(PLATFORM)) {
-    log.warn(`Platform "${PLATFORM}" is not officially tested yet — only Linux and macOS are supported.`);
+    log.warn(`Platform "${PLATFORM}" is not officially tested yet — only Linux, macOS, and Windows are supported.`);
   }
 
   const results = checkAll(ALL_TOOLS);

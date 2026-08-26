@@ -83,7 +83,10 @@ function SummaryScreen(_a) {
       if (onGenerate) onGenerate();
       return;
     }
-    if (key.leftArrow || key.backspace) {
+    // Most modern terminals send DEL (0x7f, parsed by Ink as key.delete) for
+    // the physical Backspace key, not the historical BS (0x08, key.backspace)
+    // -- treat both as "back" so this actually fires for real Backspace presses.
+    if (key.leftArrow || key.backspace || key.delete) {
       if (onBack) onBack();
       return;
     }

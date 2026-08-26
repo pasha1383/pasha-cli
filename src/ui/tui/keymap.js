@@ -117,7 +117,10 @@ function isKeyMatch(input, key, bindingKey) {
   if (bindingKey === 'left') return key.leftArrow;
   if (bindingKey === 'right') return key.rightArrow;
   if (bindingKey === 'enter') return key.return;
-  if (bindingKey === 'backspace') return key.backspace;
+  // Most modern terminals send DEL (0x7f -> key.delete) for the physical
+  // Backspace key rather than the historical BS (0x08 -> key.backspace);
+  // treat both as "backspace" so bindings react to the key users actually press.
+  if (bindingKey === 'backspace') return key.backspace || key.delete;
   if (bindingKey === 'delete') return key.delete;
   if (bindingKey === 'space') return input === ' ';
   if (bindingKey === 'tab') return key.tab;

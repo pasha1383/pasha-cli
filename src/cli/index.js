@@ -123,4 +123,17 @@ program
     }
   });
 
+program
+  .command('completion <shell>')
+  .description('Print a shell completion script (bash, zsh, or fish)')
+  .action(async (shell) => {
+    try {
+      const { completion } = require('./commands/completion');
+      await completion(shell);
+    } catch (err) {
+      log.fail(err.message);
+      process.exit(1);
+    }
+  });
+
 module.exports = { program };

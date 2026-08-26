@@ -10,8 +10,8 @@
   },
   "fileConditions": {
     "docker-compose.yml.hbs": "useDocker",
-    "src/shared": "hasSharedInfra",
-    "src/shared/database": "hasOrm",
+    "src/shared": "hasSharedInfra || ormNone",
+    "src/shared/database": "hasOrm || ormNone",
     "src/shared/database/sqlalchemy.py.hbs": "ormSqlalchemy",
     "src/shared/database/tortoise.py.hbs": "ormTortoise",
     "src/shared/database/none.py.hbs": "ormNone",

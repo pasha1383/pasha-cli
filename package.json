@@ -27,6 +27,13 @@
     "darwin",
     "linux"
   ],
+  "files": [
+    "bin",
+    "src",
+    "templates",
+    "install.sh",
+    "README.md"
+  ],
   "scripts": {
     "doctor": "node bin/pasha.js doctor",
     "link": "npm link",

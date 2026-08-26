@@ -230,6 +230,16 @@ Type `.lean()` result explicitly as a narrow literal, construct domain class man
 must never live under a conditionally-gated directory. Error classes were moved from
 `src/shared/` (gated) to `src/errors/` (ungated) for this reason.
 
+### #9 — layers.js's "force-include" encoding needs parseCondition support
+`layers.js`'s `composeFileConditions` turns a `!`-prefixed fileConditions entry (a higher
+layer un-gating a path a lower layer gated) into the string `'force-include:' + cond`. If
+that merged condition were ever fed into `makeIncludeCheck` (today it only reaches
+`explain.js`, for display), `parseCondition` would see an opaque token containing `:` and
+throw a `SyntaxError` — its identifier regex doesn't allow that character. **Fix:**
+`parseCondition` recognizes the `force-include:` prefix and treats it as unconditionally
+true, matching its intent as a deliberate escape hatch (the engine's own fileConditions
+has no override mechanism by design — gotcha #8 — so layers.js needed its own).
+
 ### #10 — TemplateRenderError line numbers, and Handlebars' error shapes
 `Handlebars.compile()` is lazy (see its own compiler.js: "Template is only compiled on
 first use") — it essentially never throws synchronously; the real parse error surfaces

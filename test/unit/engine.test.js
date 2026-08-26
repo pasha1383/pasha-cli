@@ -70,6 +70,18 @@ describe('engine', () => {
       const check = makeIncludeCheck(condsWithSlash, { hasShared: false });
       expect(check('src/shared/database')).toBe(false);
     });
+
+    it('a "force-include:" condition (layers.js\'s override encoding) always wins', () => {
+      // layers.js's composeFileConditions encodes a `!`-prefixed layer
+      // override as 'force-include:' + originalCondition. It must never
+      // reach parseCondition as an opaque, unparseable flag-name token.
+      const check = makeIncludeCheck(
+        { 'src/shared': 'force-include:hasOrm', 'src/shared/gated': 'hasOrm' },
+        { hasOrm: false }
+      );
+      expect(check('src/shared/x')).toBe(true);
+      expect(check('src/shared/gated/y')).toBe(false);
+    });
   });
 
   describe('renderTemplateDir', () => {

@@ -42,6 +42,15 @@ function PrereqsScreen({ initialResults, installTool, onDone }) {
   }, [hasMissing, phase]);
 
   useInput(function (input, key) {
+    const isCtrlC = key.ctrl && !key.meta && (input === 'c' || input === '\x03');
+    if (isCtrlC) {
+      // Footer advertises Ctrl+C as "Skip" here — skip whatever prerequisite
+      // work is outstanding and let the wizard continue, regardless of phase.
+      const allOk = tools.every(t => t.status === 'ok');
+      onDone(allOk);
+      return;
+    }
+
     if (phase !== 'confirming') return;
 
     if (key.leftArrow || key.rightArrow) {

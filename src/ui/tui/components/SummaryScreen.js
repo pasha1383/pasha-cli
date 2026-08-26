@@ -83,7 +83,7 @@ function SummaryScreen(_a) {
       if (onGenerate) onGenerate();
       return;
     }
-    if (key.leftArrow) {
+    if (key.leftArrow || key.backspace) {
       if (onBack) onBack();
       return;
     }

@@ -132,6 +132,45 @@ describe('engine', () => {
       await fs.writeFile(path.join(srcDir, 'broken.ts.hbs'), '{{#if unterminated}}');
       await expect(renderTemplateDir(srcDir, destDir, {}, () => true)).rejects.toThrow();
     });
+
+    it('carries a correct, defined line number for a real Handlebars syntax error', async () => {
+      // AGENT.md gotcha #1: a mustache's close braces sitting directly
+      // against a literal "}" (the classic `${DB_NAME:-{{expr}}}` shell-
+      // default collision) is a genuine Handlebars parse error, on line 3
+      // of this file.
+      await fs.writeFile(
+        path.join(srcDir, 'broken.env.hbs'),
+        'FIRST=1\nSECOND=2\nDB_NAME=${DB_NAME:-{{snakeCase projectName}}}'
+      );
+
+      expect.assertions(3);
+      try {
+        await renderTemplateDir(srcDir, destDir, { projectName: 'demo' }, () => true);
+      } catch (err) {
+        expect(err.name).toBe('TemplateRenderError');
+        expect(err.line).toBe(3);
+        expect(err.templatePath).toBe(path.join(srcDir, 'broken.env.hbs'));
+      }
+    });
+
+    it('carries a correct line number for a mismatched block-helper name', async () => {
+      // A second, structurally different real Handlebars parse error: this
+      // one throws a Handlebars.Exception with a real `.lineNumber`, unlike
+      // the raw-syntax-error case above (which has none at all) — both
+      // shapes must survive as `.line` on the final TemplateRenderError.
+      await fs.writeFile(
+        path.join(srcDir, 'mismatched.txt.hbs'),
+        'line one\n{{#if flag}}\nbody\n{{/unless}}'
+      );
+
+      expect.assertions(2);
+      try {
+        await renderTemplateDir(srcDir, destDir, { flag: true }, () => true);
+      } catch (err) {
+        expect(err.name).toBe('TemplateRenderError');
+        expect(err.line).toBe(2);
+      }
+    });
   });
 
   describe('renderModuleFiles', () => {

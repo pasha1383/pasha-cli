@@ -230,6 +230,20 @@ Type `.lean()` result explicitly as a narrow literal, construct domain class man
 must never live under a conditionally-gated directory. Error classes were moved from
 `src/shared/` (gated) to `src/errors/` (ungated) for this reason.
 
+### #10 — TemplateRenderError line numbers, and Handlebars' error shapes
+`Handlebars.compile()` is lazy (see its own compiler.js: "Template is only compiled on
+first use") — it essentially never throws synchronously; the real parse error surfaces
+later, when the compiled function is first invoked with a context, i.e. inside
+`renderString`. That raw error's shape varies by error class: a semantic AST error (e.g.
+mismatched `{{#if}}`/`{{/unless}}`) is a `Handlebars.Exception` with a real `.lineNumber`;
+a raw syntax error from the underlying parser (e.g. gotcha #1's brace collision) has
+**no** `.lineNumber` at all — only "Parse error on line N:" in the message text; and a
+`TemplateRenderError` we already threw and are re-wrapping carries the line under `.line`
+(`src/core/engine/errors.js`), never `.lineNumber`. A naive `err.lineNumber || null` at a
+re-wrap site silently loses the line for two of these three shapes. **Fix:**
+`renderer.js`'s `extractLine(err)` checks `.line`, then `.lineNumber`, then falls back to
+regex-extracting the number from `err.message` — covering all three.
+
 ## Conventions
 
 - **English only** in pasha-cli code/docs and all generated content

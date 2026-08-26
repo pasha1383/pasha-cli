@@ -214,13 +214,10 @@ const BASE_CONTEXT_KEYS = new Set([
 ]);
 
 function flagsFor(flavor) {
-  const modPath =
-    flavor === 'nestjs' || !flavor
-      ? '../lib/core/features.js'
-      : `../lib/core/features-${flavor}.js`;
+  const { resolveFeatures } = require(path.join(__dirname, '../src/core/features'));
   let mod;
   try {
-    mod = require(path.join(__dirname, modPath));
+    mod = resolveFeatures(flavor || 'nestjs');
   } catch (e) {
     return null;
   }

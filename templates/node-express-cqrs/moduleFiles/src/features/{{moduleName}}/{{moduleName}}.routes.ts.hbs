@@ -3,9 +3,9 @@ import { Router } from 'express';
 import { create{{pascalCase moduleName}}Schema } from './dto/create-{{moduleName}}.dto';
 import { validateBody } from '../../middlewares/validate-body.middleware';
 {{/if}}
-{{#if useClassValidator}}
-import { Create{{pascalCase moduleName}}Dto } from './dto/create-{{moduleName}}.dto';
-import { validateBodyDto } from '../../middlewares/handle-validation-errors.middleware';
+{{#if useExpressValidator}}
+import { create{{pascalCase moduleName}}Validation } from './dto/create-{{moduleName}}.dto';
+import { handleValidationErrors } from '../../middlewares/handle-validation-errors.middleware';
 {{/if}}
 import { CommandBus, QueryBus } from './infrastructure/bus';
 import { {{pascalCase moduleName}}Controller } from './infrastructure/{{moduleName}}.controller';
@@ -73,8 +73,8 @@ const controller = new {{pascalCase moduleName}}Controller(commandBus, queryBus)
 {{#if useZod}}
 {{camelCase moduleName}}Router.post('/', validateBody(create{{pascalCase moduleName}}Schema), controller.create);
 {{else}}
-{{#if useClassValidator}}
-{{camelCase moduleName}}Router.post('/', validateBodyDto(Create{{pascalCase moduleName}}Dto), controller.create);
+{{#if useExpressValidator}}
+{{camelCase moduleName}}Router.post('/', create{{pascalCase moduleName}}Validation, handleValidationErrors, controller.create);
 {{else}}
 {{camelCase moduleName}}Router.post('/', controller.create);
 {{/if}}

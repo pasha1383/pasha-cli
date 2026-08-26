@@ -1,13 +1,3 @@
-{{#if useClassValidator}}
-import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
-
-export class Create{{pascalCase moduleName}}Dto {
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(255)
-  name!: string;
-}
-{{else}}
 {{#if useZod}}
 import { z } from 'zod';
 
@@ -20,5 +10,4 @@ export type Create{{pascalCase moduleName}}Dto = z.infer<typeof create{{pascalCa
 export class Create{{pascalCase moduleName}}Dto {
   name!: string;
 }
-{{/if}}
 {{/if}}

@@ -18,9 +18,6 @@ export function {{camelCase moduleName}}Routes(controller: {{pascalCase moduleNa
 {{#if useZod}}
   router.post('/', validateBody(create{{pascalCase moduleName}}Schema), controller.create);
 {{/if}}
-{{#if useClassValidator}}
-  router.post('/', controller.create);
-{{/if}}
 {{#unless hasValidation}}
   router.post('/', controller.create);
 {{/unless}}

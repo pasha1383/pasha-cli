@@ -1,4 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+{{#if useZod}}
+import { create{{pascalCase moduleName}}Schema } from './dto/create-{{moduleName}}.dto';
+{{/if}}
 import { {{pascalCase moduleName}}Controller } from './infrastructure/{{moduleName}}.controller';
 import { Create{{pascalCase moduleName}}Handler } from './commands/create-{{moduleName}}.command-handler';
 import { {{pascalCase moduleName}}Projection } from './projections/{{moduleName}}.projection';
@@ -18,7 +21,11 @@ const controller = new {{pascalCase moduleName}}Controller(createHandler, projec
 
 // ---- Plugin ----
 export default async function {{camelCase moduleName}}Routes(fastify: FastifyInstance) {
+{{#if useZod}}
+  fastify.post('/', { schema: { body: create{{pascalCase moduleName}}Schema } }, controller.create);
+{{else}}
   fastify.post('/', controller.create);
+{{/if}}
   fastify.get('/', controller.findAll);
   fastify.get('/:id', controller.findOne);
   fastify.patch('/:id', controller.update);

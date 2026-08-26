@@ -1,12 +1,9 @@
-{{#if useClassValidator}}
-import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
+{{#if useExpressValidator}}
+import { body } from 'express-validator';
 
-export class Create{{pascalCase moduleName}}Dto {
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(255)
-  name!: string;
-}
+export const create{{pascalCase moduleName}}Validation = [
+  body('name').isString().trim().notEmpty().isLength({ max: 255 }),
+];
 {{else}}
 {{#if useZod}}
 import { z } from 'zod';

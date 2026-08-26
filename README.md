@@ -4,11 +4,35 @@ A project generator: pick a language, pick a framework, pick an architecture —
 
 ## Install
 
+### Linux / macOS
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/pasha1383/pasha-cli/main/install.sh | bash
 ```
 
-Linux and macOS only (for now).
+### Windows
+
+```powershell
+irm https://raw.githubusercontent.com/pasha1383/pasha-cli/main/install.ps1 | iex
+```
+
+If your PowerShell execution policy blocks that pipeline, download
+`install.ps1` and run it explicitly instead of lowering the policy
+machine-wide:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File install.ps1
+```
+
+Both installers check for Node 18+ and git, clone the repo, install
+production dependencies, and put a `pasha` command on your PATH (no admin
+rights needed on either OS).
+
+### Any platform, via npm
+
+```bash
+npm install -g @pasha1383/pasha
+```
 
 ## Commands
 

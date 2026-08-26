@@ -45,6 +45,38 @@ function MultiSelectPrompt(_a) {
   var clampedHighlight = Math.min(highlighted, maxIdx);
 
   useInput(function (input, key) {
+    if (filterActive) {
+      if (key.escape) {
+        setFilter('');
+        setFilterActive(false);
+        return;
+      }
+      if (key.backspace || key.delete) {
+        setFilter(function (prev) { return prev.slice(0, -1); });
+        setHighlighted(0);
+        return;
+      }
+      if (key.upArrow || input === 'k') {
+        setHighlighted(Math.max(0, clampedHighlight - 1));
+        return;
+      }
+      if (key.downArrow || input === 'j') {
+        setHighlighted(Math.min(maxIdx, clampedHighlight + 1));
+        return;
+      }
+      if (key.return) {
+        setFilterActive(false);
+        return;
+      }
+      if (input && input.length === 1 && !key.ctrl && !key.meta) {
+        setFilter(function (prev) { return prev + input; });
+        setHighlighted(0);
+        return;
+      }
+      if (onKey) onKey(input, key);
+      return;
+    }
+
     if (key.upArrow || input === 'k') {
       setHighlighted(Math.max(0, clampedHighlight - 1));
       return;
@@ -86,27 +118,6 @@ function MultiSelectPrompt(_a) {
       if (onKey) onKey(input, key);
       return;
     }
-
-    if (filterActive) {
-      if (key.escape) {
-        setFilter('');
-        setFilterActive(false);
-        return;
-      }
-      if (key.backspace || key.delete) {
-        setFilter(function (prev) { return prev.slice(0, -1); });
-        setHighlighted(0);
-        return;
-      }
-      if (input && input.length === 1 && !key.ctrl && !key.meta) {
-        setFilter(function (prev) { return prev + input; });
-        setHighlighted(0);
-        return;
-      }
-      if (onKey) onKey(input, key);
-      return;
-    }
-
     if (key.escape || key.backspace) {
       if (onKey) onKey(input, key);
       return;

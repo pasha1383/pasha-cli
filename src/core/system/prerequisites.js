@@ -26,6 +26,30 @@ const CHECK_CMDS = {
   rails: 'rails',
 };
 
+// installTool() and CHECK_CMDS/doctor's tool list are keyed by whatever name
+// a tool is *checked* under, which isn't always the name of the *package*
+// that provides it — e.g. the `rustc` binary and the `cargo` binary both
+// ship in the `rust`/`rustup` package, and `npm` ships bundled with `node`.
+// INSTALL_MAP is keyed by canonical package id; this maps a checked tool
+// name to that id (identity if there's no split). Without this, e.g.
+// installTool('rustc') looks up INSTALL_MAP[mgr]['rustc'], which never
+// exists (only INSTALL_MAP[mgr]['rust'] does) and always fails with
+// "don't know how to install rustc" even on a fully supported OS/manager.
+const PACKAGE_ALIASES = {
+  rustc: 'rust',
+  cargo: 'rust',
+  npm: 'node',
+  pip3: 'python3',
+};
+
+function resolvePackageId(tool) {
+  return PACKAGE_ALIASES[tool] || tool;
+}
+
+// Every table below is keyed by canonical package id (see PACKAGE_ALIASES) —
+// `rustc`/`cargo` both resolve to `rust`, `npm` resolves to `node`, `pip3`
+// resolves to `python3`, so those don't need (and shouldn't have) their own
+// entries here.
 const INSTALL_MAP = {
   brew: {
     node: ['brew', 'install', 'node'],
@@ -38,7 +62,6 @@ const INSTALL_MAP = {
     php: ['brew', 'install', 'php'],
     composer: ['brew', 'install', 'composer'],
     rust: ['brew', 'install', 'rustup-init'],
-    cargo: ['brew', 'install', 'rustup-init'],
     ruby: ['brew', 'install', 'ruby'],
     bundler: null,
     rails: null,
@@ -54,7 +77,6 @@ const INSTALL_MAP = {
     php: ['sudo', 'apt-get', 'install', '-y', 'php', 'php-cli', 'php-mbstring', 'php-xml', 'php-curl', 'php-pgsql', 'php-mysql', 'php-sqlite3'],
     composer: null,
     rust: null,
-    cargo: null,
     ruby: ['sudo', 'apt-get', 'install', '-y', 'ruby', 'ruby-dev'],
     bundler: null,
     rails: null,
@@ -70,7 +92,6 @@ const INSTALL_MAP = {
     php: ['sudo', 'dnf', 'install', '-y', 'php', 'php-cli', 'php-mbstring', 'php-xml', 'php-curl', 'php-pgsql', 'php-mysqlnd', 'php-pdo'],
     composer: null,
     rust: ['sudo', 'dnf', 'install', '-y', 'rust', 'cargo'],
-    cargo: ['sudo', 'dnf', 'install', '-y', 'rust', 'cargo'],
     ruby: ['sudo', 'dnf', 'install', '-y', 'ruby', 'ruby-devel'],
     bundler: null,
     rails: null,
@@ -86,7 +107,6 @@ const INSTALL_MAP = {
     php: ['sudo', 'pacman', '-S', '--noconfirm', 'php'],
     composer: ['sudo', 'pacman', '-S', '--noconfirm', 'composer'],
     rust: ['sudo', 'pacman', '-S', '--noconfirm', 'rust'],
-    cargo: ['sudo', 'pacman', '-S', '--noconfirm', 'rust'],
     ruby: ['sudo', 'pacman', '-S', '--noconfirm', 'ruby'],
     bundler: null,
     rails: null,
@@ -150,7 +170,13 @@ async function installTool(tool, opts = {}) {
     }
     throw new Error('No known package manager (apt/dnf/pacman) was found.');
   }
-  const cmdParts = INSTALL_MAP[pkgManager]?.[tool];
+  // Look up the install command by canonical package id, not by whatever
+  // name the tool happens to be checked under (see PACKAGE_ALIASES) — this
+  // is what makes installTool('rustc') and installTool('npm') resolve to
+  // the `rust`/`node` package entries instead of failing to find a
+  // same-named entry that was never meant to exist.
+  const pkgId = resolvePackageId(tool);
+  const cmdParts = INSTALL_MAP[pkgManager]?.[pkgId];
   if (!cmdParts) {
     throw new Error(`Don't know how to install "${tool}" via ${pkgManager} — please install it manually.`);
   }

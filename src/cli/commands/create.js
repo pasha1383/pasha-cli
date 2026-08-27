@@ -1178,10 +1178,12 @@ async function createTui(options) {
     const { showProgress, showSummary, showDone, updateProgress, getState } = tuiApp;
 
     const React = require('react');
-    const { waitUntilExit, rerender } = ink.render(
+    const inkInstance = ink.render(
       React.createElement(tuiApp.App),
       { stdin: process.stdin, stdout: process.stdout, exitOnCtrlC: false }
     );
+    const { waitUntilExit, rerender } = inkInstance;
+    tuiApp.setClearFn(inkInstance.clear.bind(inkInstance));
 
     setTuiMode(true);
     setTuiApp(tuiApp);

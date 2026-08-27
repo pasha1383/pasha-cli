@@ -150,7 +150,11 @@ function renderPanel(boxInfo, isDimmed, scrollOffset, boxWidth) {
 
     var isBlank = line.length === 0;
     var pad = Math.max(0, innerWidth - visualLength(line));
-    var content = isBlank ? '' : '  ' + line + ' '.repeat(pad);
+    // An empty string here collapses the Text node to zero width in Ink's
+    // layout, gluing the left/right border chars together with nothing
+    // between them -- pad blank filler rows with spaces just like content
+    // rows so the row box keeps its full width.
+    var content = isBlank ? ' '.repeat(innerWidth) : '  ' + line + ' '.repeat(pad);
 
     if (i === 0 && hasUp) {
       var upPad = Math.max(0, innerWidth - 1);
@@ -260,7 +264,7 @@ function SidePanel(_a) {
     var phTop = '\u250C' + '\u2500'.repeat(boxWidth - 2) + '\u2510';
     var phBottom = '\u2514' + '\u2500'.repeat(boxWidth - 2) + '\u2518';
 
-    return e(Box, { flexDirection: 'column', marginLeft: 2, width: boxWidth, flexShrink: 0 },
+    return e(Box, { flexDirection: 'column', marginLeft: 2, paddingTop: 1, width: boxWidth, flexShrink: 0 },
       e(Text, { color: theme.primary }, phTop),
       e(Box, { flexDirection: 'row', width: boxWidth },
         e(Text, { color: theme.primary }, '\u2502'),
@@ -279,10 +283,10 @@ function SidePanel(_a) {
 
   var newPanel = renderPanel(info, isDimmed, scrollOffset, boxWidth);
 
-  return e(Box, { flexDirection: 'column', marginLeft: 2 },
+  return e(Box, { flexDirection: 'column', marginLeft: 2, paddingTop: 1 },
     oldPanel,
     newPanel
   );
 }
 
-module.exports = { SidePanel };
+module.exports = { SidePanel, getPanelWidth };

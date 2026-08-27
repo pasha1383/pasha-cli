@@ -88,7 +88,7 @@ function SummaryScreen(_a) {
     // Most modern terminals send DEL (0x7f, parsed by Ink as key.delete) for
     // the physical Backspace key, not the historical BS (0x08, key.backspace)
     // -- treat both as "back" so this actually fires for real Backspace presses.
-    if (key.leftArrow || key.backspace || key.delete) {
+    if (key.leftArrow || key.backspace || key.delete || key.escape) {
       if (onBack) onBack();
       return;
     }
@@ -109,8 +109,13 @@ function SummaryScreen(_a) {
     if (len.length > maxValueLen) maxValueLen = len.length;
   });
 
-  var titleStr = 'Configuration Summary';
-  var footerStr = '  ↑↓ navigate · Enter/e edit · g generate · ← back  ';
+  var isPreview = !onEdit && !onGenerate;
+  var titleStr = isPreview ? 'Answers So Far (preview)' : 'Configuration Summary';
+  var footerParts = ['↑↓ navigate'];
+  if (onEdit) footerParts.push('Enter/e edit');
+  if (onGenerate) footerParts.push('g generate');
+  footerParts.push(onBack ? (isPreview ? '←/Esc back to wizard' : '← back') : null);
+  var footerStr = '  ' + footerParts.filter(Boolean).join(' · ') + '  ';
 
   var contentWidth = 2 + maxLabelLen + 1 + 2 + maxValueLen + 2;
   var innerWidth = Math.max(titleStr.length + 4, footerStr.length, contentWidth);

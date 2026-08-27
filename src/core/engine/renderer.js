@@ -45,6 +45,28 @@ function renderString(str, ctx) {
   return compileTemplate(str)(ctx);
 }
 
+// Rendered file/directory names come from Handlebars-interpolated context values
+// (e.g. `{{moduleName}}` embedded in a template path segment). `path.join` does
+// NOT strip `..` segments, so an unsanitized value (a module name containing
+// `../`, for example) can make the computed destination resolve outside the
+// intended output directory. This is the last line of defense against that —
+// every caller of renderTemplateDir/renderModuleFiles is protected here,
+// regardless of what validation (or lack of it) happened upstream.
+function assertWithinDestDir(destDir, destPath, offendingSegment, srcPath) {
+  const resolvedBase = path.resolve(destDir);
+  const resolvedTarget = path.resolve(destPath);
+  const relative = path.relative(resolvedBase, resolvedTarget);
+  const escapes = relative === '..' || relative.startsWith('..' + path.sep) || path.isAbsolute(relative);
+  if (escapes) {
+    throw new TemplateRenderError(
+      `Refusing to render outside the target directory: rendered path segment "${offendingSegment}" ` +
+      `resolves to "${resolvedTarget}", which escapes "${resolvedBase}". ` +
+      `Check the value substituted into this path (e.g. a module or project name) for "../" or absolute-path content.`,
+      { templatePath: srcPath || null }
+    );
+  }
+}
+
 async function countFilesInTemplateDir(srcDir, shouldInclude, relBase) {
   const include = shouldInclude || (() => true);
   const base = relBase || '';
@@ -86,6 +108,7 @@ async function renderTemplateDir(srcDir, destDir, ctx, shouldInclude, relBase, o
       );
     }
     const destPath = path.join(destDir, renderedName);
+    assertWithinDestDir(destDir, destPath, renderedName, srcPath);
 
     if (entry.isDirectory()) {
       await fs.ensureDir(destPath);

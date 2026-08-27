@@ -2,6 +2,7 @@
 
 const React = require('react');
 const { getInk } = require('../ink-proxy');
+const { theme } = require('../theme');
 const e = React.createElement;
 
 function ConfirmPrompt({ message, defaultValue, onConfirm, onKey }) {
@@ -29,22 +30,22 @@ function ConfirmPrompt({ message, defaultValue, onConfirm, onKey }) {
     if (onKey) onKey(input, key);
   });
 
-  var arrowChar = '\u276F';
+  var arrowChar = '❯';
 
   return e(Box, { flexDirection: 'column', paddingTop: 1 },
-    e(Text, { bold: true, color: 'white' }, message),
+    e(Text, { bold: true, color: theme.text }, message),
     e(Box, { flexDirection: 'column', marginTop: 1 },
       e(Box, { flexDirection: 'row' },
         e(Text, {}, '  '),
-        e(Text, { color: selected ? 'cyan' : 'gray' }, selected ? arrowChar : ' '),
-        e(Text, { color: 'white', bold: selected }, ' Yes'),
-        e(Text, { dimColor: true, color: 'gray' }, selected ? '  (default)' : '')
+        e(Text, { color: selected ? theme.primary : theme.muted }, selected ? arrowChar : ' '),
+        e(Text, { color: theme.text, bold: selected }, ' Yes'),
+        e(Text, { dimColor: true, color: theme.muted }, selected ? '  (default)' : '')
       ),
       e(Box, { flexDirection: 'row' },
         e(Text, {}, '  '),
-        e(Text, { color: !selected ? 'cyan' : 'gray' }, !selected ? arrowChar : ' '),
-        e(Text, { color: 'white', bold: !selected }, ' No'),
-        e(Text, { dimColor: true, color: 'gray' }, !selected ? '  (default)' : '')
+        e(Text, { color: !selected ? theme.primary : theme.muted }, !selected ? arrowChar : ' '),
+        e(Text, { color: theme.text, bold: !selected }, ' No'),
+        e(Text, { dimColor: true, color: theme.muted }, !selected ? '  (default)' : '')
       )
     )
   );

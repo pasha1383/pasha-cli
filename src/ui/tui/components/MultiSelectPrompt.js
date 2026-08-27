@@ -2,6 +2,7 @@
 
 var React = require('react');
 var { getInk } = require('../ink-proxy');
+var { theme } = require('../theme');
 var e = React.createElement;
 
 var ARROW = '\u276F';
@@ -143,32 +144,32 @@ function MultiSelectPrompt(_a) {
   var filterEl = null;
   if (filter || filterActive) {
     filterEl = e(Box, { flexDirection: 'row' },
-      e(Text, { color: 'yellow' }, '  Filter: '),
-      e(Text, { color: 'white' }, filter),
-      e(Text, { color: 'yellow' }, filterActive ? '_' : ''),
-      e(Text, { dimColor: true, color: 'gray' }, '  (Esc to clear)')
+      e(Text, { color: theme.warning }, '  Filter: '),
+      e(Text, { color: theme.text }, filter),
+      e(Text, { color: theme.warning }, filterActive ? '_' : ''),
+      e(Text, { dimColor: true, color: theme.muted }, '  (Esc to clear)')
     );
   }
 
   var headerSep = e(Box, { flexDirection: 'row' },
-    e(Text, { color: 'gray' }, '  ' + '\u2500'.repeat(48))
+    e(Text, { color: theme.border }, '  ' + '\u2500'.repeat(48))
   );
 
   var counterEl = e(Box, { flexDirection: 'row' },
-    e(Text, { dimColor: true, color: 'gray' }, '  [' + checkedCount + '/' + totalAll + ' selected]')
+    e(Text, { dimColor: true, color: theme.muted }, '  [' + checkedCount + '/' + totalAll + ' selected]')
   );
 
   var hintsEl = e(Box, { flexDirection: 'row' },
-    e(Text, { dimColor: true, color: 'gray' }, '  Space=toggle, a=all, n=none, Enter=confirm')
+    e(Text, { dimColor: true, color: theme.muted }, '  Space=toggle, a=all, n=none, Enter=confirm')
   );
 
   if (filtered.length === 0) {
     return e(Box, { flexDirection: 'column', paddingTop: 1 },
-      e(Text, { bold: true, color: 'white' }, message),
+      e(Text, { bold: true, color: theme.text }, message),
       filterEl,
       headerSep,
       e(Box, { flexDirection: 'column', marginTop: 1 },
-        e(Text, { dimColor: true, color: 'gray' }, '  No matches found.')
+        e(Text, { dimColor: true, color: theme.muted }, '  No matches found.')
       ),
       counterEl,
       hintsEl
@@ -184,13 +185,13 @@ function MultiSelectPrompt(_a) {
     var checkbox = isChecked ? CHECKBOX_ON : CHECKBOX_OFF;
 
     var rowChildren = [
-      e(Text, { key: 'ptr', color: isHighlighted ? 'cyan' : undefined }, '  ' + (isHighlighted ? ARROW : ' ')),
-      e(Text, { key: 'cb', color: isChecked ? 'green' : 'gray' }, ' ' + checkbox),
-      e(Text, { key: 'label', color: 'white', bold: isHighlighted }, ' ' + label),
+      e(Text, { key: 'ptr', color: isHighlighted ? theme.primary : undefined }, '  ' + (isHighlighted ? ARROW : ' ')),
+      e(Text, { key: 'cb', color: isChecked ? theme.success : theme.muted }, ' ' + checkbox),
+      e(Text, { key: 'label', color: theme.text, bold: isHighlighted }, ' ' + label),
     ];
 
     if (desc) {
-      rowChildren.push(e(Text, { key: 'desc', dimColor: true, color: 'gray' }, '  ' + desc));
+      rowChildren.push(e(Text, { key: 'desc', dimColor: true, color: theme.muted }, '  ' + desc));
     }
 
     return e(Box, { key: choice.value || idx, flexDirection: 'row' }, ...rowChildren);
@@ -208,12 +209,12 @@ function MultiSelectPrompt(_a) {
 
     var scrollUp = startIdx > 0
       ? e(Box, { key: 'scroll-up', flexDirection: 'row' },
-          e(Text, { dimColor: true, color: 'gray' }, '  \u2191 ' + startIdx + ' more')
+          e(Text, { dimColor: true, color: theme.muted }, '  \u2191 ' + startIdx + ' more')
         )
       : null;
     var scrollDown = endIdx < filtered.length
       ? e(Box, { key: 'scroll-down', flexDirection: 'row' },
-          e(Text, { dimColor: true, color: 'gray' }, '  \u2193 ' + (filtered.length - endIdx) + ' more')
+          e(Text, { dimColor: true, color: theme.muted }, '  \u2193 ' + (filtered.length - endIdx) + ' more')
         )
       : null;
 
@@ -227,12 +228,12 @@ function MultiSelectPrompt(_a) {
       var checkbox = isChecked ? CHECKBOX_ON : CHECKBOX_OFF;
 
       var rowChildren = [
-        e(Text, { key: 'ptr', color: isHighlighted ? 'cyan' : undefined }, '  ' + (isHighlighted ? ARROW : ' ')),
-        e(Text, { key: 'cb', color: isChecked ? 'green' : 'gray' }, ' ' + checkbox),
-        e(Text, { key: 'label', color: 'white', bold: isHighlighted }, ' ' + label),
+        e(Text, { key: 'ptr', color: isHighlighted ? theme.primary : undefined }, '  ' + (isHighlighted ? ARROW : ' ')),
+        e(Text, { key: 'cb', color: isChecked ? theme.success : theme.muted }, ' ' + checkbox),
+        e(Text, { key: 'label', color: theme.text, bold: isHighlighted }, ' ' + label),
       ];
       if (desc) {
-        rowChildren.push(e(Text, { key: 'desc', dimColor: true, color: 'gray' }, '  ' + desc));
+        rowChildren.push(e(Text, { key: 'desc', dimColor: true, color: theme.muted }, '  ' + desc));
       }
 
       itemsChildren.push(e(Box, { key: choice.value || (startIdx + i), flexDirection: 'row' }, ...rowChildren));
@@ -244,7 +245,7 @@ function MultiSelectPrompt(_a) {
   }
 
   return e(Box, { flexDirection: 'column', paddingTop: 1 },
-    e(Text, { bold: true, color: 'white' }, message),
+    e(Text, { bold: true, color: theme.text }, message),
     filterEl,
     headerSep,
     e(Box, { flexDirection: 'column', marginTop: 1 }, ...itemsChildren),

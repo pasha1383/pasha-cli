@@ -2,13 +2,14 @@
 
 const React = require('react');
 const { getInk } = require('../ink-proxy');
+const { theme } = require('../theme');
 const { Spinner } = require('./Spinner');
 const e = React.createElement;
 
-const CHECK = '\u2713';
-const CROSS = '\u2717';
-const WARN = '\u26A0';
-const ARROW = '\u276F';
+const CHECK = '✓';
+const CROSS = '✗';
+const WARN = '⚠';
+const ARROW = '❯';
 
 function PrereqsScreen({ initialResults, installTool, onDone }) {
   const { Text, Box, useInput } = getInk();
@@ -128,33 +129,33 @@ function PrereqsScreen({ initialResults, installTool, onDone }) {
   const toolElements = tools.map((t, i) => {
     if (phase === 'installing' && i === installingIdx) {
       return e(Box, { key: i, flexDirection: 'row' },
-        e(Text, { color: 'cyan' }, '  '),
-        e(Spinner, { color: 'cyan' }),
-        e(Text, { color: 'cyan', bold: true }, ' ' + t.tool),
-        e(Text, { dimColor: true, color: 'gray' }, ' — installing...'),
+        e(Text, { color: theme.primary }, '  '),
+        e(Spinner, { color: theme.primary }),
+        e(Text, { color: theme.primary, bold: true }, ' ' + t.tool),
+        e(Text, { dimColor: true, color: theme.muted }, ' — installing...'),
       );
     }
 
     if (t.status === 'ok') {
       return e(Box, { key: i, flexDirection: 'row' },
-        e(Text, { color: 'green' }, '  ' + CHECK + ' '),
-        e(Text, { color: 'green' }, t.tool),
+        e(Text, { color: theme.success }, '  ' + CHECK + ' '),
+        e(Text, { color: theme.success }, t.tool),
       );
     }
 
     if (t.status === 'missing') {
       return e(Box, { key: i, flexDirection: 'row' },
-        e(Text, { color: 'red' }, '  ' + CROSS + ' '),
-        e(Text, { color: 'white' }, t.tool),
-        e(Text, { dimColor: true, color: 'gray' }, ' — not found'),
+        e(Text, { color: theme.error }, '  ' + CROSS + ' '),
+        e(Text, { color: theme.text }, t.tool),
+        e(Text, { dimColor: true, color: theme.muted }, ' — not found'),
       );
     }
 
     if (t.status === 'failed') {
       return e(Box, { key: i, flexDirection: 'row' },
-        e(Text, { color: 'red' }, '  ' + CROSS + ' '),
-        e(Text, { color: 'white' }, t.tool),
-        e(Text, { dimColor: true, color: 'red' }, ' — install failed'),
+        e(Text, { color: theme.error }, '  ' + CROSS + ' '),
+        e(Text, { color: theme.text }, t.tool),
+        e(Text, { dimColor: true, color: theme.error }, ' — install failed'),
       );
     }
 
@@ -165,25 +166,29 @@ function PrereqsScreen({ initialResults, installTool, onDone }) {
 
   if (phase === 'confirming') {
     bottomEl = e(Box, { flexDirection: 'column', marginTop: 2 },
-      e(Box, { borderStyle: 'single', borderColor: 'yellow', paddingLeft: 2, paddingRight: 2, paddingTop: 1, paddingBottom: 1, flexDirection: 'column' },
-        e(Text, { bold: true, color: 'yellow' }, WARN + ' ' + missingCount + ' tool' + (missingCount > 1 ? 's are' : ' is') + ' missing. Install now?'),
+      e(Box, { borderStyle: 'single', borderColor: theme.warning, paddingLeft: 2, paddingRight: 2, paddingTop: 1, paddingBottom: 1, flexDirection: 'column' },
+        e(Text, { bold: true, color: theme.warning }, WARN + ' ' + missingCount + ' tool' + (missingCount > 1 ? 's are' : ' is') + ' missing. Install now?'),
         e(Box, { flexDirection: 'row', marginTop: 1 },
           e(Text, {}, '  '),
-          e(Text, { color: confirmSelected ? 'cyan' : 'gray' }, confirmSelected ? ARROW : ' '),
-          e(Text, { color: 'white', bold: confirmSelected }, ' Yes' + (confirmSelected ? '  (default)' : '')),
+          e(Text, { color: confirmSelected ? theme.primary : theme.muted }, confirmSelected ? ARROW : ' '),
+          e(Text, { color: theme.text, bold: confirmSelected }, ' Yes' + (confirmSelected ? '  (default)' : '')),
         ),
         e(Box, { flexDirection: 'row' },
           e(Text, {}, '  '),
-          e(Text, { color: !confirmSelected ? 'cyan' : 'gray' }, !confirmSelected ? ARROW : ' '),
-          e(Text, { color: 'white', bold: !confirmSelected }, ' No'),
+          e(Text, { color: !confirmSelected ? theme.primary : theme.muted }, !confirmSelected ? ARROW : ' '),
+          e(Text, { color: theme.text, bold: !confirmSelected }, ' No'),
         ),
+      ),
+      e(Box, { marginTop: 1 },
+        e(Text, { dimColor: true, color: theme.muted }, '  Ctrl+C to skip and continue without installing')
       ),
     );
   }
 
   if (phase === 'installing') {
-    bottomEl = e(Box, { marginTop: 2 },
-      e(Text, { dimColor: true, color: 'gray' }, '  Installing missing tools...'),
+    bottomEl = e(Box, { flexDirection: 'column', marginTop: 2 },
+      e(Text, { dimColor: true, color: theme.muted }, '  Installing missing tools...'),
+      e(Text, { dimColor: true, color: theme.muted }, '  Ctrl+C to skip and continue without installing'),
     );
   }
 
@@ -191,17 +196,17 @@ function PrereqsScreen({ initialResults, installTool, onDone }) {
     const allOk = tools.every(t => t.status === 'ok');
     if (allOk) {
       bottomEl = e(Box, { marginTop: 2 },
-        e(Text, { color: 'green', bold: true }, '  ' + CHECK + ' All prerequisites satisfied'),
+        e(Text, { color: theme.success, bold: true }, '  ' + CHECK + ' All prerequisites satisfied'),
       );
     } else {
       bottomEl = e(Box, { marginTop: 2 },
-        e(Text, { color: 'yellow', bold: true }, '  ' + WARN + ' Some tools could not be installed. Continuing without them.'),
+        e(Text, { color: theme.warning, bold: true }, '  ' + WARN + ' Some tools could not be installed. Continuing without them.'),
       );
     }
   }
 
   return e(Box, { flexDirection: 'column', paddingTop: 2 },
-    e(Text, { bold: true, color: 'white' }, '  Prerequisites'),
+    e(Text, { bold: true, color: theme.text }, '  Prerequisites'),
     e(Box, { flexDirection: 'column', marginTop: 1 }, ...toolElements),
     bottomEl,
   );

@@ -2,6 +2,7 @@
 
 var React = require('react');
 var { getInk } = require('../ink-proxy');
+var { theme } = require('../theme');
 var { Spinner } = require('./Spinner');
 var e = React.createElement;
 
@@ -44,29 +45,29 @@ function ProgressScreen(_a) {
 
   var pctText = known ? ' ' + pct + '%' : '';
   var fileProgress = known ? '(' + done + '/' + total + ' files)' : '';
-  if (failed > 0) fileProgress += '  ' + failed + ' failed';
+  var failedText = failed > 0 ? '  ✗ ' + failed + ' failed' : '';
 
   var phaseElements = ph.map(function (phase, idx) {
     var label = phase.label || phase;
 
     if (comp[idx] || idx < cur) {
       return e(Box, { key: idx, flexDirection: 'row' },
-        e(Text, { color: 'green' }, '  ' + CHECK + ' '),
-        e(Text, { color: 'green' }, label)
+        e(Text, { color: theme.success }, '  ' + CHECK + ' '),
+        e(Text, { color: theme.success }, label)
       );
     }
 
     if (idx === cur) {
       return e(Box, { key: idx, flexDirection: 'row' },
-        e(Text, { color: 'cyan' }, '  '),
-        e(Spinner, { color: 'cyan' }),
-        e(Text, { color: 'cyan', bold: true }, ' ' + label)
+        e(Text, { color: theme.primary }, '  '),
+        e(Spinner, { color: theme.primary }),
+        e(Text, { color: theme.primary, bold: true }, ' ' + label)
       );
     }
 
     return e(Box, { key: idx, flexDirection: 'row' },
-      e(Text, { color: 'gray', dimColor: true }, '  ' + HOLLOW + ' '),
-      e(Text, { color: 'gray', dimColor: true }, label)
+      e(Text, { color: theme.muted, dimColor: true }, '  ' + HOLLOW + ' '),
+      e(Text, { color: theme.muted, dimColor: true }, label)
     );
   });
 
@@ -74,26 +75,29 @@ function ProgressScreen(_a) {
   if (known && cur >= 0) {
     barEl = e(Box, { flexDirection: 'column', marginTop: 1 },
       e(Box, { flexDirection: 'row' },
-        e(Text, { color: 'gray' }, '  ['),
-        e(Text, { color: 'cyan' }, bar.slice(0, filled)),
-        e(Text, { color: 'gray' }, bar.slice(filled)),
-        e(Text, { color: 'gray' }, ']'),
-        e(Text, { bold: true, color: 'white' }, pctText)
+        e(Text, { color: theme.border }, '  ['),
+        e(Text, { color: theme.primary }, bar.slice(0, filled)),
+        e(Text, { color: theme.border }, bar.slice(filled)),
+        e(Text, { color: theme.border }, ']'),
+        e(Text, { bold: true, color: theme.text }, pctText)
       ),
-      e(Text, { dimColor: true, color: 'gray' }, '  ' + fileProgress)
+      e(Box, { flexDirection: 'row' },
+        e(Text, { dimColor: true, color: theme.muted }, '  ' + fileProgress),
+        failed > 0 ? e(Text, { bold: true, color: theme.error }, failedText) : null
+      )
     );
   }
 
   var spinnerBarEl = null;
   if (!known && cur >= 0) {
     spinnerBarEl = e(Box, { flexDirection: 'row', marginTop: 1 },
-      e(Text, { color: 'cyan' }, '  '),
-      e(Spinner, { color: 'cyan' })
+      e(Text, { color: theme.primary }, '  '),
+      e(Spinner, { color: theme.primary })
     );
   }
 
   var fileEl = fp ? e(Box, { marginTop: 1 },
-    e(Text, { dimColor: true, color: 'gray' }, '  \u2514 ' + fp)
+    e(Text, { dimColor: true, color: theme.muted }, '  \u2514 ' + fp)
   ) : null;
 
   var msgEl = msg ? e(Box, { marginTop: 1 },
@@ -102,7 +106,7 @@ function ProgressScreen(_a) {
 
   return e(Box, { flexDirection: 'column', paddingTop: 2 },
     e(Box, { flexDirection: 'row' },
-      e(Text, { bold: true, color: 'white' }, '  Generating project...')
+      e(Text, { bold: true, color: theme.text }, '  Generating project...')
     ),
     barEl,
     spinnerBarEl,

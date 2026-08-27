@@ -151,7 +151,7 @@
               "template": "node-nestjs-vertical"
             },
             "microservices": {
-              "label": "Microservices (@nestjs/microservices)",
+              "label": "Message-based (NestJS Microservices Transport)",
               "template": "node-nestjs-microservices"
             },
             "serverless": {
@@ -226,15 +226,6 @@
             }
           }
         },
-        "microservices": {
-          "label": "Microservices",
-          "architectures": {
-            "microservices": {
-              "label": "Microservices (Multi-Service)",
-              "template": "node-microservices"
-            }
-          }
-        },
         "fastify": {
           "label": "Fastify",
           "architectures": {
@@ -304,7 +295,7 @@
               "template": "node-hapi-onion"
             },
             "microservices": {
-              "label": "Microservices (Hapi transport)",
+              "label": "Message-based (Hapi Transport)",
               "template": "node-hapi-microservices"
             }
           }

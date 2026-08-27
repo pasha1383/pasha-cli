@@ -110,4 +110,31 @@ program
     }
   });
 
+program
+  .command('update')
+  .description('Check for and install the latest version of pasha')
+  .option('--check', 'Only check whether an update is available, without installing it')
+  .action(async (opts) => {
+    try {
+      const { update } = require('./commands/update');
+      await update(opts);
+    } catch (err) {
+      log.fail(err.message);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('completion <shell>')
+  .description('Print a shell completion script (bash, zsh, or fish)')
+  .action(async (shell) => {
+    try {
+      const { completion } = require('./commands/completion');
+      await completion(shell);
+    } catch (err) {
+      log.fail(err.message);
+      process.exit(1);
+    }
+  });
+
 module.exports = { program };

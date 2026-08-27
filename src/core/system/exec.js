@@ -17,11 +17,29 @@ const { spawn } = require('child_process');
  * @param {string} options.stdio  'inherit' (default) streams output live.
  * @returns {Promise<void>}     Rejects with an Error carrying .exitCode / .code.
  */
+const IS_WINDOWS = process.platform === 'win32';
+
 function run(command, args = [], options = {}) {
   const { cwd = process.cwd(), stdio = 'inherit' } = options;
 
   return new Promise((resolve, reject) => {
-    const child = spawn(command, args, { cwd, stdio });
+    const child = spawn(command, args, {
+      cwd,
+      stdio,
+      // On Windows, PATH-installed tools like npm/npx/git/composer are very
+      // often `.cmd`/`.bat` shims rather than directly-executable binaries.
+      // `child_process.spawn` does not go through a shell by default, and
+      // Windows' CreateProcess cannot launch a .cmd/.bat file on its own —
+      // that fails with EINVAL/ENOENT even when the tool is installed and on
+      // PATH (this holds whether `command` is a bare name or an absolute
+      // path resolved via resolveCommandPath, since resolution just finds
+      // the shim file, it doesn't change how it must be launched). Routing
+      // through the shell here makes spawn behave like typing the command
+      // at a normal Windows prompt. Left off on POSIX so the existing
+      // behavior (no shell metacharacter interpretation, no argument
+      // requoting) is unchanged there.
+      ...(IS_WINDOWS ? { shell: true } : {}),
+    });
 
     child.on('error', (err) => {
       const error = new Error(`Failed to start "${command}": ${err.message}`);

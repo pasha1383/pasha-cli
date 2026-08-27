@@ -2,7 +2,7 @@
 
 jest.mock('fs-extra');
 
-const { sessionToAnswers } = require('../../lib/core/history');
+const { sessionToAnswers } = require('../../src/core/session/history');
 
 describe('history', () => {
   describe('sessionToAnswers', () => {

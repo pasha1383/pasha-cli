@@ -3,6 +3,7 @@
 const AND = '&&';
 const OR = '||';
 const ALWAYS_TRUE = '!always';
+const FORCE_INCLUDE_PREFIX = 'force-include:';
 
 function parseCondition(expr) {
   if (typeof expr !== 'string') {
@@ -10,6 +11,16 @@ function parseCondition(expr) {
   }
 
   const trimmed = expr.trim();
+
+  if (trimmed.startsWith(FORCE_INCLUDE_PREFIX)) {
+    // layers.js encodes a `!`-prefixed fileConditions override (a higher
+    // layer un-gating a path a lower layer gated) as
+    // `'force-include:' + originalCondition`. The engine's normal
+    // fileConditions has no override mechanism by design (AGENT.md gotcha
+    // #8), so a force-include is a deliberate escape hatch: it always
+    // wins, regardless of what condition it wraps.
+    return () => true;
+  }
 
   if (trimmed === 'true') return () => true;
   if (trimmed === 'false') return () => false;

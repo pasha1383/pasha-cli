@@ -1,14 +1,41 @@
 'use strict';
 
-const {
-  deriveFlags,
-  resolveDependencies,
-  resolveScripts,
-  databaseChoices,
-  ormChoices,
-} = require('../../lib/core/features');
+const { resolveFeatures, REGISTRY } = require('../../src/core/features');
+const nestjsFeatures = require('../../src/core/features/nestjs');
+const expressFeatures = require('../../src/core/features/express');
 
-describe('features', () => {
+describe('features/index — resolveFeatures dispatcher', () => {
+  it('resolves a known flavor to its module', () => {
+    expect(resolveFeatures('nestjs')).toBe(nestjsFeatures);
+    expect(resolveFeatures('express')).toBe(expressFeatures);
+  });
+
+  it('throws for an unknown flavor', () => {
+    expect(() => resolveFeatures('does-not-exist')).toThrow(/Unknown stack flavor/);
+  });
+
+  it('every registered module exposes the full required interface', () => {
+    const required = [
+      'ormChoices',
+      'databaseChoices',
+      'validationChoices',
+      'brokerChoices',
+      'extraFeatureChoices',
+      'deriveFlags',
+      'resolveDependencies',
+      'resolveScripts',
+    ];
+    for (const mod of Object.values(REGISTRY)) {
+      for (const key of required) {
+        expect(typeof mod[key]).toBe('function');
+      }
+    }
+  });
+});
+
+describe('features/nestjs', () => {
+  const { deriveFlags, resolveDependencies, resolveScripts, databaseChoices, ormChoices } = nestjsFeatures;
+
   describe('deriveFlags', () => {
     it('prisma + postgres sets ormPrisma=true and dbPostgres=true', () => {
       const flags = deriveFlags({ orm: 'prisma', database: 'postgres' });
@@ -52,13 +79,11 @@ describe('features', () => {
     });
 
     it('dbNeedsServer false for sqlite', () => {
-      const flags = deriveFlags({ database: 'sqlite' });
-      expect(flags.dbNeedsServer).toBe(false);
+      expect(deriveFlags({ database: 'sqlite' }).dbNeedsServer).toBe(false);
     });
 
     it('dbNeedsServer true for postgres', () => {
-      const flags = deriveFlags({ database: 'postgres' });
-      expect(flags.dbNeedsServer).toBe(true);
+      expect(deriveFlags({ database: 'postgres' }).dbNeedsServer).toBe(true);
     });
 
     it('dbPort set correctly', () => {
@@ -73,8 +98,7 @@ describe('features', () => {
     });
 
     it('hasSharedInfra false with no selections', () => {
-      const flags = deriveFlags({ orm: 'none' });
-      expect(flags.hasSharedInfra).toBe(false);
+      expect(deriveFlags({ orm: 'none' }).hasSharedInfra).toBe(false);
     });
 
     it('needsCoreTokens true with rateLimit', () => {
@@ -87,13 +111,9 @@ describe('features', () => {
   });
 
   describe('resolveDependencies', () => {
-    it('always includes @nestjs/common', () => {
+    it('always includes @nestjs/common and @nestjs/core', () => {
       const { dependencies } = resolveDependencies(deriveFlags({}));
       expect(dependencies['@nestjs/common']).toBe('^10.0.0');
-    });
-
-    it('always includes @nestjs/core', () => {
-      const { dependencies } = resolveDependencies(deriveFlags({}));
       expect(dependencies['@nestjs/core']).toBe('^10.0.0');
     });
 
@@ -103,14 +123,9 @@ describe('features', () => {
       expect(devDependencies.prisma).toBe('^5.14.0');
     });
 
-    it('redis adds ioredis', () => {
-      const { dependencies } = resolveDependencies(deriveFlags({ useRedis: true }));
-      expect(dependencies.ioredis).toBe('^5.4.1');
-    });
-
-    it('no redis == no ioredis', () => {
-      const { dependencies } = resolveDependencies(deriveFlags({}));
-      expect(dependencies.ioredis).toBeUndefined();
+    it('redis adds ioredis, no redis adds nothing', () => {
+      expect(resolveDependencies(deriveFlags({ useRedis: true })).dependencies.ioredis).toBe('^5.4.1');
+      expect(resolveDependencies(deriveFlags({})).dependencies.ioredis).toBeUndefined();
     });
 
     it('typeorm + postgres adds pg', () => {
@@ -125,8 +140,7 @@ describe('features', () => {
     });
 
     it('swagger adds @nestjs/swagger', () => {
-      const { dependencies } = resolveDependencies(deriveFlags({ extras: ['swagger'] }));
-      expect(dependencies['@nestjs/swagger']).toBe('^7.4.0');
+      expect(resolveDependencies(deriveFlags({ extras: ['swagger'] })).dependencies['@nestjs/swagger']).toBe('^7.4.0');
     });
   });
 
@@ -141,26 +155,18 @@ describe('features', () => {
       expect(choices[0].value).toBe('mongo');
     });
 
-    it('none returns empty array', () => {
+    it('none / unknown orm returns empty array', () => {
       expect(databaseChoices('none')).toEqual([]);
-    });
-
-    it('unknown orm returns empty array', () => {
       expect(databaseChoices('unknown')).toEqual([]);
     });
   });
 
   describe('ormChoices', () => {
-    it('returns 4 options', () => {
-      expect(ormChoices()).toHaveLength(4);
-    });
-
-    it('includes prisma, typeorm, mongoose, none', () => {
-      const values = ormChoices().map((c) => c.value);
-      expect(values).toContain('prisma');
-      expect(values).toContain('typeorm');
-      expect(values).toContain('mongoose');
-      expect(values).toContain('none');
+    it('returns 4 options including prisma, typeorm, mongoose, none', () => {
+      const choices = ormChoices();
+      expect(choices).toHaveLength(4);
+      const values = choices.map((c) => c.value);
+      expect(values).toEqual(expect.arrayContaining(['prisma', 'typeorm', 'mongoose', 'none']));
     });
   });
 
@@ -178,6 +184,10 @@ describe('features', () => {
       expect(scripts['prisma:studio']).toBe('prisma studio');
     });
 
+    it('no prisma == no prisma scripts', () => {
+      expect(resolveScripts(deriveFlags({}))['prisma:migrate']).toBeUndefined();
+    });
+
     it('lint adds lint and format scripts', () => {
       const scripts = resolveScripts(deriveFlags({ extras: ['lint'] }));
       expect(scripts.lint).toContain('eslint');
@@ -192,15 +202,53 @@ describe('features', () => {
       expect(scripts['test:e2e']).toContain('jest-e2e');
     });
 
-    it('no prisma == no prisma scripts', () => {
-      const scripts = resolveScripts(deriveFlags({}));
-      expect(scripts['prisma:migrate']).toBeUndefined();
-    });
-
     it('useDocker adds infra scripts', () => {
       const scripts = resolveScripts(deriveFlags({ database: 'postgres' }));
       expect(scripts['infra:up']).toContain('docker compose');
       expect(scripts['infra:down']).toContain('docker compose');
     });
+  });
+});
+
+describe('features/express', () => {
+  const { deriveFlags, resolveDependencies, resolveScripts, databaseChoices, ormChoices } = expressFeatures;
+
+  it('deriveFlags mirrors the nestjs shape but has no DI-only concepts', () => {
+    const flags = deriveFlags({ orm: 'prisma', database: 'postgres', validation: 'express-validator' });
+    expect(flags.ormPrisma).toBe(true);
+    expect(flags.dbPostgres).toBe(true);
+    expect(flags.useExpressValidator).toBe(true);
+    expect(flags.hasOrm).toBe(true);
+  });
+
+  it('deriveFlags supports zod validation and reports hasValidation', () => {
+    const flags = deriveFlags({ validation: 'zod' });
+    expect(flags.useZod).toBe(true);
+    expect(flags.hasValidation).toBe(true);
+  });
+
+  it('resolveDependencies always includes the express runtime deps', () => {
+    const { dependencies } = resolveDependencies(deriveFlags({}));
+    expect(dependencies.express).toBe('^4.19.2');
+    expect(dependencies.cors).toBe('^2.8.5');
+    expect(dependencies.helmet).toBe('^7.1.0');
+  });
+
+  it('resolveDependencies adds express-validator only when selected', () => {
+    expect(resolveDependencies(deriveFlags({ validation: 'express-validator' })).dependencies['express-validator']).toBe(
+      '^7.1.0'
+    );
+    expect(resolveDependencies(deriveFlags({})).dependencies['express-validator']).toBeUndefined();
+  });
+
+  it('resolveScripts uses tsc/node instead of nest build/start', () => {
+    const scripts = resolveScripts(deriveFlags({}));
+    expect(scripts.build).toBe('tsc');
+    expect(scripts.start).toBe('node dist/main.js');
+  });
+
+  it('databaseChoices/ormChoices behave the same as nestjs', () => {
+    expect(ormChoices()).toHaveLength(4);
+    expect(databaseChoices('mongoose')).toHaveLength(1);
   });
 });

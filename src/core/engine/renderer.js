@@ -8,6 +8,28 @@ const { TemplateRenderError } = require('./errors');
 
 const compileCache = new Map();
 
+// Handlebars' compiled template is lazily parsed on first invocation (see
+// its own compiler.js: "Template is only compiled on first use") — so
+// Handlebars.compile() below essentially never throws synchronously; the
+// actual parse error surfaces later, when the returned function is called
+// with a context (i.e. inside renderString). That error's shape varies:
+//   - a semantic AST error (e.g. mismatched {{#if}}/{{/unless}}) is a
+//     Handlebars.Exception and carries the line under `.lineNumber`
+//   - a raw syntax error from the underlying parser (e.g. the classic
+//     `${...{{expr}}}` brace collision — AGENT.md gotcha #1) carries no
+//     `.lineNumber` at all, only "Parse error on line N:" in the message
+//   - a TemplateRenderError we already threw and are re-wrapping carries
+//     the line under `.line`, per errors.js — never `.lineNumber`
+// extractLine checks all three so the line survives regardless of which
+// shape actually reached the catch block.
+function extractLine(err) {
+  if (!err) return null;
+  if (typeof err.line === 'number') return err.line;
+  if (typeof err.lineNumber === 'number') return err.lineNumber;
+  const match = /line (\d+)/.exec(err.message || '');
+  return match ? Number(match[1]) : null;
+}
+
 function compileTemplate(src) {
   if (compileCache.has(src)) return compileCache.get(src);
   try {
@@ -15,7 +37,7 @@ function compileTemplate(src) {
     compileCache.set(src, tpl);
     return tpl;
   } catch (err) {
-    throw new TemplateRenderError(err.message, { templatePath: null, line: err.lineNumber });
+    throw new TemplateRenderError(err.message, { templatePath: null, line: extractLine(err) });
   }
 }
 
@@ -60,7 +82,7 @@ async function renderTemplateDir(srcDir, destDir, ctx, shouldInclude, relBase, o
     } catch (err) {
       throw new TemplateRenderError(
         `Failed to render filename "${entry.name}": ${err.message}`,
-        { templatePath: srcPath }
+        { templatePath: srcPath, line: extractLine(err) }
       );
     }
     const destPath = path.join(destDir, renderedName);
@@ -81,7 +103,7 @@ async function renderTemplateDir(srcDir, destDir, ctx, shouldInclude, relBase, o
         } catch (err) {
           throw new TemplateRenderError(err.message, {
             templatePath: srcPath,
-            line: err.lineNumber || null,
+            line: extractLine(err),
           });
         }
         await fs.ensureDir(path.dirname(destPath));

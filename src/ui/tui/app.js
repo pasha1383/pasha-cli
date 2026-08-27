@@ -5,7 +5,7 @@ var pkg = require('../../../package.json');
 var { getInk } = require('./ink-proxy');
 var { StepRail } = require('./components/StepRail');
 var { KeyHints } = require('./components/KeyHints');
-var { SidePanel } = require('./components/SidePanel');
+var { SidePanel, getPanelWidth } = require('./components/SidePanel');
 var { SelectPrompt } = require('./components/SelectPrompt');
 var { MultiSelectPrompt } = require('./components/MultiSelectPrompt');
 var { InputPrompt } = require('./components/InputPrompt');
@@ -16,6 +16,7 @@ var { PrereqsScreen } = require('./components/PrereqsScreen');
 var { HelpOverlay } = require('./components/HelpOverlay');
 var { hintsForContext, mapKey } = require('./keymap');
 var { onResize, restore: restoreTerminal, saveSummary: terminalSaveSummary } = require('./terminal');
+var io = require('../io');
 var { theme } = require('./theme');
 var e = React.createElement;
 
@@ -35,6 +36,20 @@ function getState() {
 }
 
 function setState(update) {
+  // Ink tracks how many terminal rows the previous frame occupied and
+  // erases exactly that many before writing the next one. When a view
+  // with a much taller frame (e.g. a select screen with a long
+  // side-panel description) is followed by a much shorter one, that
+  // bookkeeping can fall out of sync and leave stale rows from the old
+  // frame on screen above the new content. We're already in the
+  // alternate screen buffer (see terminal.js), where a full clear on
+  // every view change is the normal, expected behavior for a
+  // full-screen app (same as vim/htop) -- so force one here rather
+  // than relying on Ink's incremental erase to always get it right.
+  var viewChanged = update.view !== undefined && (!_appState || update.view !== _appState.view);
+  if (viewChanged && io.isTTY()) {
+    try { process.stdout.write('\x1b[2J\x1b[3J\x1b[H'); } catch (_) {}
+  }
   _appState = Object.assign({}, _appState || {}, update);
   if (_onStateChange) _onStateChange(_appState);
 }
@@ -162,9 +177,17 @@ function showSummary(context, opts) {
 }
 
 function _showSummaryFromCurrent() {
-  var state = getState();
-  if (state.view === 'summary') return;
-  showSummary(state.answers || {});
+  var priorState = getState();
+  if (priorState.view === 'summary') return;
+  // This is a read-only preview of answers-so-far (triggered by the
+  // "Skip to summary" shortcut mid-wizard) -- there's no onGenerate here
+  // because the remaining questions haven't been asked yet, so
+  // generating now would silently use incomplete/default answers.
+  // Wire onBack to actually restore the step the user was on, rather
+  // than leaving Back/Escape as a silent no-op.
+  showSummary(priorState.answers || {}, {
+    onBack: function () { setState(priorState); },
+  });
 }
 
 var _prereqsProps = null;
@@ -809,11 +832,17 @@ function App() {
         currentArch = initCh ? initCh.value : null;
       }
 
+      var sidebarVisible = !!currentArch && !compact;
       var sidebar = e(SidePanel, {
         architecture: currentArch,
-        visible: !!currentArch && !compact,
+        visible: sidebarVisible,
         compact: compact,
       });
+
+      var cols = 80;
+      try { cols = process.stdout.columns || 80; } catch (_) {}
+      var reserved = sidebarVisible ? getPanelWidth() + 2 : 0;
+      var availableWidth = Math.max(20, cols - reserved);
 
       return e(Box, { flexDirection: compact ? 'column' : 'row' },
         e(Box, { flexDirection: 'column', flexGrow: 1 },
@@ -822,6 +851,7 @@ function App() {
             choices: mappedChoices,
             selectedIndex: Math.max(0, defaultIdx),
             compact: compact,
+            availableWidth: availableWidth,
             onSelect: function (chosen) {
               _answer(chosen.value !== undefined ? chosen.value : chosen);
             },
@@ -916,7 +946,7 @@ function App() {
 
   return e(Box, { flexDirection: 'column', paddingLeft: 1, paddingRight: 1, minHeight: 24, key: 'r-' + renderKey },
     isWelcome || state.view === 'done' ? null : headerBar,
-    isWelcome || state.view === 'done' ? null : e(StepRail, { steps: STEPS, currentIndex: state.stepIndex, width: compact ? process.stdout.columns : 78, compact: compact }),
+    isWelcome || state.view === 'done' ? null : e(StepRail, { steps: STEPS, currentIndex: state.stepIndex, width: Math.min(process.stdout.columns || 80, 100), compact: compact }),
     e(Box, { flexDirection: 'column', flexGrow: 1, minHeight: 14 },
       helpVisible
         ? e(HelpOverlay, { visible: true, context: helpCtx, hints: hintsForContext(helpCtx), onClose: function () { setHelpVisible(false); } })

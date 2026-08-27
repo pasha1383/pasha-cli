@@ -24,6 +24,8 @@ function welcome() {
   console.log(row(padC(COLORS.dim(`project generator v${VERSION}`), W)));
   console.log(COLORS.primary(BOX.BL + bar() + BOX.BR));
   console.log('');
+  console.log('  ' + chalk.white("Answer a few quick questions and we'll scaffold a ready-to-run project."));
+  console.log('');
   console.log(COLORS.primary('  ') + chalk.white.bold("Let's build your project.") + COLORS.dim('  Press Ctrl+C to cancel anytime.'));
   console.log('');
 }

@@ -6,6 +6,7 @@ var { getInk } = require('./ink-proxy');
 var { StepRail } = require('./components/StepRail');
 var { KeyHints } = require('./components/KeyHints');
 var { SidePanel, getPanelWidth } = require('./components/SidePanel');
+var archDescriptions = require('./arch-descriptions');
 var { SelectPrompt } = require('./components/SelectPrompt');
 var { MultiSelectPrompt } = require('./components/MultiSelectPrompt');
 var { InputPrompt } = require('./components/InputPrompt');
@@ -846,7 +847,17 @@ function App() {
         currentArch = initCh ? initCh.value : null;
       }
 
-      var sidebarVisible = !!currentArch && !compact;
+      // Some question types (ORM, database, validation, broker choices)
+      // have no entries in arch-descriptions.js at all -- showing the
+      // panel there just means every single highlight displays the same
+      // permanently-empty "Select an option to see details" placeholder,
+      // which reads as broken/missing content rather than "nothing to
+      // show here." Only show the panel for a question where at least
+      // one choice actually has real content.
+      var anyChoiceHasDescription = mappedChoices.some(function (c) {
+        return !!archDescriptions[c.value];
+      });
+      var sidebarVisible = !!currentArch && !compact && anyChoiceHasDescription;
       var sidebar = e(SidePanel, {
         architecture: currentArch,
         visible: sidebarVisible,

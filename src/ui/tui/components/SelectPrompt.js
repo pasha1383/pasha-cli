@@ -16,6 +16,7 @@ function SelectPrompt(_a) {
   var onHighlight = _a.onHighlight;
   var onKey = _a.onKey;
   var compact = _a.compact;
+  var availableWidth = _a.availableWidth;
 
   var { Text, Box, useInput } = getInk();
   var allChoices = choices || [];
@@ -136,6 +137,7 @@ function SelectPrompt(_a) {
 
   var cols = 80;
   try { cols = process.stdout.columns || 80; } catch (_) {}
+  if (availableWidth) cols = availableWidth;
 
   var filterEl = null;
   if (!compact && filterActive) {

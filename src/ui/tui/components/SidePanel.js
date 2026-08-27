@@ -30,9 +30,21 @@ function getPanelWidth() {
   return Math.max(30, Math.floor(cols * 0.38));
 }
 
+// Rows always reserved by chrome around the panel, regardless of its own
+// content: the header bar (3: top border, title, bottom border), the
+// step rail (1), the gap between the rail and the question (2), the
+// footer bar (1), and the key-hints line (1) -- plus a couple of rows of
+// margin. Getting this wrong doesn't just look a little cramped: since
+// the panel unconditionally pads its content to this many rows, too
+// generous a budget makes the whole screen taller than the terminal,
+// pushing the header and step rail off the top with no way to scroll
+// back to them (this app runs in the alternate screen buffer, which
+// has no separate scrollback).
+var RESERVED_CHROME_ROWS = 11;
+
 function getMaxVisibleLines() {
   var rows = process.stdout.rows || 24;
-  return Math.max(10, rows - 4);
+  return Math.max(10, rows - RESERVED_CHROME_ROWS);
 }
 
 function wrapLines(text, maxLen) {
@@ -228,28 +240,32 @@ function SidePanel(_a) {
 
   if (architecture !== prevArchRef.current && animEnabled) {
     if (prevArchRef.current !== null && prevArchRef.current !== undefined) {
-      transitionRef.current = {
-        startFrame: anim.frame,
-        prevArch: prevArchRef.current,
-      };
+      transitionRef.current = { startFrame: anim.frame };
     } else {
-      transitionRef.current = { startFrame: 0, prevArch: null };
+      transitionRef.current = { startFrame: 0 };
     }
     prevArchRef.current = architecture;
   }
 
-  var showOld = false;
+  // Previously crossfaded by rendering the outgoing and incoming panels
+  // stacked on top of each other for CROSSFADE_FRAMES. Each panel pads
+  // itself to a fixed, often 30+ row height, so for that entire window
+  // total output height could run to 2x a single panel -- reliably
+  // exceeding the terminal's row count. Ink's own renderer has a special
+  // code path for exactly that case (output taller than the terminal)
+  // that bypasses its normal incremental-erase tracking entirely; once
+  // the transition ends and output height drops back under the
+  // terminal's row count, that tracking is left out of sync with what's
+  // actually on screen, leaving a stale full frame behind a new one.
+  // Simple single-panel dim-in on the incoming panel instead -- same
+  // panel, no second one stacked underneath it.
   var crossfadeT = 1;
-  var oldInfo = null;
-
-  if (transitionRef.current.startFrame > 0 && animEnabled && transitionRef.current.prevArch !== null) {
+  if (transitionRef.current.startFrame > 0 && animEnabled) {
     var elapsed = anim.frame - transitionRef.current.startFrame;
     if (elapsed < CROSSFADE_FRAMES) {
-      showOld = true;
       crossfadeT = elapsed / CROSSFADE_FRAMES;
-      oldInfo = archDescriptions[transitionRef.current.prevArch] || null;
     } else {
-      transitionRef.current = { startFrame: 0, prevArch: null };
+      transitionRef.current = { startFrame: 0 };
     }
   }
 
@@ -275,16 +291,11 @@ function SidePanel(_a) {
     );
   }
 
-  var oldPanel = showOld && oldInfo
-    ? renderPanel(oldInfo, true, scrollOffset, boxWidth)
-    : null;
-
   var isDimmed = animEnabled && crossfadeT < 1 ? crossfadeT < 0.6 : false;
 
   var newPanel = renderPanel(info, isDimmed, scrollOffset, boxWidth);
 
   return e(Box, { flexDirection: 'column', marginLeft: 2, paddingTop: 1 },
-    oldPanel,
     newPanel
   );
 }

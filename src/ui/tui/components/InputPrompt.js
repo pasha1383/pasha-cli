@@ -2,6 +2,7 @@
 
 var React = require('react');
 var { getInk, getInkTextInput } = require('../ink-proxy');
+var { theme } = require('../theme');
 var e = React.createElement;
 
 function InputPrompt(_a) {
@@ -64,9 +65,9 @@ function InputPrompt(_a) {
 
   var children = [];
 
-  children.push(e(Text, { bold: true, color: 'white' }, message));
+  children.push(e(Text, { bold: true, color: theme.text }, message));
   children.push(e(Box, { flexDirection: 'row', marginTop: 1, key: 'input-row' },
-    e(Text, { color: 'cyan', bold: true }, '  \u276F '),
+    e(Text, { color: theme.primary, bold: true }, '  \u276F '),
     e(UncontrolledTextInput, {
       initialValue: def,
       onSubmit: handleSubmit,
@@ -76,13 +77,13 @@ function InputPrompt(_a) {
 
   if (error) {
     children.push(e(Box, { marginTop: 1, key: 'error' },
-      e(Text, { color: 'red', bold: true }, '  ' + error)
+      e(Text, { color: theme.error, bold: true }, '  ' + error)
     ));
   }
 
   if (def && !value) {
     children.push(e(Box, { marginTop: 0, key: 'default' },
-      e(Text, { dimColor: true, color: 'gray' }, '  Default: ' + def)
+      e(Text, { dimColor: true, color: theme.muted }, '  Default: ' + def)
     ));
   }
 

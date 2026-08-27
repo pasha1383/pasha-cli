@@ -5,6 +5,7 @@ const { create } = require('./commands/create');
 const { doctor } = require('./commands/doctor');
 const log = require('../utils/logger');
 const io = require('../ui/io');
+const { error: errorScreen } = require('../ui/screens/error');
 
 const program = new Command();
 
@@ -52,7 +53,7 @@ program
         console.log('\nCancelled.');
         process.exit(0);
       }
-      log.fail(err.message);
+      errorScreen('Something went wrong', err);
       process.exit(err.exitCode || 1);
     }
   });

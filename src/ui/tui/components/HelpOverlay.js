@@ -2,6 +2,7 @@
 
 const React = require('react');
 const { getInk } = require('../ink-proxy');
+const { theme } = require('../theme');
 const e = React.createElement;
 
 function HelpOverlay({ visible, context, hints, onClose }) {
@@ -18,7 +19,7 @@ function HelpOverlay({ visible, context, hints, onClose }) {
 
   const hintList = hints || [];
   const ctxLabel = context || 'wizard';
-  const titleStr = 'Help  \u2014  ' + ctxLabel;
+  const titleStr = 'Help  —  ' + ctxLabel;
 
   var maxKey = 0;
   for (var i = 0; i < hintList.length; i++) {
@@ -30,10 +31,10 @@ function HelpOverlay({ visible, context, hints, onClose }) {
   if (innerWidth < 50) innerWidth = 50;
   var boxWidth = innerWidth + 2;
 
-  var top_ = '\u250C' + '\u2500'.repeat(boxWidth - 2) + '\u2510';
-  var bottom_ = '\u2514' + '\u2500'.repeat(boxWidth - 2) + '\u2518';
-  var sep = '\u2502';
-  var thin = '\u2500';
+  var top_ = '┌' + '─'.repeat(boxWidth - 2) + '┐';
+  var bottom_ = '└' + '─'.repeat(boxWidth - 2) + '┘';
+  var sep = '│';
+  var thin = '─';
 
   var titlePad = Math.max(0, innerWidth - titleStr.length);
   var titleLeft = Math.floor(titlePad / 2);
@@ -41,21 +42,21 @@ function HelpOverlay({ visible, context, hints, onClose }) {
 
   var rows = [];
 
-  rows.push(e(Text, { color: 'cyan' }, top_));
+  rows.push(e(Text, { color: theme.primary }, top_));
 
   rows.push(
     e(Box, { key: 'title', flexDirection: 'row' },
-      e(Text, { color: 'cyan' }, sep),
-      e(Text, { bold: true, color: 'white' }, ' '.repeat(titleLeft) + titleStr + ' '.repeat(titleRight)),
-      e(Text, { color: 'cyan' }, sep)
+      e(Text, { color: theme.primary }, sep),
+      e(Text, { bold: true, color: theme.text }, ' '.repeat(titleLeft) + titleStr + ' '.repeat(titleRight)),
+      e(Text, { color: theme.primary }, sep)
     )
   );
 
   rows.push(
     e(Box, { key: 'gap', flexDirection: 'row' },
-      e(Text, { color: 'cyan' }, sep),
-      e(Text, { color: 'gray' }, thin.repeat(innerWidth)),
-      e(Text, { color: 'cyan' }, sep)
+      e(Text, { color: theme.primary }, sep),
+      e(Text, { color: theme.border }, thin.repeat(innerWidth)),
+      e(Text, { color: theme.primary }, sep)
     )
   );
 
@@ -66,10 +67,10 @@ function HelpOverlay({ visible, context, hints, onClose }) {
     var rightPad = Math.max(0, innerWidth - keyStr.length - descStr.length - 7);
     rows.push(
       e(Box, { key: 'h-' + j, flexDirection: 'row' },
-        e(Text, { color: 'cyan' }, sep),
-        e(Text, { bold: true, color: 'white' }, '  ' + keyStr),
-        e(Text, { dimColor: true, color: 'gray' }, '  \u2014  ' + descStr + ' '.repeat(rightPad)),
-        e(Text, { color: 'cyan' }, sep)
+        e(Text, { color: theme.primary }, sep),
+        e(Text, { bold: true, color: theme.text }, '  ' + keyStr),
+        e(Text, { dimColor: true, color: theme.muted }, '  —  ' + descStr + ' '.repeat(rightPad)),
+        e(Text, { color: theme.primary }, sep)
       )
     );
   }
@@ -78,13 +79,13 @@ function HelpOverlay({ visible, context, hints, onClose }) {
   var closePad = Math.max(0, innerWidth - closeText.length);
   rows.push(
     e(Box, { key: 'close', flexDirection: 'row' },
-      e(Text, { color: 'cyan' }, sep),
-      e(Text, { dimColor: true, color: 'gray' }, ' '.repeat(closePad) + closeText),
-      e(Text, { color: 'cyan' }, sep)
+      e(Text, { color: theme.primary }, sep),
+      e(Text, { dimColor: true, color: theme.muted }, ' '.repeat(closePad) + closeText),
+      e(Text, { color: theme.primary }, sep)
     )
   );
 
-  rows.push(e(Text, { color: 'cyan' }, bottom_));
+  rows.push(e(Text, { color: theme.primary }, bottom_));
 
   return e(Box, { flexDirection: 'column', flexGrow: 1, alignItems: 'center', justifyContent: 'center' },
     e(Box, { flexDirection: 'column' }, ...rows)

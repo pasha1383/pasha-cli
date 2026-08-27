@@ -16,6 +16,7 @@ var { PrereqsScreen } = require('./components/PrereqsScreen');
 var { HelpOverlay } = require('./components/HelpOverlay');
 var { hintsForContext, mapKey } = require('./keymap');
 var { onResize, restore: restoreTerminal, saveSummary: terminalSaveSummary } = require('./terminal');
+var { theme } = require('./theme');
 var e = React.createElement;
 
 var COMPACT_COLS = 60;
@@ -236,9 +237,9 @@ var ErrorBoundary = (function () {
     try {
       var ink = getInk();
       return e(ink.Box, { flexDirection: 'column', paddingTop: 2, paddingLeft: 1 },
-        e(ink.Text, { bold: true, color: 'red' }, 'Fatal Error'),
+        e(ink.Text, { bold: true, color: theme.error }, 'Fatal Error'),
         e(ink.Box, { marginTop: 1 },
-          e(ink.Text, { color: 'red' }, String(props.error && props.error.message ? props.error.message : 'Unknown error'))
+          e(ink.Text, { color: theme.error }, String(props.error && props.error.message ? props.error.message : 'Unknown error'))
         ),
         e(ink.Box, { marginTop: 1 },
           e(ink.Text, { dimColor: true }, 'Press Ctrl+C to exit.')
@@ -573,16 +574,16 @@ function App() {
     var padCount = Math.max(0, innerWidth - leftText.length - rightText.length);
 
     return e(Box, { flexDirection: 'column' },
-      e(Text, { color: 'gray' }, topBorder),
+      e(Text, { color: theme.border }, topBorder),
       e(Box, { flexDirection: 'row', width: innerWidth, paddingLeft: 1, paddingRight: 0 },
-        e(Text, { bold: true, color: 'magenta' }, title),
-        e(Text, { dimColor: true, color: 'gray' }, ' ' + version),
+        e(Text, { bold: true, color: theme.brand }, title),
+        e(Text, { dimColor: true, color: theme.muted }, ' ' + version),
         padCount > 0 ? e(Text, { dimColor: true }, ' '.repeat(padCount)) : null,
         bread
           ? e(Text, { dimColor: true }, bread)
           : null
       ),
-      e(Text, { color: 'gray' }, '\u2514' + '\u2500'.repeat(maxWidth - 2) + '\u2518')
+      e(Text, { color: theme.border }, '\u2514' + '\u2500'.repeat(maxWidth - 2) + '\u2518')
     );
   }
 
@@ -590,7 +591,7 @@ function App() {
     var cols = 80;
     try { cols = process.stdout.columns || 80; } catch (_) {}
     var maxWidth = Math.min(cols, 100);
-    return e(Text, { color: 'gray' }, '\u2514' + '\u2500'.repeat(maxWidth - 2) + '\u2518');
+    return e(Text, { color: theme.border }, '\u2514' + '\u2500'.repeat(maxWidth - 2) + '\u2518');
   }
 
   var headerBar = renderHeaderBar();
@@ -601,14 +602,18 @@ function App() {
       return e(Box, { flexDirection: 'column', paddingTop: 2, alignItems: 'center' },
         e(Box, { flexDirection: 'column' },
           ...LOGO_SHORT.map(function (line, i) {
-            return e(Text, { key: i, color: 'magenta', dimColor: true }, line);
+            return e(Text, { key: i, bold: true, color: theme.brand }, line);
           })
         ),
-        e(Box, { marginTop: 2 },
-          e(Text, { dimColor: true }, 'Multi-language / multi-architecture CLI generator'),
-        ),
         e(Box, { marginTop: 1 },
-          e(Text, { color: 'white' }, 'Press any key to start...'),
+          e(Text, { dimColor: true, color: theme.muted }, 'Multi-language / multi-architecture CLI generator'),
+        ),
+        e(Box, { marginTop: 2, flexDirection: 'column', alignItems: 'center' },
+          e(Text, { color: theme.text }, 'Answer a few quick questions and we’ll scaffold'),
+          e(Text, { color: theme.text }, 'a ready-to-run project — stack, structure, and all.'),
+        ),
+        e(Box, { marginTop: 2 },
+          e(Text, { dimColor: true, color: theme.muted }, 'Press any key to start…'),
         ),
       );
     }
@@ -660,21 +665,31 @@ function App() {
       if (isSuccess) {
         doneLines.push(
           e(Box, {},
-            e(Text, { color: 'green', bold: true, dimColor: dimmed }, '\u2713  Project Ready')
+            e(Text, { color: theme.success, bold: true, dimColor: dimmed }, '\u2713  Project Ready')
           )
         );
 
         if (outPath) {
           doneLines.push(
             e(Box, { marginTop: 1 },
-              e(Text, { bold: true, color: 'white', dimColor: dimmed }, '  ' + outPath)
+              e(Text, { bold: true, color: theme.text, dimColor: dimmed }, '  ' + outPath)
+            )
+          );
+        }
+
+        var summaryParts = [ctx.languageLabel || ctx.language, ctx.frameworkLabel || ctx.framework, ctx.architectureLabel || ctx.architecture]
+          .filter(Boolean);
+        if (summaryParts.length) {
+          doneLines.push(
+            e(Box, { marginTop: 0 },
+              e(Text, { dimColor: true, color: theme.muted }, '  ' + summaryParts.join(' · '))
             )
           );
         }
       } else {
         doneLines.push(
           e(Box, {},
-            e(Text, { bold: true, color: 'red', dimColor: dimmed },
+            e(Text, { bold: true, color: theme.error, dimColor: dimmed },
               '\u2717 ' + (state.doneMessage || 'Done!')
             )
           )
@@ -688,75 +703,76 @@ function App() {
 
         doneLines.push(
           e(Box, { marginTop: 1, flexDirection: 'column' },
-            e(Text, { bold: true, color: 'white' }, 'Next steps:'),
-            e(Text, { dimColor: true }, '  cd ' + ctx.projectName)
+            e(Text, { color: theme.border }, '  ' + '─'.repeat(28)),
+            e(Text, { bold: true, color: theme.text }, 'Next steps:'),
+            e(Text, { dimColor: true, color: theme.muted }, '  $ cd ' + ctx.projectName)
           )
         );
 
         if (isPython) {
           doneLines.push(
-            e(Text, { dimColor: true }, '  python3 -m venv venv'),
-            e(Text, { dimColor: true }, '  source venv/bin/activate'),
-            e(Text, { dimColor: true }, '  pip install -r requirements.txt')
+            e(Text, { dimColor: true, color: theme.muted }, '  $ python3 -m venv venv'),
+            e(Text, { dimColor: true, color: theme.muted }, '  $ source venv/bin/activate'),
+            e(Text, { dimColor: true, color: theme.muted }, '  $ pip install -r requirements.txt')
           );
           if (ctx.devRequirementsTxt) {
-            doneLines.push(e(Text, { dimColor: true }, '  pip install -r dev-requirements.txt'));
+            doneLines.push(e(Text, { dimColor: true, color: theme.muted }, '  $ pip install -r dev-requirements.txt'));
           }
         }
 
         if (isGo) {
-          doneLines.push(e(Text, { dimColor: true }, '  go mod tidy'));
+          doneLines.push(e(Text, { dimColor: true, color: theme.muted }, '  $ go mod tidy'));
         }
 
         if (isNode) {
-          doneLines.push(e(Text, { dimColor: true }, '  npm install'));
+          doneLines.push(e(Text, { dimColor: true, color: theme.muted }, '  $ npm install'));
         }
 
         if (ctx.useDocker) {
           doneLines.push(
-            e(Text, { dimColor: true }, '  cp .env.example .env')
+            e(Text, { dimColor: true, color: theme.muted }, '  $ cp .env.example .env')
           );
           if (isNode) {
-            doneLines.push(e(Text, { dimColor: true }, '  npm run infra:up'));
+            doneLines.push(e(Text, { dimColor: true, color: theme.muted }, '  $ npm run infra:up'));
           } else {
-            doneLines.push(e(Text, { dimColor: true }, '  docker compose up -d'));
+            doneLines.push(e(Text, { dimColor: true, color: theme.muted }, '  $ docker compose up -d'));
           }
         }
 
         if (isPython) {
           if (ctx.ormDjango) {
             doneLines.push(
-              e(Text, { dimColor: true }, '  python manage.py migrate'),
-              e(Text, { dimColor: true }, '  python manage.py runserver')
+              e(Text, { dimColor: true, color: theme.muted }, '  $ python manage.py migrate'),
+              e(Text, { dimColor: true, color: theme.muted }, '  $ python manage.py runserver')
             );
           } else {
             doneLines.push(
-              e(Text, { dimColor: true }, '  uvicorn src.main:create_app --reload --factory --host 0.0.0.0 --port 8000')
+              e(Text, { dimColor: true, color: theme.muted }, '  $ uvicorn src.main:create_app --reload --factory --host 0.0.0.0 --port 8000')
             );
           }
         } else if (isGo) {
-          doneLines.push(e(Text, { dimColor: true }, '  go run .'));
+          doneLines.push(e(Text, { dimColor: true, color: theme.muted }, '  $ go run .'));
         } else {
           if (ctx.ormPrisma) {
-            doneLines.push(e(Text, { dimColor: true }, '  npm run prisma:migrate'));
+            doneLines.push(e(Text, { dimColor: true, color: theme.muted }, '  $ npm run prisma:migrate'));
           }
-          doneLines.push(e(Text, { dimColor: true }, '  npm run start:dev'));
+          doneLines.push(e(Text, { dimColor: true, color: theme.muted }, '  $ npm run start:dev'));
         }
 
         if (ctx.useSwagger) {
           if (isPython && ctx.ormDjango) {
-            doneLines.push(e(Text, { dimColor: true }, '  # API docs at http://localhost:8000/api/docs/'));
+            doneLines.push(e(Text, { dimColor: true, color: theme.muted }, '  # API docs at http://localhost:8000/api/docs/'));
           } else if (isPython) {
-            doneLines.push(e(Text, { dimColor: true }, '  # API docs at http://localhost:8000/docs'));
+            doneLines.push(e(Text, { dimColor: true, color: theme.muted }, '  # API docs at http://localhost:8000/docs'));
           } else {
-            doneLines.push(e(Text, { dimColor: true }, '  # API docs at http://localhost:3000/api/docs'));
+            doneLines.push(e(Text, { dimColor: true, color: theme.muted }, '  # API docs at http://localhost:3000/api/docs'));
           }
         }
       }
 
       doneLines.push(
         e(Box, { marginTop: 1 },
-          e(Text, { dimColor: dimmed }, 'Press Enter to exit.')
+          e(Text, { dimColor: true, color: theme.muted }, 'Press Enter to exit.')
         )
       );
 
@@ -765,7 +781,7 @@ function App() {
 
     if (state.view === 'idle') {
       return e(Box, { flexDirection: 'column', paddingTop: 2 },
-        e(Text, { color: 'yellow' }, 'Loading wizard...')
+        e(Text, { color: theme.warning }, 'Loading wizard...')
       );
     }
 
@@ -862,7 +878,7 @@ function App() {
     }
 
     return e(Box, { flexDirection: 'column', paddingTop: 2 },
-      e(Text, { color: 'red' }, 'Unknown question type: ' + qType)
+      e(Text, { color: theme.error }, 'Unknown question type: ' + qType)
     );
   }
 
@@ -885,10 +901,10 @@ function App() {
   var quitOverlayEl = null;
   if (quitConfirmVisible) {
     quitOverlayEl = e(Box, { flexDirection: 'column', justifyContent: 'center', alignItems: 'center', flexGrow: 1, minHeight: 14 },
-      e(Box, { borderStyle: 'single', borderColor: 'red', paddingLeft: 2, paddingRight: 2, paddingTop: 1, paddingBottom: 1 },
-        e(Text, { bold: true, color: 'red' }, 'Quit without saving? (y/N)'),
+      e(Box, { borderStyle: 'single', borderColor: theme.error, paddingLeft: 2, paddingRight: 2, paddingTop: 1, paddingBottom: 1 },
+        e(Text, { bold: true, color: theme.error }, 'Quit without saving? (y/N)'),
         e(Box, { marginTop: 1 },
-          e(Text, { color: 'white' }, 'y to quit, n or Esc to cancel')
+          e(Text, { color: theme.text }, 'y to quit, n or Esc to cancel')
         )
       )
     );

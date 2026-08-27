@@ -17,54 +17,62 @@ function done(outPath, ctx) {
   console.log(COLORS.success(BOX.BL + bar() + BOX.BR));
   console.log('');
   console.log('  ' + COLORS.success.bold(outPath));
+
+  const summaryParts = [ctx.languageLabel || ctx.language, ctx.frameworkLabel || ctx.framework, ctx.architectureLabel || ctx.architecture]
+    .filter(Boolean);
+  if (summaryParts.length) {
+    console.log('  ' + COLORS.dim(summaryParts.join(' · ')));
+  }
+
   console.log('');
+  console.log(COLORS.dim('  ' + '─'.repeat(28)));
   console.log(chalk.bold('  Next steps:'));
-  console.log(COLORS.dim('  cd ' + ctx.projectName));
+  console.log(COLORS.dim('  $ cd ' + ctx.projectName));
 
   const isNode = ctx.language === 'node';
   const isPython = ctx.language === 'python';
   const isGo = ctx.language === 'go';
 
   if (isPython) {
-    console.log(COLORS.dim('  python3 -m venv venv'));
-    console.log(COLORS.dim('  source venv/bin/activate'));
-    console.log(COLORS.dim('  pip install -r requirements.txt'));
+    console.log(COLORS.dim('  $ python3 -m venv venv'));
+    console.log(COLORS.dim('  $ source venv/bin/activate'));
+    console.log(COLORS.dim('  $ pip install -r requirements.txt'));
     if (ctx.devRequirementsTxt) {
-      console.log(COLORS.dim('  pip install -r dev-requirements.txt'));
+      console.log(COLORS.dim('  $ pip install -r dev-requirements.txt'));
     }
   }
 
   if (isGo) {
-    console.log(COLORS.dim('  go mod tidy'));
+    console.log(COLORS.dim('  $ go mod tidy'));
   }
 
   if (isNode) {
-    console.log(COLORS.dim('  npm install'));
+    console.log(COLORS.dim('  $ npm install'));
   }
 
   if (ctx.useDocker) {
-    console.log(COLORS.dim('  cp .env.example .env'));
+    console.log(COLORS.dim('  $ cp .env.example .env'));
     if (isNode) {
-      console.log(COLORS.dim('  npm run infra:up'));
+      console.log(COLORS.dim('  $ npm run infra:up'));
     } else {
-      console.log(COLORS.dim('  docker compose up -d'));
+      console.log(COLORS.dim('  $ docker compose up -d'));
     }
   }
 
   if (isPython) {
     if (ctx.ormDjango) {
-      console.log(COLORS.dim('  python manage.py migrate'));
-      console.log(COLORS.dim('  python manage.py runserver'));
+      console.log(COLORS.dim('  $ python manage.py migrate'));
+      console.log(COLORS.dim('  $ python manage.py runserver'));
     } else {
-      console.log(COLORS.dim('  uvicorn src.main:create_app --reload --factory --host 0.0.0.0 --port 8000'));
+      console.log(COLORS.dim('  $ uvicorn src.main:create_app --reload --factory --host 0.0.0.0 --port 8000'));
     }
   } else if (isGo) {
-    console.log(COLORS.dim('  go run .'));
+    console.log(COLORS.dim('  $ go run .'));
   } else {
     if (ctx.ormPrisma) {
-      console.log(COLORS.dim('  npm run prisma:migrate'));
+      console.log(COLORS.dim('  $ npm run prisma:migrate'));
     }
-    console.log(COLORS.dim('  npm run start:dev'));
+    console.log(COLORS.dim('  $ npm run start:dev'));
   }
 
   if (ctx.useSwagger) {

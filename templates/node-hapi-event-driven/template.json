@@ -16,7 +16,7 @@
     "src/shared/database/typeorm.datasource.ts.hbs": "ormTypeorm",
     "src/shared/database/mongoose.connection.ts.hbs": "ormMongoose",
     "src/shared/cache": "useRedis",
-    "src/plugins": "hasSharedInfra",
+    "src/plugins": "hasSharedInfra || useSwagger",
     "src/plugins/swagger.ts.hbs": "useSwagger",
     "src/plugins/auth.ts.hbs": "useAuth",
     "AGENT.md.hbs": "useAgentDocs",

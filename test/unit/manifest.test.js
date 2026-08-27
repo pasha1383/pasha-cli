@@ -1,6 +1,6 @@
 'use strict';
 
-const { getLanguages, getFrameworks, getArchitectures, getTemplateDir } = require('../../lib/core/manifest');
+const { getLanguages, getFrameworks, getArchitectures, getTemplateDir } = require('../../src/core/catalog/manifest');
 
 const mock = {
   languages: {

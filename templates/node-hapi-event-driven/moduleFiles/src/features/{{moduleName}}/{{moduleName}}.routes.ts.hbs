@@ -1,4 +1,10 @@
 import { ServerRoute } from '@hapi/hapi';
+{{#if useJoi}}
+import { create{{pascalCase moduleName}}Schema } from './dto/create-{{moduleName}}.dto';
+{{/if}}
+{{#if useZod}}
+import { create{{pascalCase moduleName}}Schema } from './dto/create-{{moduleName}}.dto';
+{{/if}}
 import { {{pascalCase moduleName}}Controller } from './infrastructure/{{moduleName}}.controller';
 import { Create{{pascalCase moduleName}}Handler } from './commands/create-{{moduleName}}.command-handler';
 import { {{pascalCase moduleName}}Projection } from './projections/{{moduleName}}.projection';
@@ -18,7 +24,18 @@ const controller = new {{pascalCase moduleName}}Controller(createHandler, projec
 
 // ---- Routes ----
 export const {{camelCase moduleName}}Routes: ServerRoute[] = [
-  { method: 'POST', path: '/{{moduleName}}', handler: controller.create },
+  {
+    method: 'POST',
+    path: '/{{moduleName}}',
+    handler: controller.create,
+{{#if useJoi}}
+    options: {
+      validate: {
+        payload: create{{pascalCase moduleName}}Schema,
+      },
+    },
+{{/if}}
+  },
   { method: 'GET', path: '/{{moduleName}}', handler: controller.findAll },
   { method: 'GET', path: '/{{moduleName}}/{id}', handler: controller.findOne },
   { method: 'PATCH', path: '/{{moduleName}}/{id}', handler: controller.update },

@@ -2,6 +2,7 @@
 
 const React = require('react');
 const { getInk } = require('../ink-proxy');
+const { theme } = require('../theme');
 const e = React.createElement;
 
 function KeyHints({ hints, compact, stepIndex }) {
@@ -33,7 +34,7 @@ function KeyHints({ hints, compact, stepIndex }) {
     cols = 80;
   }
 
-  const SEP = ' \u00B7 ';
+  const SEP = ' · ';
   var fit = [];
   var used = 0;
 
@@ -50,17 +51,17 @@ function KeyHints({ hints, compact, stepIndex }) {
 
   var children = [];
   for (var j = 0; j < fit.length; j++) {
-    if (j > 0) children.push(e(Text, { key: 's-' + j, dimColor: true, color: 'gray' }, SEP));
-    children.push(e(Text, { key: 'k-' + j, bold: true, color: 'white' }, fit[j].key));
-    children.push(e(Text, { key: 'l-' + j, dimColor: true, color: 'gray' }, ' ' + fit[j].label));
+    if (j > 0) children.push(e(Text, { key: 's-' + j, dimColor: true, color: theme.muted }, SEP));
+    children.push(e(Text, { key: 'k-' + j, bold: true, color: theme.primary }, fit[j].key));
+    children.push(e(Text, { key: 'l-' + j, dimColor: true, color: theme.muted }, ' ' + fit[j].label));
   }
 
   var cols2 = Math.min(cols, 120);
-  var topBorder = '\u251C' + '\u2500'.repeat(Math.max(0, cols2 - 2)) + '\u2524';
+  var topBorder = '├' + '─'.repeat(Math.max(0, cols2 - 2)) + '┤';
 
   return e(Box, { flexDirection: 'column' },
     e(Box, { flexDirection: 'row' },
-      e(Text, { color: 'gray' }, topBorder)
+      e(Text, { color: theme.border }, topBorder)
     ),
     e(Box, { flexDirection: 'row', justifyContent: 'center', paddingTop: 1, paddingBottom: 0 }, ...children)
   );

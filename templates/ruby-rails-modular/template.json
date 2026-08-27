@@ -21,7 +21,6 @@
     "config/initializers/rack_attack.rb.hbs": "useRateLimit",
     "config/initializers/okcomputer.rb.hbs": "useHealthCheck",
     "app/models/application_record.rb.hbs": "ormActiverecord",
-    "engines": true,
     "app/jobs": "useSidekiq",
     "spec": "useTests",
     "spec/rails_helper.rb.hbs": "useTests",

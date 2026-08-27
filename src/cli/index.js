@@ -5,6 +5,7 @@ const { create } = require('./commands/create');
 const { doctor } = require('./commands/doctor');
 const log = require('../utils/logger');
 const io = require('../ui/io');
+const { error: errorScreen } = require('../ui/screens/error');
 
 const program = new Command();
 
@@ -52,7 +53,7 @@ program
         console.log('\nCancelled.');
         process.exit(0);
       }
-      log.fail(err.message);
+      errorScreen('Something went wrong', err);
       process.exit(err.exitCode || 1);
     }
   });
@@ -106,6 +107,33 @@ program
           console.log(`    · ${a.name}`);
         }
       }
+    }
+  });
+
+program
+  .command('update')
+  .description('Check for and install the latest version of pasha')
+  .option('--check', 'Only check whether an update is available, without installing it')
+  .action(async (opts) => {
+    try {
+      const { update } = require('./commands/update');
+      await update(opts);
+    } catch (err) {
+      log.fail(err.message);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('completion <shell>')
+  .description('Print a shell completion script (bash, zsh, or fish)')
+  .action(async (shell) => {
+    try {
+      const { completion } = require('./commands/completion');
+      await completion(shell);
+    } catch (err) {
+      log.fail(err.message);
+      process.exit(1);
     }
   });
 

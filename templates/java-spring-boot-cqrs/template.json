@@ -10,8 +10,8 @@
   },
   "fileConditions": {
     "docker-compose.yml.hbs": "useDocker",
-    "src/main/java/com/example/project/shared": "hasSharedInfra",
-    "src/main/java/com/example/project/shared/database": "hasOrm",
+    "src/main/java/com/example/project/shared": "hasSharedInfra || ormNone",
+    "src/main/java/com/example/project/shared/database": "hasOrm || ormNone",
     "src/main/java/com/example/project/shared/database/JpaConfig.java.hbs": "ormJpa",
     "src/main/java/com/example/project/shared/database/MyBatisConfig.java.hbs": "ormMybatis",
     "src/main/java/com/example/project/shared/database/NoneConfig.java.hbs": "ormNone",

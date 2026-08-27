@@ -8,6 +8,11 @@ const { renderModuleFiles } = require('../../core/engine/renderer');
 const { makeIncludeCheck } = require('../../core/engine/conditions');
 const { prompt } = require('../../ui/prompts');
 
+// Same pattern used by the interactive module-name prompt below and by
+// stepProject/askModules in create.js — kept identical everywhere a module
+// name is accepted.
+const MODULE_NAME_RE = /^[a-z][a-z0-9-]*$/;
+
 async function add(opts) {
   const cwd = process.cwd();
   const pashaJsonPath = path.join(cwd, '.pasha.json');
@@ -38,9 +43,15 @@ async function add(opts) {
     const { name } = await prompt([{
       type: 'input', name: 'name',
       message: 'Module name?',
-      validate: (v) => /^[a-z][a-z0-9-]*$/.test(v) || 'Lowercase letters, numbers, and hyphens only',
+      validate: (v) => MODULE_NAME_RE.test(v) || 'Lowercase letters, numbers, and hyphens only',
     }]);
     moduleName = name;
+  } else if (!MODULE_NAME_RE.test(moduleName)) {
+    // A module name passed as a CLI positional argument must be validated
+    // here too — it otherwise bypasses the prompt's `validate` entirely and
+    // flows straight into path.join() when rendering module files.
+    log.fail(`Invalid module name "${moduleName}". Must start with a lowercase letter and contain only lowercase letters, numbers, and hyphens.`);
+    process.exit(1);
   }
 
   const existingModules = ctx.modules || [];

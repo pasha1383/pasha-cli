@@ -7,13 +7,6 @@ export const create{{pascalCase moduleName}}Dto = z.object({
 
 export type Create{{pascalCase moduleName}}Dto = z.infer<typeof create{{pascalCase moduleName}}Dto>;
 {{/if}}
-{{#if useJoi}}
-import Joi from 'joi';
-
-export const create{{pascalCase moduleName}}Schema = Joi.object({
-  name: Joi.string().min(1).max(255).required(),
-});
-{{/if}}
 {{#unless hasValidation}}
 export interface Create{{pascalCase moduleName}}Dto {
   name: string;

@@ -12,9 +12,7 @@ from slowapi import Limiter
 
 from src.config.settings import settings
 from src.errors.app_error import AppError
-{{#if hasOrm}}
-from src.shared.database.{{#if ormSqlalchemy}}sqlalchemy{{/if}}{{#if ormTortoise}}tortoise{{/if}}{{#if ormDjango}}none{{/if}} import init_db, close_db
-{{/if}}
+from src.shared.database.{{#if ormSqlalchemy}}sqlalchemy{{else if ormTortoise}}tortoise{{else}}none{{/if}} import init_db, close_db
 {{#if useRedis}}
 from src.shared.cache.redis_client import get_redis
 {{/if}}
@@ -57,15 +55,11 @@ def create_app() -> FastAPI:
 
     @app.on_event("startup")
     async def startup():
-        {{#if hasOrm}}
         await init_db(settings)
-        {{/if}}
 
     @app.on_event("shutdown")
     async def shutdown():
-        {{#if hasOrm}}
         await close_db()
-        {{/if}}
         {{#if useRedis}}
         r = await get_redis()
         if r:

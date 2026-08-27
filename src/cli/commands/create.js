@@ -31,6 +31,15 @@ const TEMPLATES_ROOT = path.join(__dirname, '../../../templates');
 
 const FRONTEND_FLAVORS = ['nextjs', 'react', 'vue', 'svelte', 'angular', 'astro', 'html'];
 
+// Same patterns enforced by the interactive prompts (stepProject's
+// projectName/github validators and askModules' moduleName validator).
+// The non-interactive (`-y` / flag-driven) path reads these values straight
+// from flags and skips those prompts entirely, so it must apply the same
+// checks itself before the values reach any output path or template render.
+const PROJECT_NAME_RE = /^[a-z0-9-]+$/;
+const GITHUB_USERNAME_RE = /^[a-zA-Z0-9-]+$/;
+const MODULE_NAME_RE = /^[a-z][a-z0-9-]*$/;
+
 let _manifest = null;
 
 function progressHeader(current, total, label) {
@@ -954,6 +963,25 @@ async function createNonInteractive(opts) {
   const author = opts.author || process.env.USER || process.env.USERNAME || 'Developer';
   const github = opts.github || 'developer';
   const description = opts.description || 'Built with pasha CLI';
+
+  if (!PROJECT_NAME_RE.test(projectName)) {
+    log.fail(`Invalid project name "${projectName}". Use only lowercase letters, numbers, and hyphens (e.g. my-api).`);
+    process.exit(1);
+  }
+  if (!author || !String(author).trim()) {
+    log.fail('Author name cannot be empty.');
+    process.exit(1);
+  }
+  if (!GITHUB_USERNAME_RE.test(github)) {
+    log.fail(`Invalid GitHub username "${github}". Use only letters, numbers, and hyphens (e.g. johndoe).`);
+    process.exit(1);
+  }
+  for (const m of modules) {
+    if (!MODULE_NAME_RE.test(m)) {
+      log.fail(`Invalid module name "${m}". Start with a lowercase letter; use lowercase letters, numbers, and hyphens only.`);
+      process.exit(1);
+    }
+  }
 
   const ctx = Object.assign(
     {

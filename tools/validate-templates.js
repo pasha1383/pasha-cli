@@ -85,13 +85,37 @@ function scanMustaches(src) {
   return tags;
 }
 
-function checkBraceCollisions(relPath, src, scope) {
-  const lines = src.split('\n');
-  lines.forEach((line, i) => {
-    if (/\$\{[^}]*\{\{/.test(line)) {
-      err(scope, `${relPath}:${i + 1} shell \${...} wraps a mustache — use the shellDefault helper instead`);
+// A genuine brace collision (AGENT.md gotcha #1) only happens when a
+// mustache's own close braces sit directly against a literal `}` with
+// nothing in between — the run of `}`s gets lexed as an unescaped
+// triple-stash close with no matching open (or, for an already-triple
+// mustache, a stray fourth `}` the lexer can't attach to anything). A
+// correctly-used `{{{shellDefault ...}}}` triple-mustache is balanced
+// (3 open, 3 close) and never at risk on its own, so it must never be
+// flagged here just for appearing next to other, unrelated braces.
+//
+// scanMustaches's own regex is greedy about trailing `}` (`\}?\}\}`), so
+// a double-mustache immediately followed by a literal `}` already gets
+// that extra brace absorbed into tag.raw — surfacing as more close
+// braces than open braces in the match itself. A dangling brace beyond
+// what the regex could absorb (e.g. after an already-balanced triple)
+// instead shows up as a literal `}` right after the match ends. Either
+// signal alone misses one of the two cases, so both are checked.
+function checkBraceCollisions(relPath, src, tags, scope) {
+  for (const tag of tags) {
+    const openLen = (tag.raw.match(/^\{+/) || [''])[0].length;
+    const closeLen = (tag.raw.match(/\}+$/) || [''])[0].length;
+    const nextChar = src[tag.index + tag.raw.length];
+    const swallowedExtraBrace = closeLen > openLen;
+    const danglingExtraBrace = closeLen === openLen && nextChar === '}';
+    if (swallowedExtraBrace || danglingExtraBrace) {
+      const line = src.slice(0, tag.index).split('\n').length;
+      err(
+        scope,
+        `${relPath}:${line} \`${tag.raw}\` sits directly against a literal "}" — the combined "}}}" breaks Handlebars parsing; use the shellDefault helper (triple-mustache) instead of nesting a mustache inside \${...}`
+      );
     }
-  });
+  }
 }
 
 function checkBlockBalance(relPath, tags, scope) {
@@ -99,7 +123,13 @@ function checkBlockBalance(relPath, tags, scope) {
   for (const tag of tags) {
     const inner = tag.inner;
     if (!inner || inner.startsWith('!')) continue;
-    if (inner.startsWith('#')) {
+    // `{{#if x}}` and the `{{^x}}` "unless" shorthand both open a block that
+    // a matching `{{/x}}` closes. A *bare* `{{^}}` (no name) is not an
+    // opener — it's the inline else/inverse marker inside an already-open
+    // block — so it must not be pushed onto the stack.
+    const isHashOpen = inner.startsWith('#');
+    const isCaretOpen = inner.startsWith('^') && inner.slice(1).trim() !== '';
+    if (isHashOpen || isCaretOpen) {
       const name = inner.slice(1).trim().split(/\s+/)[0];
       stack.push({ name, tag });
     } else if (inner.startsWith('/')) {
@@ -214,13 +244,10 @@ const BASE_CONTEXT_KEYS = new Set([
 ]);
 
 function flagsFor(flavor) {
-  const modPath =
-    flavor === 'nestjs' || !flavor
-      ? '../lib/core/features.js'
-      : `../lib/core/features-${flavor}.js`;
+  const { resolveFeatures } = require(path.join(__dirname, '../src/core/features'));
   let mod;
   try {
-    mod = require(path.join(__dirname, modPath));
+    mod = resolveFeatures(flavor || 'nestjs');
   } catch (e) {
     return null;
   }
@@ -322,7 +349,7 @@ function checkTemplate(name, tmplJsonPath) {
         if (!entry.rel.endsWith('.hbs')) continue;
         const src = fs.readFileSync(entry.abs, 'utf8');
         const tags = scanMustaches(src);
-        checkBraceCollisions(entry.rel, src, scope);
+        checkBraceCollisions(entry.rel, src, tags, scope);
         checkBlockBalance(entry.rel, tags, scope);
         checkDuplicateIfUnless(entry.rel, tags, scope);
         collectIdentifiers(tags, identifiers);

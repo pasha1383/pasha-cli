@@ -1,6 +1,6 @@
 {
   "name": "@pasha1383/pasha",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Multi-language / multi-architecture CLI generator — pick a stack, we scaffold the base project for you",
   "main": "bin/pasha.js",
   "bin": {
@@ -25,7 +25,15 @@
   },
   "os": [
     "darwin",
-    "linux"
+    "linux",
+    "win32"
+  ],
+  "files": [
+    "bin",
+    "src",
+    "templates",
+    "install.sh",
+    "README.md"
   ],
   "scripts": {
     "doctor": "node bin/pasha.js doctor",
@@ -34,7 +42,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "verify": "npm test && npm run verify:tui",
+    "validate:templates": "node tools/validate-templates.js",
+    "verify": "npm test && npm run validate:templates && npm run verify:tui",
     "verify:tui": "node test/harness/walker.js --smoke",
     "verify:tui:full": "node test/harness/walker.js --full",
     "verify:tui:fuzz": "node test/harness/walker.js --fuzz",
@@ -47,7 +56,7 @@
       "**/test/**/*.test.js"
     ],
     "collectCoverageFrom": [
-      "lib/**/*.js"
+      "src/**/*.js"
     ]
   },
   "dependencies": {
@@ -60,7 +69,6 @@
     "ink-select-input": "^6.2.0",
     "ink-spinner": "^5.0.0",
     "ink-text-input": "^6.0.0",
-    "inquirer": "^8.2.7",
     "ora": "^5.4.1",
     "react": "^18.3.1"
   },

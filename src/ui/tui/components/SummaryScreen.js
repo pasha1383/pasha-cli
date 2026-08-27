@@ -2,6 +2,7 @@
 
 var React = require('react');
 var { getInk } = require('../ink-proxy');
+var { theme } = require('../theme');
 var e = React.createElement;
 
 var SUMMARY_KEYS = [
@@ -22,7 +23,8 @@ var EXTRA_LABELS = {
 };
 
 function fmtBool(val) {
-  return val ? 'Yes' : 'No';
+  // Pair color with a symbol so the state still reads when color doesn't render.
+  return val ? '✓ Yes' : '✗ No';
 }
 
 function SummaryScreen(_a) {
@@ -83,7 +85,10 @@ function SummaryScreen(_a) {
       if (onGenerate) onGenerate();
       return;
     }
-    if (key.leftArrow) {
+    // Most modern terminals send DEL (0x7f, parsed by Ink as key.delete) for
+    // the physical Backspace key, not the historical BS (0x08, key.backspace)
+    // -- treat both as "back" so this actually fires for real Backspace presses.
+    if (key.leftArrow || key.backspace || key.delete) {
       if (onBack) onBack();
       return;
     }
@@ -105,7 +110,7 @@ function SummaryScreen(_a) {
   });
 
   var titleStr = 'Configuration Summary';
-  var footerStr = '  \u2191\u2193 navigate \u00b7 Enter/e edit \u00b7 g generate \u00b7 \u2190 back  ';
+  var footerStr = '  ↑↓ navigate · Enter/e edit · g generate · ← back  ';
 
   var contentWidth = 2 + maxLabelLen + 1 + 2 + maxValueLen + 2;
   var innerWidth = Math.max(titleStr.length + 4, footerStr.length, contentWidth);
@@ -113,10 +118,10 @@ function SummaryScreen(_a) {
 
   var boxWidth = innerWidth + 2;
 
-  var top_ = '\u250C' + '\u2500'.repeat(boxWidth - 2) + '\u2510';
-  var mid_ = '\u251C' + '\u2500'.repeat(boxWidth - 2) + '\u2524';
-  var bottom_ = '\u2514' + '\u2500'.repeat(boxWidth - 2) + '\u2518';
-  var sep = '\u2502';
+  var top_ = '┌' + '─'.repeat(boxWidth - 2) + '┐';
+  var mid_ = '├' + '─'.repeat(boxWidth - 2) + '┤';
+  var bottom_ = '└' + '─'.repeat(boxWidth - 2) + '┘';
+  var sep = '│';
 
   var titlePad = Math.max(0, innerWidth - titleStr.length);
   var titleLeft = Math.floor(titlePad / 2);
@@ -126,17 +131,17 @@ function SummaryScreen(_a) {
 
   var elements = [];
 
-  elements.push(e(Text, { color: 'gray' }, top_));
+  elements.push(e(Text, { color: theme.border }, top_));
 
   elements.push(
     e(Box, { key: 'title', flexDirection: 'row' },
-      e(Text, { color: 'gray' }, sep),
-      e(Text, { bold: true, color: 'white' }, ' '.repeat(titleLeft) + titleStr + ' '.repeat(titleRight)),
-      e(Text, { color: 'gray' }, sep)
+      e(Text, { color: theme.border }, sep),
+      e(Text, { bold: true, color: theme.text }, ' '.repeat(titleLeft) + titleStr + ' '.repeat(titleRight)),
+      e(Text, { color: theme.border }, sep)
     )
   );
 
-  elements.push(e(Text, { color: 'gray' }, mid_));
+  elements.push(e(Text, { color: theme.border }, mid_));
 
   rows.forEach(function (row, idx) {
     var label = row.label;
@@ -149,45 +154,47 @@ function SummaryScreen(_a) {
 
     var labelColon = label + ':';
     var labelPart = labelColon + ' '.repeat(labelColonWidth - labelColon.length) + '  ';
-    var contentPrefix = '  ' + labelPart;
+    // Reserve the leading two spaces for a "❯ " pointer on the highlighted
+    // row so focus doesn't rely on the background color alone.
+    var pointerPrefix = isHighlighted ? '❯ ' : '  ';
+    var contentPrefix = pointerPrefix + labelPart;
     var rightPad = innerWidth - contentPrefix.length - valDisplay.length;
 
     if (rightPad < 0) rightPad = 0;
 
     if (isHighlighted) {
       var rowContent = contentPrefix + valDisplay + ' '.repeat(rightPad);
-      elements.push(e(Text, { key: 'r-' + idx, backgroundColor: 'cyan', color: 'black' },
+      elements.push(e(Text, { key: 'r-' + idx, backgroundColor: theme.accentBg, color: theme.onAccent, bold: true },
         sep + rowContent + sep
       ));
     } else {
       var isYes = row.isBool && row.value === true;
       var isNo = row.isBool && row.value === false;
-      var valColor = isYes ? 'green' : 'white';
-      var valDim = isNo;
+      var valColor = isYes ? theme.success : (isNo ? theme.muted : theme.text);
 
       elements.push(
         e(Box, { key: 'r-' + idx, flexDirection: 'row' },
-          e(Text, { color: 'gray' }, sep),
-          e(Text, { color: 'white' }, contentPrefix),
-          e(Text, { color: valColor, dimColor: valDim }, valDisplay + ' '.repeat(rightPad)),
-          e(Text, { color: 'gray' }, sep)
+          e(Text, { color: theme.border }, sep),
+          e(Text, { color: theme.text }, contentPrefix),
+          e(Text, { color: valColor }, valDisplay + ' '.repeat(rightPad)),
+          e(Text, { color: theme.border }, sep)
         )
       );
     }
   });
 
-  elements.push(e(Text, { color: 'gray' }, mid_));
+  elements.push(e(Text, { color: theme.border }, mid_));
 
   var footerPad = Math.max(0, innerWidth - footerStr.length);
   elements.push(
     e(Box, { key: 'footer', flexDirection: 'row' },
-      e(Text, { color: 'gray' }, sep),
-      e(Text, { dimColor: true, color: 'gray' }, footerStr + ' '.repeat(footerPad)),
-      e(Text, { color: 'gray' }, sep)
+      e(Text, { color: theme.border }, sep),
+      e(Text, { dimColor: true, color: theme.muted }, footerStr + ' '.repeat(footerPad)),
+      e(Text, { color: theme.border }, sep)
     )
   );
 
-  elements.push(e(Text, { color: 'gray' }, bottom_));
+  elements.push(e(Text, { color: theme.border }, bottom_));
 
   return e(Box, { flexDirection: 'column', paddingTop: 1, paddingBottom: 1 }, ...elements);
 }

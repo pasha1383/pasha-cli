@@ -1,24 +1,14 @@
-{{#if useClassValidator}}
-import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
+{{#if useJoi}}
+import Joi from 'joi';
 
-export class Create{{pascalCase moduleName}}Dto {
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(255)
-  name!: string;
-}
-{{else}}
+export const create{{pascalCase moduleName}}Schema = Joi.object({
+  name: Joi.string().min(1).max(255).required(),
+});
+{{/if}}
 {{#if useZod}}
 import { z } from 'zod';
 
 export const create{{pascalCase moduleName}}Schema = z.object({
   name: z.string().min(1).max(255),
 });
-
-export type Create{{pascalCase moduleName}}Dto = z.infer<typeof create{{pascalCase moduleName}}Schema>;
-{{else}}
-export class Create{{pascalCase moduleName}}Dto {
-  name!: string;
-}
-{{/if}}
 {{/if}}

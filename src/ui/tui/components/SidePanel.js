@@ -3,6 +3,7 @@
 const React = require('react');
 const { getInk } = require('../ink-proxy');
 const { useAnimation, isAnimationEnabled } = require('../hooks/useAnimation');
+const { theme } = require('../theme');
 const archDescriptions = require('../arch-descriptions');
 const e = React.createElement;
 
@@ -124,7 +125,7 @@ function renderPanel(boxInfo, isDimmed, scrollOffset, boxWidth) {
 
   var hasUp = scroll > 0;
   var hasDown = scroll < maxScroll;
-  var borderColor = isDimmed ? 'gray' : 'cyan';
+  var borderColor = isDimmed ? theme.muted : theme.primary;
 
   var lineElements = [];
 
@@ -138,13 +139,13 @@ function renderPanel(boxInfo, isDimmed, scrollOffset, boxWidth) {
     var dim = false;
 
     if (section === SECTION_HEADER) {
-      color = isDimmed ? 'gray' : 'yellow';
+      color = isDimmed ? theme.muted : theme.primary;
       bold = true;
     } else if (section === SECTION_CONTENT) {
-      color = isDimmed ? 'gray' : undefined;
+      color = isDimmed ? theme.muted : theme.text;
       dim = true;
     } else if (section === SECTION_BLANK || section === SECTION_DESC) {
-      color = isDimmed ? 'gray' : undefined;
+      color = isDimmed ? theme.muted : theme.text;
     }
 
     var isBlank = line.length === 0;
@@ -260,13 +261,13 @@ function SidePanel(_a) {
     var phBottom = '\u2514' + '\u2500'.repeat(boxWidth - 2) + '\u2518';
 
     return e(Box, { flexDirection: 'column', marginLeft: 2, width: boxWidth, flexShrink: 0 },
-      e(Text, { color: 'cyan' }, phTop),
+      e(Text, { color: theme.primary }, phTop),
       e(Box, { flexDirection: 'row', width: boxWidth },
-        e(Text, { color: 'cyan' }, '\u2502'),
-        e(Text, { dimColor: true }, '  ' + ' '.repeat(padLeft) + msg),
-        e(Text, { color: 'cyan' }, '\u2502')
+        e(Text, { color: theme.primary }, '\u2502'),
+        e(Text, { dimColor: true, color: theme.muted }, '  ' + ' '.repeat(padLeft) + msg),
+        e(Text, { color: theme.primary }, '\u2502')
       ),
-      e(Text, { color: 'cyan' }, phBottom)
+      e(Text, { color: theme.primary }, phBottom)
     );
   }
 

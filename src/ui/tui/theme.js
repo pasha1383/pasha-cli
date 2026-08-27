@@ -41,19 +41,4 @@ var theme = {
   error: 'red',
 };
 
-// Small helpers for the two recurring "dim secondary text" and
-// "border/rule line" prop bundles, so components can spread one token
-// instead of repeating `{ color: theme.muted, dimColor: true }` everywhere.
-var textProps = {
-  muted: { color: theme.muted, dimColor: true },
-  border: { color: theme.border },
-  body: { color: theme.text },
-  heading: { color: theme.text, bold: true },
-  accent: { color: theme.primary },
-  brand: { color: theme.brand },
-  success: { color: theme.success },
-  warning: { color: theme.warning },
-  error: { color: theme.error, bold: true },
-};
-
-module.exports = { theme: theme, textProps: textProps };
+module.exports = { theme: theme };

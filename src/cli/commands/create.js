@@ -439,9 +439,16 @@ function buildContext(flags, modules, baseAnswers, ctx) {
 }
 
 async function renderProject(ctx, renderOpts = {}) {
-  const outDir = path.resolve(process.cwd(), ctx.projectName);
+  // Full-stack mode passes an explicit outDir so backend/frontend land as
+  // nested <root>/backend and <root>/frontend directories rather than each
+  // resolving its own top-level directory from ctx.projectName (which, for
+  // that mode, is a per-half template name like "myapp-backend" — not the
+  // path we actually want on disk). cdPath is the human-readable path used
+  // in log/warning messages, since it can differ from ctx.projectName too.
+  const outDir = renderOpts.outDir || path.resolve(process.cwd(), ctx.projectName);
+  const cdPath = renderOpts.cdPath || ctx.projectName;
   if (await fs.pathExists(outDir)) {
-    log.fail(`Directory "${ctx.projectName}" already exists.`);
+    log.fail(`Directory "${cdPath}" already exists.`);
     process.exit(1);
   }
 
@@ -474,7 +481,15 @@ async function renderProject(ctx, renderOpts = {}) {
         await renderTemplateDir(sharedFiles, outDir, ctx, shouldInclude, null, onProgress ? function (fp) { onProgress({ phase: 0, filePath: fp }); } : null);
     }
 
-    await renderTemplateDir(path.join(templateDir, 'files'), outDir, ctx, shouldInclude, null, onProgress ? function (fp) { onProgress({ phase: 0, filePath: fp }); } : null);
+    // A template whose own files/ is empty on top of its shared/ base (e.g.
+    // several frontend framework templates) doesn't get that directory
+    // checked into git at all — git doesn't track empty directories — so
+    // it can be legitimately absent on a fresh checkout. Guard the same way
+    // the tc.shared branch above already does, rather than letting
+    // fs.readdir throw ENOENT for a template that has nothing more to add.
+    const ownFilesDir = path.join(templateDir, 'files');
+    if (await fs.pathExists(ownFilesDir))
+      await renderTemplateDir(ownFilesDir, outDir, ctx, shouldInclude, null, onProgress ? function (fp) { onProgress({ phase: 0, filePath: fp }); } : null);
 
     const moduleFilesDir = path.join(templateDir, 'moduleFiles');
     if (modules.length && (await fs.pathExists(moduleFilesDir)))
@@ -501,7 +516,7 @@ async function renderProject(ctx, renderOpts = {}) {
     const npmPath = resolveCommandPath('npm');
     if (!npmPath) {
       log.fail('Could not resolve npm on PATH.');
-      log.warn(`Run manually: cd ${ctx.projectName} && npm install`);
+      log.warn(`Run manually: cd ${cdPath} && npm install`);
     } else {
       try {
         await run(npmPath, ['install'], { cwd: outDir, stdio: 'inherit' });
@@ -509,7 +524,7 @@ async function renderProject(ctx, renderOpts = {}) {
         log.ok('npm install done');
       } catch (err) {
         log.fail(err.message);
-        log.warn(`Run manually: cd ${ctx.projectName} && npm install`);
+        log.warn(`Run manually: cd ${cdPath} && npm install`);
       }
     }
   }
@@ -523,6 +538,18 @@ async function renderProject(ctx, renderOpts = {}) {
         await run('git', ['commit', '-m', 'feat: init ' + ctx.projectName], { cwd: outDir, stdio: 'ignore' });
       } catch (_) {}
       onProgress({ phase: 3, done: true });
+    } else if (renderOpts.gitMode === 'auto') {
+      // Non-interactive (-y) callers: never block on a confirm prompt --
+      // that defeats the point of "-y". Run git init the same way the
+      // TUI path above does, just without progress-bar plumbing.
+      try {
+        await run('git', ['init'], { cwd: outDir, stdio: 'ignore' });
+        await run('git', ['add', '.'], { cwd: outDir, stdio: 'ignore' });
+        await run('git', ['commit', '-m', 'feat: init ' + ctx.projectName], { cwd: outDir, stdio: 'ignore' });
+        if (isPlain) console.log('  ✓ git set up');
+      } catch (_) {
+        if (isPlain) console.log('  Run git init manually');
+      }
     } else {
       const { doGit } = await prompt([
         { type: 'confirm', name: 'doGit', message: 'Run git init and first commit?', default: true },
@@ -580,6 +607,112 @@ async function writePashaJson(outDir, fullCtx) {
   } catch (e) { /* non-critical */ }
 }
 
+// Shared by runFullStack() (interactive, plain + TUI) and
+// createNonInteractive()'s full-stack branch: renders the already-resolved
+// backend/frontend contexts into <root>/backend and <root>/frontend under
+// one project directory, then — a deliberate choice over an independent git
+// repo per half — does a single git init/commit at the project root, since
+// "one full-stack app" reads better than two unrelated repos nested inside
+// each other. Each half still gets its own postInstall (e.g. npm install)
+// run independently, since backend/frontend are usually separate packages.
+async function renderFullStackProject(rootCtx, backendCtx, frontendCtx, opts = {}) {
+  const rootDir = path.resolve(process.cwd(), rootCtx.projectName);
+  if (await fs.pathExists(rootDir)) {
+    log.fail(`Directory "${rootCtx.projectName}" already exists.`);
+    process.exit(1);
+  }
+  await fs.ensureDir(rootDir);
+
+  const backendOutDir = path.join(rootDir, 'backend');
+  const frontendOutDir = path.join(rootDir, 'frontend');
+  const tui = !!(opts.tui && opts.tuiApp);
+
+  if (tui) {
+    opts.tuiApp.showProgress(
+      [{ label: 'Generating backend' }, { label: 'Generating frontend' }, { label: 'Finishing' }],
+      0, 'Generating backend...'
+    );
+  } else {
+    console.log('');
+    console.log(chalk.bold(`  ${chalk.cyan('Backend')}`));
+  }
+  await renderProject(backendCtx, {
+    outDir: backendOutDir,
+    cdPath: `${rootCtx.projectName}/backend`,
+    skipInstall: opts.skipInstall,
+    skipGit: true,
+  });
+  await history.saveSession(backendCtx);
+  await writePashaJson(backendOutDir, backendCtx);
+
+  if (tui) {
+    opts.tuiApp.updateProgress({ currentPhase: 1, progressMessage: 'Generating frontend...' });
+  } else {
+    console.log('');
+    console.log(chalk.bold(`  ${chalk.magenta('Frontend')}`));
+  }
+  await renderProject(frontendCtx, {
+    outDir: frontendOutDir,
+    cdPath: `${rootCtx.projectName}/frontend`,
+    skipInstall: opts.skipInstall,
+    skipGit: true,
+  });
+  await history.saveSession(frontendCtx);
+  await writePashaJson(frontendOutDir, frontendCtx);
+
+  if (!opts.skipGit) {
+    if (tui) {
+      opts.tuiApp.updateProgress({ currentPhase: 2, progressMessage: 'Setting up git...' });
+      try {
+        await run('git', ['init'], { cwd: rootDir, stdio: 'ignore' });
+        await run('git', ['add', '.'], { cwd: rootDir, stdio: 'ignore' });
+        await run('git', ['commit', '-m', 'feat: init ' + rootCtx.projectName], { cwd: rootDir, stdio: 'ignore' });
+      } catch (_) { /* non-fatal — user can init manually */ }
+    } else if (opts.gitMode === 'auto') {
+      try {
+        await run('git', ['init'], { cwd: rootDir, stdio: 'ignore' });
+        await run('git', ['add', '.'], { cwd: rootDir, stdio: 'ignore' });
+        await run('git', ['commit', '-m', 'feat: init ' + rootCtx.projectName], { cwd: rootDir, stdio: 'ignore' });
+        log.ok('git set up at project root');
+      } catch (_) {
+        log.warn('Run git init manually at the project root');
+      }
+    } else {
+      const { doGit } = await prompt([
+        { type: 'confirm', name: 'doGit', message: 'Run git init and first commit at the project root?', default: true },
+      ]);
+      if (doGit) {
+        try {
+          await run('git', ['init'], { cwd: rootDir, stdio: 'ignore' });
+          await run('git', ['add', '.'], { cwd: rootDir, stdio: 'ignore' });
+          await run('git', ['commit', '-m', 'feat: init ' + rootCtx.projectName], { cwd: rootDir, stdio: 'ignore' });
+          log.ok('git set up at project root');
+        } catch (_) {
+          log.warn('Run git init manually at the project root');
+        }
+      }
+    }
+  }
+
+  // backendCtx.projectName is the per-half template name (e.g.
+  // "myapp-backend"), not the actual root directory — done()/showDone's
+  // "cd <projectName>" hint needs the real root name instead.
+  const doneCtx = Object.assign({}, backendCtx, { projectName: rootCtx.projectName });
+
+  if (tui) {
+    opts.tuiApp.showDone(`Full-stack project "${rootCtx.projectName}" created!`, rootDir, doneCtx);
+  } else {
+    done(rootDir, doneCtx);
+    console.log('');
+    console.log(chalk.bold('  Full-stack project scaffolded'));
+    console.log(chalk.dim(`  Backend:  ${rootCtx.projectName}/backend`));
+    console.log(chalk.dim(`  Frontend: ${rootCtx.projectName}/frontend`));
+    console.log('');
+  }
+
+  return { rootDir, backendOutDir, frontendOutDir };
+}
+
 async function renderProjectDry(ctx) {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'pasha-dry-'));
   const tc = ctx._templateConfig;
@@ -596,7 +729,9 @@ async function renderProjectDry(ctx) {
         await renderTemplateDir(sharedFiles, tmpDir, ctx, shouldInclude);
     }
 
-    await renderTemplateDir(path.join(templateDir, 'files'), tmpDir, ctx, shouldInclude);
+    const ownFilesDirDry = path.join(templateDir, 'files');
+    if (await fs.pathExists(ownFilesDirDry))
+      await renderTemplateDir(ownFilesDirDry, tmpDir, ctx, shouldInclude);
 
     const moduleFilesDir = path.join(templateDir, 'moduleFiles');
     if (modules.length && (await fs.pathExists(moduleFilesDir)))
@@ -629,6 +764,7 @@ async function renderProjectDry(ctx) {
 }
 
 async function stepLanguage(ctx, nav) {
+  if (ctx._skipRemaining) return {};
   progressHeader(nav.currentIndex + 1, nav.totalSteps, nav.currentStep.label);
   if (ctx._mode === 'frontend') {
     log.info('   Language: Frontend (auto-selected)');
@@ -647,6 +783,7 @@ async function stepLanguage(ctx, nav) {
 }
 
 async function stepFramework(ctx, nav) {
+  if (ctx._skipRemaining) return {};
   progressHeader(nav.currentIndex + 1, nav.totalSteps, nav.currentStep.label);
   const fws = getFrameworks(_manifest, ctx.language);
   const defaultVal = ctx.framework || undefined;
@@ -661,6 +798,7 @@ async function stepFramework(ctx, nav) {
 }
 
 async function stepArchitecture(ctx, nav) {
+  if (ctx._skipRemaining) return {};
   progressHeader(nav.currentIndex + 1, nav.totalSteps, nav.currentStep.label);
   const archs = getArchitectures(_manifest, ctx.language, ctx.framework);
   const defaultVal = ctx.architecture || undefined;
@@ -687,6 +825,7 @@ async function stepArchitecture(ctx, nav) {
 }
 
 async function stepPrerequisites(ctx, nav) {
+  if (ctx._skipRemaining) return {};
   progressHeader(nav.currentIndex + 1, nav.totalSteps, nav.currentStep.label);
   const res = await ensurePrerequisites(ctx._templateConfig.prerequisites);
   if (res === '__back__') return '__back__';
@@ -694,6 +833,7 @@ async function stepPrerequisites(ctx, nav) {
 }
 
 async function stepProject(ctx, nav) {
+  if (ctx._skipRemaining) return {};
   progressHeader(nav.currentIndex + 1, nav.totalSteps, nav.currentStep.label);
   const answers = await prompt([
     {
@@ -732,11 +872,13 @@ async function stepProject(ctx, nav) {
 }
 
 async function stepStack(ctx, nav) {
+  if (ctx._skipRemaining) return {};
   progressHeader(nav.currentIndex + 1, nav.totalSteps, nav.currentStep.label);
   return runStackWizard(ctx, nav);
 }
 
 async function stepModules(ctx, nav) {
+  if (ctx._skipRemaining) return {};
   progressHeader(nav.currentIndex + 1, nav.totalSteps, nav.currentStep.label);
   const list = await askModules(ctx, nav);
   if (list === '__back__') return '__back__';
@@ -745,6 +887,7 @@ async function stepModules(ctx, nav) {
 }
 
 async function stepReview(ctx, nav) {
+  if (ctx._skipRemaining) return {};
   progressHeader(nav.currentIndex + 1, nav.totalSteps, nav.currentStep.label);
   const flavor = ctx._stackFlavor;
   const flags = flavor ? resolveFeatures(flavor).deriveFlags(Object.assign(
@@ -870,7 +1013,124 @@ async function runMicroservices(ctx) {
   console.log('');
 }
 
+// ---- Full-stack mode ----
+//
+// Mirrors runMicroservices' shape (above): two passes over the same
+// backend/frontend step sequences used by 'single' and 'frontend' mode,
+// instead of a user-chosen count of services. The first pass has no
+// _mode set, so stepLanguage prompts for a real language/framework/
+// architecture exactly like 'single' mode. The second pass seeds
+// _mode: 'frontend' + language: 'frontend' so stepLanguage auto-selects
+// frontend and the frontend-specific choice lists are used, exactly like
+// 'frontend' mode. Like runMicroservices, there is no per-pass review/
+// confirm step — the two passes collect answers, then both projects are
+// generated together.
+//
+// Works in both plain and TUI mode: opts.tui/opts.tuiApp, when given,
+// route each pass's Navigator through the TUI (setNavigator, so back-nav
+// within a pass still works) and keep the step rail roughly in sync via
+// setTuiContext — reusing the existing Language..Modules rail entries for
+// both passes rather than inventing new ones, since the rail resets
+// between passes is an accepted approximation here (see AGENT.md-adjacent
+// notes in the PR — runMicroservices doesn't solve this cleanly in TUI
+// either, and this mode doesn't need to be pixel-perfect about it).
+const FULL_STACK_PASS_STEP_DEFS = [
+  { name: 'language',     label: 'Language' },
+  { name: 'framework',    label: 'Framework' },
+  { name: 'architecture', label: 'Architecture' },
+  { name: 'prereqs',      label: 'Prerequisites' },
+  { name: 'project',      label: 'Project Info' },
+  { name: 'stack',        label: 'Stack' },
+  { name: 'modules',      label: 'Modules' },
+];
+
+async function runFullStack(ctx, opts = {}) {
+  const tui = !!(opts.tui && opts.tuiApp);
+  const tuiApp = opts.tuiApp;
+  const prereqStep = opts.prereqStep || stepPrerequisites;
+
+  const runners = {
+    language: stepLanguage,
+    framework: stepFramework,
+    architecture: stepArchitecture,
+    prereqs: prereqStep,
+    project: stepProject,
+    stack: stepStack,
+    modules: stepModules,
+  };
+
+  if (!tui) {
+    console.log('');
+    console.log(chalk.bold('  Full-stack Mode'));
+    console.log(chalk.dim("  You'll configure the backend, then the frontend."));
+    console.log(chalk.dim('  Both are generated as backend/ and frontend/ inside one project root.'));
+    console.log('');
+  }
+
+  async function runPass(passLabel, half, extraCtx) {
+    const steps = FULL_STACK_PASS_STEP_DEFS.map((s) => ({ name: s.name, label: s.label, run: runners[s.name] }));
+
+    if (tui) {
+      for (let i = 0; i < steps.length; i++) {
+        const orig = steps[i].run;
+        const idx = i;
+        steps[i].run = async (c, n) => {
+          setTuiContext({
+            // Offset by 1 to line up with app.js's STEPS rail
+            // (0=Mode, 1..7=Language..Modules, 8=Review) for both passes.
+            stepIndex: idx + 1,
+            totalSteps: 9,
+            stepLabel: `${passLabel}: ${steps[idx].label}`,
+            answers: c,
+          });
+          return orig(c, n);
+        };
+      }
+    } else {
+      console.log('');
+      console.log(chalk.bold(`  ${half === 'backend' ? chalk.cyan(passLabel) : chalk.magenta(passLabel)}`));
+      console.log('');
+    }
+
+    const nav = new Navigator(steps);
+    if (tui) tuiApp.setNavigator(nav);
+    const passCtx = await nav.start(Object.assign({}, ctx, extraCtx));
+
+    const flavor = passCtx._stackFlavor;
+    const flags = flavor ? resolveFeatures(flavor).deriveFlags(Object.assign(
+      {}, passCtx,
+      passCtx.orm ? { orm: passCtx.orm, database: passCtx.database,
+        validation: passCtx.validation, broker: passCtx.broker,
+        useRedis: passCtx.useRedis, useAgentDocs: passCtx.useAgentDocs,
+        extras: passCtx.extras } : {}
+    )) : {};
+
+    const finalCtx = buildContext(flags, passCtx.modules || [], passCtx, passCtx);
+    if (!tui) summary(finalCtx);
+    return finalCtx;
+  }
+
+  const backendCtx = await runPass('Backend', 'backend', {
+    projectName: `${ctx.projectName}-backend`,
+    description: `Backend for ${ctx.projectName}`,
+  });
+
+  const frontendCtx = await runPass('Frontend', 'frontend', {
+    projectName: `${ctx.projectName}-frontend`,
+    description: `Frontend for ${ctx.projectName}`,
+    _mode: 'frontend',
+    language: 'frontend',
+  });
+
+  if (!tui) divider();
+
+  await renderFullStackProject(ctx, backendCtx, frontendCtx, { tui, tuiApp });
+}
+
 function hasEnoughCliFlags(opts) {
+  if (opts.mode === 'full-stack') {
+    return !!(opts.framework && opts.architecture && opts.frontendFramework && opts.frontendArchitecture);
+  }
   if (opts.mode === 'frontend') return !!(opts.framework && opts.architecture);
   return !!(opts.language && opts.framework && opts.architecture);
 }
@@ -904,6 +1164,10 @@ async function resolveTemplateInfo(lang, fw, arch) {
 }
 
 async function createNonInteractive(opts) {
+  if (opts.mode === 'full-stack') {
+    return createNonInteractiveFullStack(opts);
+  }
+
   const isFrontendMode = opts.mode === 'frontend';
 
   const lang = isFrontendMode ? 'frontend' : (opts.language || 'node');
@@ -1003,11 +1267,135 @@ async function createNonInteractive(opts) {
   if (opts.dryRun) {
     await renderProjectDry(fullCtx);
   } else {
-    const outDir = await renderProject(fullCtx, { skipInstall: opts.skipInstall, skipGit: opts.skipGit });
+    const outDir = await renderProject(fullCtx, { skipInstall: opts.skipInstall, skipGit: opts.skipGit, gitMode: 'auto' });
     await history.saveSession(fullCtx);
     done(outDir, fullCtx);
     await writePashaJson(outDir, fullCtx);
   }
+}
+
+// Non-interactive (-y / enough flags) equivalent of runFullStack(): reuses
+// the existing backend flag names (--language/--framework/--architecture
+// and friends) for the backend half, and adds --frontend-framework /
+// --frontend-architecture for the frontend half — same defaults each half
+// already uses on its own (react/component-based for frontend; nestjs/
+// layered for backend), since full-stack mode is just "run both halves
+// non-interactively instead of one."
+async function createNonInteractiveFullStack(opts) {
+  const lang = opts.language || 'node';
+  const fw = opts.framework || 'nestjs';
+  const arch = opts.architecture || 'layered';
+
+  const feLang = 'frontend';
+  const feFw = opts.frontendFramework || 'react';
+  const feArch = opts.frontendArchitecture || 'component-based';
+
+  const backendTi = await resolveTemplateInfo(lang, fw, arch);
+  const frontendTi = await resolveTemplateInfo(feLang, feFw, feArch);
+
+  function buildHalfAnswers(ti, isFrontendHalf) {
+    const flavor = ti._stackFlavor;
+    let orm, database, validation, useRedis, broker, useAgentDocs, extras, flags, stackAnswers;
+
+    if (flavor) {
+      const fm = resolveFeatures(flavor);
+      if (isFrontendHalf) {
+        orm = 'none';
+        database = 'none';
+        useRedis = false;
+        broker = 'none';
+        validation = opts.validation || (fm.validationChoices()[0] && fm.validationChoices()[0].value) || 'none';
+        useAgentDocs = opts.agentDocs !== undefined ? Boolean(opts.agentDocs) : true;
+        extras = opts.extras ? opts.extras.split(',').map((s) => s.trim()).filter(Boolean) : ['lint', 'tests'];
+      } else {
+        orm = opts.orm || (fm.ormChoices(fw)[0] && fm.ormChoices(fw)[0].value) || 'none';
+        database = opts.database || 'none';
+        if (orm !== 'none' && database === 'none') {
+          const dbChoices = fm.databaseChoices(orm);
+          if (dbChoices.length > 0) database = dbChoices[0].value;
+        }
+        validation = opts.validation || (fm.validationChoices()[0] && fm.validationChoices()[0].value) || 'none';
+        useRedis = opts.redis !== undefined ? Boolean(opts.redis) : false;
+        broker = opts.broker || 'none';
+        useAgentDocs = opts.agentDocs !== undefined ? Boolean(opts.agentDocs) : true;
+        extras = opts.extras ? opts.extras.split(',').map((s) => s.trim()).filter(Boolean) : ['swagger', 'lint', 'tests', 'health'];
+      }
+      stackAnswers = { orm, database, validation, useRedis, broker, useAgentDocs, extras };
+      if (isFrontendHalf) stackAnswers._frontendFlavor = flavor;
+      flags = fm.deriveFlags(stackAnswers);
+    } else {
+      stackAnswers = { orm: 'none', database: 'none', validation: 'none', useRedis: false, broker: 'none', useAgentDocs: true, extras: [] };
+      flags = {};
+    }
+    return { flags, stackAnswers };
+  }
+
+  const modules = opts.modules ? opts.modules.split(',').map((s) => s.trim()).filter(Boolean) : ['product'];
+  const projectName = opts.projectName || 'my-project';
+  const author = opts.author || process.env.USER || process.env.USERNAME || 'Developer';
+  const github = opts.github || 'developer';
+  const description = opts.description || 'Built with pasha CLI';
+
+  if (!PROJECT_NAME_RE.test(projectName)) {
+    log.fail(`Invalid project name "${projectName}". Use only lowercase letters, numbers, and hyphens (e.g. my-api).`);
+    process.exit(1);
+  }
+  if (!author || !String(author).trim()) {
+    log.fail('Author name cannot be empty.');
+    process.exit(1);
+  }
+  if (!GITHUB_USERNAME_RE.test(github)) {
+    log.fail(`Invalid GitHub username "${github}". Use only letters, numbers, and hyphens (e.g. johndoe).`);
+    process.exit(1);
+  }
+  for (const m of modules) {
+    if (!MODULE_NAME_RE.test(m)) {
+      log.fail(`Invalid module name "${m}". Start with a lowercase letter; use lowercase letters, numbers, and hyphens only.`);
+      process.exit(1);
+    }
+  }
+
+  const backendHalf = buildHalfAnswers(backendTi, false);
+  const backendCtxBase = Object.assign(
+    {
+      language: lang, framework: fw, architecture: arch,
+      projectName: `${projectName}-backend`, author, github,
+      description: `Backend for ${description}`,
+      _mode: 'single',
+    },
+    backendTi,
+    backendHalf.stackAnswers
+  );
+  const backendFullCtx = buildContext(backendHalf.flags, modules, backendCtxBase, backendCtxBase);
+
+  const frontendHalf = buildHalfAnswers(frontendTi, true);
+  const frontendCtxBase = Object.assign(
+    {
+      language: feLang, framework: feFw, architecture: feArch,
+      projectName: `${projectName}-frontend`, author, github,
+      description: `Frontend for ${description}`,
+      _mode: 'frontend',
+    },
+    frontendTi,
+    frontendHalf.stackAnswers
+  );
+  const frontendFullCtx = buildContext(frontendHalf.flags, modules, frontendCtxBase, frontendCtxBase);
+
+  if (opts.dryRun) {
+    console.log('');
+    console.log(chalk.bold('  Backend'));
+    await renderProjectDry(backendFullCtx);
+    console.log('');
+    console.log(chalk.bold('  Frontend'));
+    await renderProjectDry(frontendFullCtx);
+    return;
+  }
+
+  await renderFullStackProject({ projectName }, backendFullCtx, frontendFullCtx, {
+    skipInstall: opts.skipInstall,
+    skipGit: opts.skipGit,
+    gitMode: 'auto',
+  });
 }
 
 async function createInteractive(opts) {
@@ -1065,12 +1453,49 @@ async function createInteractive(opts) {
       { name: chalk.bold('Single service'), value: 'single', description: 'One backend service with your chosen stack' },
       { name: chalk.cyan('Microservices (multi-service)'), value: 'multi', description: 'Multiple independent services orchestrated together' },
       { name: chalk.magenta('Frontend app'), value: 'frontend', description: 'React, Vue, Next.js, Svelte, or static HTML site' },
+      { name: chalk.green('Full-stack'), value: 'full-stack', description: 'Backend + frontend, generated together' },
     ],
   }]);
 
   if (mode === 'frontend') {
     initialCtx._mode = 'frontend';
     initialCtx.language = 'frontend';
+  }
+
+  if (mode === 'full-stack') {
+    section('Project Info');
+    const base = await prompt([
+      {
+        type: 'input', name: 'projectName', message: 'Root project name?',
+        default: initialCtx.projectName || undefined,
+        validate: (v) => {
+          if (!v || v.trim() === '') return 'Project name cannot be empty';
+          return /^[a-z0-9-]+$/.test(v) || 'Lowercase letters, numbers, and hyphens only';
+        },
+      },
+      {
+        type: 'input', name: 'author', message: 'Your full name?',
+        default: initialCtx.author || undefined,
+        validate: (v) => {
+          if (!v || v.trim().length === 0) return 'Please enter your name';
+          return true;
+        },
+      },
+      {
+        type: 'input', name: 'github', message: 'GitHub username?',
+        default: initialCtx.github || undefined,
+        validate: (v) => {
+          if (!v || v.trim() === '') return 'GitHub username cannot be empty';
+          return /^[a-zA-Z0-9-]+$/.test(v) || 'Letters, numbers, and hyphens only';
+        },
+      },
+      {
+        type: 'input', name: 'description', message: 'Short description?',
+        default: initialCtx.description || 'Built with pasha CLI',
+      },
+    ]);
+    await runFullStack(Object.assign({}, base), { tui: false });
+    return;
   }
 
   if (mode === 'multi') {
@@ -1261,9 +1686,58 @@ async function createTui(options) {
           { name: 'Single service', value: 'single', description: 'One backend service with your chosen stack' },
           { name: 'Microservices (multi-service)', value: 'multi', description: 'Multiple independent services orchestrated together' },
           { name: 'Frontend app', value: 'frontend', description: 'React, Vue, Next.js, Svelte, or static HTML site' },
+          { name: 'Full-stack', value: 'full-stack', description: 'Backend + frontend, generated together' },
         ],
       }]);
       if (mode === '__back__') return '__back__';
+
+      if (mode === 'full-stack') {
+        const base = await prompt([
+          {
+            type: 'input', name: 'projectName', message: 'Root project name?',
+            default: ctx.projectName || undefined,
+            validate: (v) => {
+              if (!v || v.trim() === '') return 'Project name cannot be empty';
+              return /^[a-z0-9-]+$/.test(v) || 'Lowercase letters, numbers, and hyphens only';
+            },
+          },
+          {
+            type: 'input', name: 'author', message: 'Your full name?',
+            default: ctx.author || undefined,
+            validate: (v) => {
+              if (!v || v.trim().length === 0) return 'Please enter your name';
+              return true;
+            },
+          },
+          {
+            type: 'input', name: 'github', message: 'GitHub username?',
+            default: ctx.github || undefined,
+            validate: (v) => {
+              if (!v || v.trim() === '') return 'GitHub username cannot be empty';
+              return /^[a-zA-Z0-9-]+$/.test(v) || 'Letters, numbers, and hyphens only';
+            },
+          },
+          {
+            type: 'input', name: 'description', message: 'Short description?',
+            default: ctx.description || 'Built with pasha CLI',
+          },
+        ]);
+        for (const v of Object.values(base)) {
+          if (v === '__back__') return '__back__';
+        }
+
+        await runFullStack(Object.assign({}, base), { tui: true, tuiApp, prereqStep: _stepPrerequisites });
+
+        // The rest of the outer 9-step Navigator (language..review) has
+        // already been fully handled inside runFullStack via its own
+        // per-pass Navigators — every remaining step function no-ops when
+        // it sees _skipRemaining, so the outer Navigator just fast-forwards
+        // to the end without prompting again. See the `ctx._skipRemaining`
+        // check right after `nav.start()` below, which skips the normal
+        // single-project render/done pipeline for this case.
+        return { _mode: mode, mode, _skipRemaining: true };
+      }
+
       return { _mode: mode, mode };
     }
 
@@ -1313,21 +1787,40 @@ async function createTui(options) {
 
     const ctx = await nav.start(initialCtx);
 
-    if (!ctx._confirmed) {
-      showDone('Cancelled. No files were created.', null, null);
-      await waitUntilExit();
-      tuiTerminal.restore();
-      process.stdout.write('Cancelled. No files were created.\n');
-      process.exit(0);
+    // Full-stack mode is handled entirely inside _stepMode (two full
+    // passes, each rendered as its own nested project) — the remaining
+    // steps in this Navigator no-op via the `ctx._skipRemaining` guard at
+    // the top of each shared step function, fast-forwarding straight
+    // through without prompting. There's nothing left for the normal
+    // single-project confirm/render pipeline below to do; skip straight
+    // to the same wait-for-exit tail every other path ends with.
+    if (!ctx._skipRemaining) {
+      if (!ctx._confirmed) {
+        showDone('Cancelled. No files were created.', null, null);
+        await waitUntilExit();
+        tuiTerminal.restore();
+        process.stdout.write('Cancelled. No files were created.\n');
+        process.exit(0);
+      }
+
+      if (options.savePreset) {
+        try {
+          const savedPath = await savePreset(options.savePreset, ctx);
+          log.info(`Preset saved: ${options.savePreset}`);
+        } catch (err) {
+          log.fail(`Failed to save preset: ${err.message}`);
+        }
+      }
     }
 
-    if (options.savePreset) {
-      try {
-        const savedPath = await savePreset(options.savePreset, ctx);
-        log.info(`Preset saved: ${options.savePreset}`);
-      } catch (err) {
-        log.fail(`Failed to save preset: ${err.message}`);
+    if (ctx._skipRemaining) {
+      await waitUntilExit();
+      var fsSummary = tuiTerminal.getSummary();
+      tuiTerminal.restore();
+      if (fsSummary && fsSummary.outPath) {
+        done(fsSummary.outPath, fsSummary.ctx);
       }
+      process.exit(0);
     }
 
     const phases = [
@@ -1374,7 +1867,10 @@ async function createTui(options) {
       var templateDir = path.join(TEMPLATES_ROOT, ctx._templateName);
       var shouldInclude = makeIncludeCheck(tc.fileConditions, ctx);
 
-      renderFileCount = await countFilesInTemplateDir(path.join(templateDir, 'files'), shouldInclude);
+      var ownFilesDirCount = path.join(templateDir, 'files');
+      if (await fs.pathExists(ownFilesDirCount)) {
+        renderFileCount = await countFilesInTemplateDir(ownFilesDirCount, shouldInclude);
+      }
       if (tc.shared) {
         var sharedFilesDir = path.join(TEMPLATES_ROOT, tc.shared, 'files');
         if (await fs.pathExists(sharedFilesDir)) {

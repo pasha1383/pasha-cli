@@ -16,9 +16,12 @@ program
 
 program
   .option('-y, --yes', 'Use defaults for all prompts (non-interactive)')
+  .option('--mode <mode>', 'Wizard mode: single, multi, frontend, or full-stack')
   .option('-l, --language <lang>', 'Target language')
   .option('-f, --framework <fw>', 'Target framework')
   .option('-a, --architecture <arch>', 'Target architecture')
+  .option('--frontend-framework <fw>', 'Frontend framework (full-stack mode)')
+  .option('--frontend-architecture <arch>', 'Frontend architecture (full-stack mode)')
   .option('--orm <orm>', 'ORM selection')
   .option('--database <db>', 'Database selection')
   .option('--validation <val>', 'Validation selection')

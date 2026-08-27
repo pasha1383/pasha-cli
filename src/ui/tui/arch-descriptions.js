@@ -13,6 +13,12 @@ module.exports = {
     bestFor: 'Systems that genuinely need independent scaling/deployment per service, polyglot stacks',
     files: 'One directory per service, each a self-contained project with its own stack',
   },
+  'full-stack': {
+    title: 'Full-stack',
+    description: 'A backend service and a frontend app, configured back-to-back — you pick the backend language, framework, and architecture and its stack first, exactly as in Single service mode, then the frontend framework and architecture, exactly as in Frontend app mode. Both are generated together under one project root as nested backend/ and frontend/ directories, rather than as two unrelated top-level projects, with a single git repo at the root covering both.',
+    bestFor: 'Apps that ship an API and its own UI together: SaaS products, admin panels with a matching backend, small-to-medium teams that own both ends',
+    files: '<projectName>/{backend, frontend}/ — each a self-contained project with its own stack and dependencies',
+  },
   layered: {
     title: 'Layered (N-Tier)',
     description: 'The codebase is split into horizontal layers — typically Controller/Presentation, Service/Application, and Repository/Data. Each layer only calls the one directly below it. Dependencies flow top-to-bottom; data flows both ways. Simple mental model, fast onboarding, and trivial to test each layer in isolation with mocks. The trade-off: business logic tends to accumulate in fat services, and layer boundaries blur over time unless enforced by lint rules or architecture tests.',

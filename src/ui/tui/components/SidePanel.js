@@ -34,17 +34,34 @@ function getPanelWidth() {
 // content: the header bar (3: top border, title, bottom border), the
 // step rail (1), the gap between the rail and the question (2), the
 // footer bar (1), and the key-hints line (1) -- plus a couple of rows of
-// margin. Getting this wrong doesn't just look a little cramped: since
-// the panel unconditionally pads its content to this many rows, too
-// generous a budget makes the whole screen taller than the terminal,
-// pushing the header and step rail off the top with no way to scroll
-// back to them (this app runs in the alternate screen buffer, which
-// has no separate scrollback).
+// margin.
 var RESERVED_CHROME_ROWS = 11;
+
+// The panel used to scale with `rows - RESERVED_CHROME_ROWS`, filling
+// almost the whole terminal on a tall window. That's fragile in a way
+// that isn't just cosmetic: the panel unconditionally pads its content
+// to whatever height this returns, and if the true chrome height (which
+// varies with terminal width -- wider terminals wrap the description
+// text into fewer lines, narrower ones into more) ever runs even one
+// row over this budget's assumptions, total output exceeds the
+// terminal's row count. Ink has a special code path for exactly that
+// case (output taller than the terminal) that bypasses its normal
+// incremental-erase tracking; once output height drops back under the
+// terminal's row count on a later render, that tracking is left out of
+// sync with what's actually on screen -- a stale frame left behind a
+// new one, or the whole screen flashing on every highlight change as
+// Ink repeatedly falls into and out of that path. A terminal-size-scaled
+// budget can only ever be as safe as its estimate of chrome height is
+// exact; capping the panel at a small absolute height regardless of how
+// tall the terminal is gives a real, terminal-size-independent margin
+// instead of a best-effort one. Longer descriptions already scroll via
+// the panel's own up/down indicators, so this only affects how much is
+// visible without scrolling, never what's reachable.
+var ABSOLUTE_MAX_PANEL_LINES = 13;
 
 function getMaxVisibleLines() {
   var rows = process.stdout.rows || 24;
-  return Math.max(10, rows - RESERVED_CHROME_ROWS);
+  return Math.max(7, Math.min(ABSOLUTE_MAX_PANEL_LINES, rows - RESERVED_CHROME_ROWS));
 }
 
 function wrapLines(text, maxLen) {

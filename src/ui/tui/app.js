@@ -6,6 +6,7 @@ var { getInk } = require('./ink-proxy');
 var { StepRail } = require('./components/StepRail');
 var { KeyHints } = require('./components/KeyHints');
 var { SidePanel, getPanelWidth } = require('./components/SidePanel');
+var archDescriptions = require('./arch-descriptions');
 var { SelectPrompt } = require('./components/SelectPrompt');
 var { MultiSelectPrompt } = require('./components/MultiSelectPrompt');
 var { InputPrompt } = require('./components/InputPrompt');
@@ -16,7 +17,6 @@ var { PrereqsScreen } = require('./components/PrereqsScreen');
 var { HelpOverlay } = require('./components/HelpOverlay');
 var { hintsForContext, mapKey } = require('./keymap');
 var { onResize, restore: restoreTerminal, saveSummary: terminalSaveSummary } = require('./terminal');
-var io = require('../io');
 var { theme } = require('./theme');
 var e = React.createElement;
 
@@ -35,21 +35,36 @@ function getState() {
   return _appState;
 }
 
-function setState(update) {
-  // Ink tracks how many terminal rows the previous frame occupied and
-  // erases exactly that many before writing the next one. When a view
-  // with a much taller frame (e.g. a select screen with a long
-  // side-panel description) is followed by a much shorter one, that
-  // bookkeeping can fall out of sync and leave stale rows from the old
-  // frame on screen above the new content. We're already in the
-  // alternate screen buffer (see terminal.js), where a full clear on
-  // every view change is the normal, expected behavior for a
-  // full-screen app (same as vim/htop) -- so force one here rather
-  // than relying on Ink's incremental erase to always get it right.
-  var viewChanged = update.view !== undefined && (!_appState || update.view !== _appState.view);
-  if (viewChanged && io.isTTY()) {
-    try { process.stdout.write('\x1b[2J\x1b[3J\x1b[H'); } catch (_) {}
+// Ink tracks how many terminal rows the previous frame occupied and
+// erases exactly that many before writing the next one, via log-update's
+// own internal bookkeeping. Any change that alters the frame's total
+// height -- a view transition, but just as easily the side panel
+// swinging between its short "no description" placeholder and its full
+// padded content as the highlighted choice changes -- can leave that
+// bookkeeping out of sync, leaving stale rows from the old frame on
+// screen above the new content.
+//
+// Forcing a clear with a *raw* ANSI write here (bypassing Ink) was tried
+// first and made things worse: Ink/log-update still believes the cursor
+// is wherever its own internal count last left it, so its next write is
+// positioned relative to that stale belief rather than the real (reset)
+// cursor position, pushing content further down or off-screen entirely.
+// ink.render()'s returned instance exposes clear() for exactly this --
+// it resets log-update's own tracking, not just the physical terminal --
+// so create.js wires it in via setClearFn() once the instance exists.
+var _clearFn = null;
+function setClearFn(fn) {
+  _clearFn = fn;
+}
+function clearScreenForRedraw() {
+  if (_clearFn) {
+    try { _clearFn(); } catch (_) {}
   }
+}
+
+function setState(update) {
+  var viewChanged = update.view !== undefined && (!_appState || update.view !== _appState.view);
+  if (viewChanged) clearScreenForRedraw();
   _appState = Object.assign({}, _appState || {}, update);
   if (_onStateChange) _onStateChange(_appState);
 }
@@ -832,7 +847,17 @@ function App() {
         currentArch = initCh ? initCh.value : null;
       }
 
-      var sidebarVisible = !!currentArch && !compact;
+      // Some question types (ORM, database, validation, broker choices)
+      // have no entries in arch-descriptions.js at all -- showing the
+      // panel there just means every single highlight displays the same
+      // permanently-empty "Select an option to see details" placeholder,
+      // which reads as broken/missing content rather than "nothing to
+      // show here." Only show the panel for a question where at least
+      // one choice actually has real content.
+      var anyChoiceHasDescription = mappedChoices.some(function (c) {
+        return !!archDescriptions[c.value];
+      });
+      var sidebarVisible = !!currentArch && !compact && anyChoiceHasDescription;
       var sidebar = e(SidePanel, {
         architecture: currentArch,
         visible: sidebarVisible,
@@ -977,5 +1002,6 @@ module.exports = {
   setState: setState,
   cancelAll: cancelAll,
   setNavigator: setNavigator,
+  setClearFn: setClearFn,
   _queue: _queue,
 };

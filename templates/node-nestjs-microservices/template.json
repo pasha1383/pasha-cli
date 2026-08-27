@@ -1,5 +1,5 @@
 {
-  "name": "Node.js + NestJS + Microservices",
+  "name": "Node.js + NestJS + Message-based Microservices Transport",
   "prerequisites": [
     "node",
     "npm",

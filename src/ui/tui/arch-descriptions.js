@@ -1,6 +1,18 @@
 'use strict';
 
 module.exports = {
+  single: {
+    title: 'Single Service',
+    description: 'One backend service, built with the language, framework, and architecture you choose next. The straightforward default -- everything lives in one deployable process talking to one set of infrastructure (database, cache, broker). No inter-service networking, no service discovery, no distributed-systems overhead to manage.',
+    bestFor: 'Most projects, especially to start: APIs, internal tools, MVPs, small-to-medium teams',
+    files: 'A single project directory -- exact layout depends on the architecture you pick next',
+  },
+  multi: {
+    title: 'Microservices (multi-service)',
+    description: 'Multiple independent backend services, each scaffolded and deployed on its own, orchestrated together as one project. You pick the stack per service and pasha generates each as a separate directory. Best reached for once you actually need independent scaling or deployment across services -- it brings real operational overhead (service discovery, distributed tracing, cross-service contracts) that a single service does not have.',
+    bestFor: 'Systems that genuinely need independent scaling/deployment per service, polyglot stacks',
+    files: 'One directory per service, each a self-contained project with its own stack',
+  },
   layered: {
     title: 'Layered (N-Tier)',
     description: 'The codebase is split into horizontal layers — typically Controller/Presentation, Service/Application, and Repository/Data. Each layer only calls the one directly below it. Dependencies flow top-to-bottom; data flows both ways. Simple mental model, fast onboarding, and trivial to test each layer in isolation with mocks. The trade-off: business logic tends to accumulate in fat services, and layer boundaries blur over time unless enforced by lint rules or architecture tests.',
@@ -62,10 +74,10 @@ module.exports = {
     files: 'src/functions/{createUser, getOrder, processPayment}/ + shared/',
   },
   microservices: {
-    title: 'Microservices',
-    description: 'The application is split into independently deployable services, each owning a bounded context. Services communicate over the network — typically via REST, gRPC, or async messaging. Each service can use its own language, framework, and database. You can scale hot services independently and deploy without coordinating across the whole org. The operational cost is high: service discovery, distributed tracing, circuit breakers, and eventual consistency all add friction. Start with a modular monolith unless you have strong organisational reasons to distribute.',
-    bestFor: 'Large organisations with independent teams, systems needing independent scaling, polyglot stacks',
-    files: 'services/{user-service, order-service, payment-service}/ — each is its own project',
+    title: 'Message-based (Microservices Transport)',
+    description: 'Not the same thing as picking "Microservices" as your project Mode -- this is a single service, using its framework\'s microservice-transport library (NestJS: @nestjs/microservices; Hapi: an equivalent transport plugin) to speak TCP, Redis, NATS, gRPC, or Kafka instead of exposing an HTTP API directly. It fits into a larger system as one node that talks to other services over a message broker or RPC transport. If you actually want pasha to generate multiple independent, separately-deployable service directories, go back and pick "Microservices (multi-service)" as the project Mode instead -- this architecture choice does not do that.',
+    bestFor: 'A single service that needs to join an existing message/RPC-based system, not the system itself',
+    files: 'Same layered structure as the framework\'s other architectures, with a transport/microservices module wiring in the chosen protocol',
   },
   'component-based': {
     title: 'Component-Based Architecture',

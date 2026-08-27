@@ -1,5 +1,5 @@
 {
-  "name": "Node.js + Hapi + Microservices",
+  "name": "Node.js + Hapi + Message-based Transport",
   "prerequisites": ["node", "npm", "git"],
   "shared": null,
   "stackFeatures": "hapi",

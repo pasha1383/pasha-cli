@@ -5,16 +5,6 @@ export const create{{pascalCase moduleName}}Validation = [
   body('name').isString().isLength({ min: 1, max: 255 }).withMessage('name is required (1–255 chars)'),
 ];
 {{/if}}
-{{#if useClassValidator}}
-import { IsString, MinLength, MaxLength } from 'class-validator';
-
-export class Create{{pascalCase moduleName}}Dto {
-  @IsString()
-  @MinLength(1)
-  @MaxLength(255)
-  name!: string;
-}
-{{/if}}
 {{#if useZod}}
 import { z } from 'zod';
 

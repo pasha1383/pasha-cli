@@ -5,9 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.config.settings import settings
 from src.errors.app_error import AppError
-{{#if hasOrm}}
-from src.shared.database.{{#if ormSqlalchemy}}sqlalchemy{{/if}}{{#if ormTortoise}}tortoise{{/if}}{{#if ormDjango}}none{{/if}} import init_db, close_db
-{{/if}}
+from src.shared.database.{{#if ormSqlalchemy}}sqlalchemy{{else if ormTortoise}}tortoise{{else}}none{{/if}} import init_db, close_db
 {{#each modules}}
 from src.features.{{snakeCase this}}.routes import router as {{camelCase this}}_router
 {{/each}}
@@ -30,15 +28,11 @@ def create_app() -> FastAPI:
 
     @app.on_event("startup")
     async def startup():
-        {{#if hasOrm}}
         await init_db(settings)
-        {{/if}}
 
     @app.on_event("shutdown")
     async def shutdown():
-        {{#if hasOrm}}
         await close_db()
-        {{/if}}
 
     {{#each modules}}
     app.include_router({{camelCase this}}_router, prefix="/{{this}}", tags=["{{this}}"])
